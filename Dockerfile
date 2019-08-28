@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: "3"
+FROM rocker/rstudio:3.6.1
 
-services:
-  all:
-    image: eturkes/ad-cbd-exosome-proteins:3.6.1
-    volumes:
-      - ".:/AD-CBD-exosome-proteins:rw"
-    command: Rscript -e "setwd('/AD-CBD-exosome-proteins/R/')" -e "rmarkdown::render('AD_CBD_exosome_proteins_report.Rmd', output_file = '../results/AD-CBD-exosome-proteins-report.html')"
+LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 
-  rstudio:
-    image: eturkes/ad-cbd-exosome-proteins:3.6.1
-    volumes:
-      - ".:/home/rstudio/AD-CBD-exosome-proteins:rw"
-    ports:
-      - "127.0.0.1:8792:8787"
-    environment:
-      -  DISABLE_AUTH=true
+RUN Rscript -e "install.packages('rmarkdown')" \
+        -e "install.packages('rprojroot')" \
+        -e "install.packages('conflicted')" \
+        -e "install.packages('DT')" \
+        -e "install.packages('data.table')" \
+        -e "install.packages('readxl')" \
+    && apt-get clean \
+    && rm -Rf /var/lib/apt/lists/ \
+        /tmp/downloaded_packages/ \
+        /tmp/*.rds
