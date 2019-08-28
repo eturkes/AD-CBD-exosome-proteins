@@ -1,0 +1,115 @@
+---
+title: "AD CBD Exosome Proteins"
+author:
+  - name: "Emir Turkes [et2628@cumc.columbia.edu]"
+  - name: "Columbia University"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+bibliography: "../AD-CBD-exosome-proteins.bib"
+biblio-style: apalike
+link-citations: true
+output:
+  html_document:
+    code_folding: show
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit:
+  (function(inputFile, encoding) {
+    rmarkdown::render(
+      inputFile, encoding = encoding,
+      output_file = "../results/AD-CBD-exosome-proteins-report.html")})
+---
+
+```{r, include = FALSE}
+# Copyright 2019 Emir Turkes
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+knitr::opts_chunk$set(fig.width = 8.5, fig.height = 7)
+```
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This is an in-depth analysis based using one or more cleaned datasets.*
+
+The goal of this analysis is to compare exosome proteins between control, Alzheimer's Disease (AD), and Corticobasal Degeneration (CBD) samples.
+
+Datasets used in this analysis include:
+
+- Mass spectrometry data of exosome proteins analyzed with MaxQuant.
+
+This analysis was performed in R except where noted.
+The source code and instructions for rerunning the analysis can be found at [github.com/eturkes/bag3-pathway-analysis](https://github.com/eturkes/bag3-pathway-analysis).
+
+# Final Results
+
+**Read just the following sub-section for the final results of the analysis and a brief summary of the methods.**
+
+# ~~~ Breakdown of Methods ~~~ {-}
+
+**Sections from here to the end break down the methods used and are optional to read.**
+
+We start by loading in any required packages and setting some global variables.
+
+```{r}
+packages <- c("conflicted", "DT", "data.table", "readxl")
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+
+assets_dir <- file.path(getwd(), "..", "assets")
+results_dir <- file.path(getwd(), "..", "results")
+
+# Adds download buttons and exponential values.
+datatable_custom <- function(dt) {
+  datatable(
+    dt,
+    extensions = "Buttons", options = list(dom = "Blfrtip", buttons = list(
+      "copy", "print",
+      list(extend = "collection", buttons = c("csv", "excel", "pdf"), text = "Download")),
+    rowCallback = JS(
+      "function(row, data) {for (i = 1; i < data.length; i++) {if (data[i]>1000 | data[i]<1) {",
+        "$('td:eq('+i+')', row).html(data[i].toExponential(2));",
+      "}}}")))}
+```
+
+# Original Data
+
+This section contains the original data received from the mass spec facility and was mainly processed using MaxQuant.
+
+```{r}
+# Suppress NaN warnings.
+AD_control <- suppressWarnings(data.table(read_excel(file.path(
+  assets_dir, "max-quant", "AD_CONTROL_DIFFERENCE_08202019.xls"))))
+CBD_control <- suppressWarnings(data.table(read_excel(file.path(
+  assets_dir, "max-quant", "CBD_CONTROL_DIFFERENCE_08202019.xls"))))
+AD_CBD <- suppressWarnings(data.table(read_excel(file.path(
+  assets_dir, "max-quant", "AD_CDB_DIFFERENCE_08202019.xls"))))
+
+datatable_custom(AD_control)
+datatable_custom(CBD_control)
+datatable_custom(AD_CBD)
+```
