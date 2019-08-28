@@ -64,7 +64,7 @@ Datasets used in this analysis include:
 - Mass spectrometry data of exosome proteins analyzed with MaxQuant.
 
 This analysis was performed in R except where noted.
-The source code and instructions for rerunning the analysis can be found at [github.com/eturkes/bag3-pathway-analysis](https://github.com/eturkes/bag3-pathway-analysis).
+The source code and instructions for rerunning the analysis can be found at [github.com/eturkes/AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).
 
 # Final Results
 
