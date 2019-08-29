@@ -26,23 +26,19 @@ knit:
 ---
 
 ```{r, include = FALSE}
-#    This file is part of AD-CBD-exosome-proteins.
-#    Copyright (C) 2019  Emir Turkes
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+# Copyright 2019 Emir Turkes
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 knitr::opts_chunk$set(fig.width = 8.5, fig.height = 7)
 ```
@@ -59,12 +55,11 @@ div.tocify {width: 100%;}
 div.main-container {max-width: none; width: 100%;}
 </style>
 
-*This is an in-depth analysis based using one or more cleaned datasets.*
+*This is a broad initial analysis that prepares and characterizes the data for use in other projects.*
 
-The goal of this analysis is to compare exosome proteins between control, Alzheimer's Disease (AD), and Corticobasal Degeneration (CBD) samples.
+The background for this data is as follows:
 
-Datasets used in this analysis include:
-
+- Two replicates of control, Alzheimer's Disease (AD), and Corticobasal Degeneration (CBD) patient brain samples.
 - Mass spectrometry data of exosome proteins analyzed with MaxQuant.
 
 This analysis was performed in R except where noted.
@@ -72,7 +67,7 @@ The source code and instructions for rerunning the analysis can be found at [git
 
 # Final Results
 
-**Read just the following sub-section for the final results of the analysis and a brief summary of the methods.**
+**None available...yet!**
 
 # ~~~ Breakdown of Methods ~~~ {-}
 
@@ -81,11 +76,11 @@ The source code and instructions for rerunning the analysis can be found at [git
 We start by loading in any required packages and setting some global variables.
 
 ```{r}
-packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr")
-invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
-
 assets_dir <- file.path(getwd(), "..", "assets")
 results_dir <- file.path(getwd(), "..", "results")
+
+packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr")
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 
 # Adds download buttons and exponential values.
 datatable_custom <- function(dt) {
@@ -113,7 +108,6 @@ CBD_control <- data.table(read_excel(
 AD_CBD <- data.table(read_excel(
   file.path(assets_dir, "max-quant", "AD_CDB_DIFFERENCE_08202019.xls"), na = "NaN"))
 sets <- list(AD_control, CBD_control, AD_CBD)
-rm(AD_control, CBD_control, AD_CBD)
 
 datatable_custom(sets[[1]])
 datatable_custom(sets[[2]])
@@ -122,15 +116,18 @@ datatable_custom(sets[[3]])
 
 # Preliminary Cleaning
 
+First, we do some very basic modifications that improve presentation of the table without any direct data manipulation.
+
 ```{r}
 sets <- lapply(sets, function(x) x[ , c(6, 3, 2)])
+
 sets <- lapply(sets, function(x) rename(x, c("Gene names" = "Genes", "p value" = "p_value")))
 sets[[1]] <- rename(sets[[1]], c("AD_Control fold diff" = "AD_Control_Fold_Change"))
 sets[[2]] <- rename(sets[[2]], c("CBD_Control_Fold difference" = "CBD_Control_Fold_Change"))
 sets[[3]] <- rename(sets[[3]], c("AD_CDB_FoldDifference" = "AD_CBD_Fold_Change"))
-sets <- lapply(sets, function(x) x[!x$Genes == "", ])
-sets <- lapply(sets, function(x) x[x$p_value < 0.05, ])
-sets <- lapply(sets, function(x) x[order(-x[ , 2])])
+
+sets <- lapply(sets, function(x) x[!x$Genes == "", ]) # Remove blank entries.
+sets <- lapply(sets, function(x) x[order(-x[ , 2])]) # Order by fold change.
 
 datatable_custom(sets[[1]]) %>%
   formatStyle("Genes", `text-align` = "center")
@@ -140,14 +137,19 @@ datatable_custom(sets[[3]]) %>%
   formatStyle("Genes", `text-align` = "center")
 ```
 
-# Overlapping Genes
+# Differential Expression
+
+We start by characterizing the differential expression of proteins in our two treatment conditions and three datasets.
 
 ```{r}
-merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
-  sets[[2]][ , 1:2], sets[[3]][ , 1:2]), sets[[1]][ , 1:2])
-merged_set <- merged_set[!(is.na(merged_set$Genes) | merged_set$Genes == ""), ]
-merged_set[is.na(merged_set)] <- 0
+sets <- lapply(sets, function(x) x[x$p_value < 0.05, ]) # Set p-value cutoff.
 
+merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
+  sets[[2]][ , c(1, 2)], sets[[3]][ , c(1, 2)]), sets[[1]][ , c(1, 2)])
+merged_set <- merged_set[!(is.na(merged_set$Genes) | merged_set$Genes == ""), ]
+merged_set[is.na(merged_set)] <- 0 # Set all NA to 0 for easier manipulation.
+
+# Data for the next chunk must be prepared here.
 AD_control <- head(merged_set[order(-merged_set$AD_Control_Fold_Change)], n = 10)
 CBD_control <- head(merged_set[order(-merged_set$CBD_Control_Fold_Change)], n = 10)
 AD_CBD <- head(merged_set[order(-merged_set$AD_CBD_Fold_Change)], n = 10)
@@ -156,17 +158,31 @@ genes <- merged_set$Genes
 merged_set <- merged_set[ , 2:4]
 rownames(merged_set) <- genes
 datatable_custom(merged_set)
+```
 
+We also compare the top 10 within-group differentially expressed proteins for each dataset.
+
+```{r}
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
   CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
 merged_top <- merged_top[!(is.na(merged_top$Genes) | merged_top$Genes == ""), ]
-merged_top[is.na(merged_top)] <- 0
+merged_top[is.na(merged_top)] <- 0 # Set all NA to 0 for easier manipulation.
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
 datatable_custom(merged_top)
 
+# Visualize in a heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(merged_top, scale = "row")
+```
+
+# References
+
+This is the concluding section of the document.
+Here we write relevant results to disk, output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
 ```
