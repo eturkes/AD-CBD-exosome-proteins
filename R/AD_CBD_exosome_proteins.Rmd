@@ -91,9 +91,10 @@ datatable_custom <- function(dt) {
       "copy", "print",
       list(extend = "collection", buttons = c("csv", "excel", "pdf"), text = "Download")),
     rowCallback = JS(
-      "function(row, data) {for (i = 1; i < data.length; i++) {if (data[i]>1000 | data[i]<1) {",
-        "$('td:eq('+i+')', row).html(data[i].toExponential(2));",
-      "}}}")))}
+      "function(row, data) {",
+        "for (i = 1; i < data.length; i++) {",
+          "if (data[i]>=1000 | data[i]<1000) {",
+            "$('td:eq('+i+')', row).html(data[i].toExponential(2));}}}")))}
 ```
 
 # Original Data
@@ -101,15 +102,31 @@ datatable_custom <- function(dt) {
 This section contains the original data received from the mass spec facility and was mainly processed using MaxQuant.
 
 ```{r}
-# Suppress NaN warnings.
-AD_control <- suppressWarnings(data.table(read_excel(file.path(
-  assets_dir, "max-quant", "AD_CONTROL_DIFFERENCE_08202019.xls"))))
-CBD_control <- suppressWarnings(data.table(read_excel(file.path(
-  assets_dir, "max-quant", "CBD_CONTROL_DIFFERENCE_08202019.xls"))))
-AD_CBD <- suppressWarnings(data.table(read_excel(file.path(
-  assets_dir, "max-quant", "AD_CDB_DIFFERENCE_08202019.xls"))))
+AD_control <- data.table(read_excel(
+  file.path(assets_dir, "max-quant", "AD_CONTROL_DIFFERENCE_08202019.xls"), na = "NaN"))
+CBD_control <- data.table(read_excel(
+  file.path(assets_dir, "max-quant", "CBD_CONTROL_DIFFERENCE_08202019.xls"), na = "NaN"))
+AD_CBD <- data.table(read_excel(
+  file.path(assets_dir, "max-quant", "AD_CDB_DIFFERENCE_08202019.xls"), na = "NaN"))
+sets <- list(AD_control, CBD_control, AD_CBD)
+rm(AD_control, CBD_control, AD_CBD)
 
-datatable_custom(AD_control)
-datatable_custom(CBD_control)
-datatable_custom(AD_CBD)
+datatable_custom(sets[[1]])
+datatable_custom(sets[[2]])
+datatable_custom(sets[[3]])
+```
+
+# Preliminary Cleaning
+
+```{r}
+sets <- lapply(sets, function(x) x[ , c(6, 3, 2)])
+sets <- lapply(sets, function(x) x[x$`p value` < 0.05, ])
+sets <- lapply(sets, function(x) x[order(-x[ , 2])])
+
+datatable_custom(sets[[1]]) %>%
+  formatStyle("Gene names", `text-align` = "center")
+datatable_custom(sets[[2]]) %>%
+  formatStyle("Gene names", `text-align` = "center")
+datatable_custom(sets[[3]]) %>%
+  formatStyle("Gene names", `text-align` = "center")
 ```
