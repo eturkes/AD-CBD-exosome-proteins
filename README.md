@@ -15,6 +15,6 @@ limitations under the License.
 -->
 
 # AD CBD Exosome Proteins
-#### *This analysis is a work-in-progress**
+#### *This analysis is a work-in-progress*
 
 Analysis of exosome proteins in Alzheimer's Disease and Corticobasal Degeneration
