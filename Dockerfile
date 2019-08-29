@@ -26,6 +26,8 @@ RUN Rscript -e "install.packages('rmarkdown')" \
         -e "install.packages('DT')" \
         -e "install.packages('data.table')" \
         -e "install.packages('readxl')" \
+        -e "install.packages('pheatmap')" \
+        -e "install.packages('plyr')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \

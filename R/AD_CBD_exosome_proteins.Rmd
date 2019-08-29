@@ -341,11 +341,12 @@ datatable_custom(sets[[3]])
 
 ```{r}
 sets <- lapply(sets, function(x) x[ , c(6, 3, 2)])
-sets <- lapply(sets, function(x) rename(x, c("Gene names" = "Genes", "p value" = "p-value")))
-sets[[1]] <- rename(sets[[1]], c("AD_Control fold diff" = "AD/Control Fold Change"))
-sets[[2]] <- rename(sets[[2]], c("CBD_Control_Fold difference" = "CBD/Control Fold Change"))
-sets[[3]] <- rename(sets[[3]], c("AD_CDB_FoldDifference" = "AD/CBD Fold Change"))
-sets <- lapply(sets, function(x) x[x$`p-value` < 0.05, ])
+sets <- lapply(sets, function(x) rename(x, c("Gene names" = "Genes", "p value" = "p_value")))
+sets[[1]] <- rename(sets[[1]], c("AD_Control fold diff" = "AD_Control_Fold_Change"))
+sets[[2]] <- rename(sets[[2]], c("CBD_Control_Fold difference" = "CBD_Control_Fold_Change"))
+sets[[3]] <- rename(sets[[3]], c("AD_CDB_FoldDifference" = "AD_CBD_Fold_Change"))
+sets <- lapply(sets, function(x) x[!x$Genes == "", ])
+sets <- lapply(sets, function(x) x[x$p_value < 0.05, ])
 sets <- lapply(sets, function(x) x[order(-x[ , 2])])
 
 datatable_custom(sets[[1]]) %>%
@@ -359,6 +360,33 @@ datatable_custom(sets[[3]]) %>%
 # Overlapping Genes
 
 ```{r}
-combined_set <- cbind.na(sets[[1]][ , c(1, 2)], sets[[2]][ , c(1, 2)], sets[[3]][ , c(1, 2)])
+combined_set <- cbind.na(sets[[1]][ , 1:2], sets[[2]][ , 1:2], sets[[3]][ , 1:2])
 datatable_custom(combined_set)
+
+merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
+  sets[[2]][ , 1:2], sets[[3]][ , 1:2]), sets[[1]][ , 1:2])
+merged_set <- merged_set[!(is.na(merged_set$Genes) | merged_set$Genes == ""), ]
+merged_set[is.na(merged_set)] <- 0
+
+AD_control <- head(merged_set[order(-merged_set$AD_Control_Fold_Change)], n = 10)
+CBD_control <- head(merged_set[order(-merged_set$CBD_Control_Fold_Change)], n = 10)
+AD_CBD <- head(merged_set[order(-merged_set$AD_CBD_Fold_Change)], n = 10)
+
+genes <- merged_set$Genes
+merged_set <- merged_set[ , 2:4]
+rownames(merged_set) <- genes
+datatable_custom(merged_set)
+
+merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
+  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+merged_top <- merged_top[!(is.na(merged_top$Genes) | merged_top$Genes == ""), ]
+merged_top[is.na(merged_top)] <- 0
+top_genes <- merged_top$Genes
+merged_top <- merged_top[ , 2:4]
+rownames(merged_top) <- top_genes
+datatable_custom(merged_top)
+
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
+pheatmap(merged_top, scale = "row")
 ```
