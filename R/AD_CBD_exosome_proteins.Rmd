@@ -81,7 +81,7 @@ The source code and instructions for rerunning the analysis can be found at [git
 We start by loading in any required packages and setting some global variables.
 
 ```{r}
-packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap")
+packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 
 assets_dir <- file.path(getwd(), "..", "assets")
@@ -341,15 +341,19 @@ datatable_custom(sets[[3]])
 
 ```{r}
 sets <- lapply(sets, function(x) x[ , c(6, 3, 2)])
-sets <- lapply(sets, function(x) x[x$`p value` < 0.05, ])
+sets <- lapply(sets, function(x) rename(x, c("Gene names" = "Genes", "p value" = "p-value")))
+sets[[1]] <- rename(sets[[1]], c("AD_Control fold diff" = "AD/Control Fold Change"))
+sets[[2]] <- rename(sets[[2]], c("CBD_Control_Fold difference" = "CBD/Control Fold Change"))
+sets[[3]] <- rename(sets[[3]], c("AD_CDB_FoldDifference" = "AD/CBD Fold Change"))
+sets <- lapply(sets, function(x) x[x$`p-value` < 0.05, ])
 sets <- lapply(sets, function(x) x[order(-x[ , 2])])
 
 datatable_custom(sets[[1]]) %>%
-  formatStyle("Gene names", `text-align` = "center")
+  formatStyle("Genes", `text-align` = "center")
 datatable_custom(sets[[2]]) %>%
-  formatStyle("Gene names", `text-align` = "center")
+  formatStyle("Genes", `text-align` = "center")
 datatable_custom(sets[[3]]) %>%
-  formatStyle("Gene names", `text-align` = "center")
+  formatStyle("Genes", `text-align` = "center")
 ```
 
 # Overlapping Genes
