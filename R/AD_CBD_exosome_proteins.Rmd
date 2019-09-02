@@ -237,7 +237,7 @@ pheatmap(
   angle_col = 0,
   fontsize = 9,
   color = color,
-  treeheight_col = 0,
+  cluster_cols = FALSE,
   breaks = c(
     seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
     seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50)))
@@ -272,7 +272,7 @@ pheatmap(
   angle_col = 0,
   fontsize = 9,
   color = color,
-  treeheight_col = 0,
+  cluster_cols = FALSE,
   breaks = c(
     seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
     seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50)))
@@ -305,7 +305,7 @@ color[1] <- "#DDDDDD"
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, treeheight_col = 0)
+pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
 ```{r}
@@ -332,7 +332,7 @@ color[1] <- "#DDDDDD"
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, treeheight_col = 0)
+pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
 ## Negative Only
@@ -362,7 +362,7 @@ color[100] <- "#DDDDDD"
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, treeheight_col = 0)
+pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
 ```{r}
@@ -389,7 +389,7 @@ color[100] <- "#DDDDDD"
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, treeheight_col = 0)
+pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
 # References
