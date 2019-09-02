@@ -187,7 +187,6 @@ merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_set <- merged_set[!duplicated(merged_set$Genes), ]
 merged_set <- merged_set[!is.na(merged_set$Genes), ]
 merged_set <- merged_set[!merged_set$Genes == "", ]
-merged_set <- replace(merged_set, is.na(merged_set), as.double("NA")) # Properly type remaining NA.
 
 merged_set$AD_Control_Fold_Change <- log2(merged_set$AD_Control_Fold_Change)
 merged_set$CBD_Control_Fold_Change <- log2(merged_set$CBD_Control_Fold_Change)
@@ -218,7 +217,6 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -226,11 +224,12 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey in color palette to indicate values that were NA.
+# Use grey for 0 in color palette to indicate NA values.
+merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 
-# Generate heatmap, setting breaks to use grey in color palette appropriately.
+# Generate heatmap, setting breaks to reveal NA values.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(
@@ -254,7 +253,6 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -262,17 +260,15 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey in color palette to indicate values that were NA.
+# Use grey for 0 in color palette to indicate NA values.
+merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
 color[1] <- "#DDDDDD"
 
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(
-  merged_top,
-  angle_col = 315,
-  color = color)
+pheatmap(merged_top, angle_col = 315, color = color)
 ```
 
 ## Negative Only
@@ -287,7 +283,6 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -295,17 +290,15 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey in color palette to indicate values that were NA.
+# Use grey for 0 in color palette to indicate NA values.
+merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
 color[100] <- "#DDDDDD"
 
 # Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(
-  merged_top,
-  angle_col = 315,
-  color = color)
+pheatmap(merged_top, angle_col = 315, color = color)
 ```
 
 # References
