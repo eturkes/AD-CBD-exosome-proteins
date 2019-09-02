@@ -224,17 +224,15 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
   seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(
   merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
@@ -255,17 +253,15 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
   seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(
   merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
@@ -289,14 +285,12 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
 color[1] <- "#DDDDDD"
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
@@ -316,14 +310,12 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
 color[1] <- "#DDDDDD"
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
@@ -346,14 +338,12 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
 color[100] <- "#DDDDDD"
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
@@ -373,14 +363,12 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
 color[100] <- "#DDDDDD"
-
-# Generate heatmap.
-merged_top <- as.matrix(merged_top)
-rownames(merged_top) <- top_genes
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
 
@@ -403,17 +391,15 @@ rownames(merged_spec) <- merged_genes
 datatable_download(merged_spec) %>%
   formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
   seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
-
-# Generate heatmap.
-merged_spec <- as.matrix(head(merged_spec, n = 50))
-rownames(merged_spec) <- head(merged_genes, n = 50)
 pheatmap(
   merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
@@ -431,17 +417,15 @@ rownames(merged_spec) <- merged_genes
 datatable_download(merged_spec) %>%
   formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
   seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
-
-# Generate heatmap.
-merged_spec <- as.matrix(head(merged_spec, n = 50))
-rownames(merged_spec) <- head(merged_genes, n = 50)
 pheatmap(
   merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
@@ -459,17 +443,15 @@ rownames(merged_spec) <- merged_genes
 datatable_download(merged_spec) %>%
   formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
 
-# Use grey for 0 in color palette to indicate NA values.
+# Generate heatmap, using grey for 0 in color palette to indicate NA values.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
   seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
-
-# Generate heatmap.
-merged_spec <- as.matrix(head(merged_spec, n = 50))
-rownames(merged_spec) <- head(merged_genes, n = 50)
 pheatmap(
   merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
