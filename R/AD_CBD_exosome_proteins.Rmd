@@ -183,7 +183,7 @@ The data is log-transformed to summarize both positive and negative relationship
 
 ```{r}
 merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
-  sets[[2]][ , c(1, 2)], sets[[3]][ , c(1, 2)]), sets[[1]][ , c(1, 2)])
+  sets[[1]][ , c(1, 2)], sets[[2]][ , c(1, 2)], sets[[3]][ , c(1, 2)]))
 merged_set <- merged_set[!duplicated(merged_set$Genes), ]
 merged_set <- merged_set[!is.na(merged_set$Genes), ]
 merged_set <- merged_set[!merged_set$Genes == "", ]
@@ -213,7 +213,7 @@ CBD_control <- head(merged_set[order(-abs(merged_set$log2_CBD_Control_Fold_Chang
 AD_CBD <- head(merged_set[order(-abs(merged_set$log2_AD_CBD_Fold_Change))], n = 10)
 
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
-  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+  AD_control[ , c(1, 2)], CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]))
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
@@ -249,7 +249,7 @@ CBD_control <- head(merged_set[order(-merged_set$log2_CBD_Control_Fold_Change)],
 AD_CBD <- head(merged_set[order(-merged_set$log2_AD_CBD_Fold_Change)], n = 10)
 
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
-  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+  AD_control[ , c(1, 2)], CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]))
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
@@ -279,7 +279,7 @@ CBD_control <- head(merged_set[order(merged_set$log2_CBD_Control_Fold_Change)], 
 AD_CBD <- head(merged_set[order(merged_set$log2_AD_CBD_Fold_Change)], n = 10)
 
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
-  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+  AD_control[ , c(1, 2)], CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]))
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
