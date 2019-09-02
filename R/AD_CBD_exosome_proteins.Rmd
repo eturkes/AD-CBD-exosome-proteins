@@ -203,7 +203,6 @@ datatable_download(merged_set) %>%
 ```
 
 To narrow down the data, we start by comparing the top 10 within-group differentially expressed proteins for each dataset.
-Due the large number of `NA` from not passing the p-value cutoff, clustering is not used in heatmaps.
 
 ## Positive + Negative
 
@@ -219,7 +218,7 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -227,10 +226,20 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Visualize in a heatmap.
+# Use grey in color palette to indicate values that were NA.
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color[50] <- "#DDDDDD"
+
+# Generate heatmap, setting breaks to use grey in color palette appropriately.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, cluster_rows = FALSE, cluster_cols = FALSE, angle_col = 315)
+pheatmap(
+  merged_top,
+  angle_col = 315,
+  color = color,
+  breaks = c(
+    seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
+    seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50)))
 ```
 
 ## Positive Only
@@ -245,7 +254,7 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -253,12 +262,17 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Visualize in a heatmap.
+# Use grey in color palette to indicate values that were NA.
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
+color[1] <- "#DDDDDD"
+
+# Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(
-  merged_top, cluster_rows = FALSE, cluster_cols = FALSE,
-  angle_col = 315, color = colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100))
+  merged_top,
+  angle_col = 315,
+  color = color)
 ```
 
 ## Negative Only
@@ -273,7 +287,7 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), 0) # Some functions do not allow NA.
 
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
@@ -281,12 +295,17 @@ rownames(merged_top) <- top_genes
 datatable_download(merged_top) %>%
   formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
 
-# Visualize in a heatmap.
+# Use grey in color palette to indicate values that were NA.
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
+color[100] <- "#DDDDDD"
+
+# Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(
-  merged_top, cluster_rows = FALSE, cluster_cols = FALSE,
-  angle_col = 315, color = colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100))
+  merged_top,
+  angle_col = 315,
+  color = color)
 ```
 
 # References
