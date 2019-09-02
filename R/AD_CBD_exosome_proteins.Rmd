@@ -79,7 +79,7 @@ We start by loading in any required packages and setting some global variables.
 assets_dir <- file.path(getwd(), "..", "assets")
 results_dir <- file.path(getwd(), "..", "results")
 
-packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr")
+packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr", "RColorBrewer")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 
 # Adds download buttons.
@@ -197,28 +197,30 @@ merged_set <- rename(merged_set, c(
   "CBD_Control_Fold_Change" = "Log2_CBD_Control_Fold_Change",
   "AD_CBD_Fold_Change" = "Log2_AD_CBD_Fold_Change"))
 
-# Data for the next chunk must be prepared here.
+datatable_download(merged_set) %>%
+  formatStyle("Genes", `text-align` = "center") %>%
+  formatRound(columns = c(2:dim(merged_set)[2]), digits = 2)
+```
+
+To narrow down the data, we start by comparing the top 10 within-group differentially expressed proteins for each dataset.
+Due the large number of `NA` from not passing the p-value cutoff, clustering is not used in heatmaps.
+
+## Positive + Negative
+
+In order to capture both positive and negative relationships, we subset using the absolute value of the log2 fold changes.
+
+```{r}
 AD_control <- head(merged_set[order(-abs(merged_set$Log2_AD_Control_Fold_Change))], n = 10)
 CBD_control <- head(merged_set[order(-abs(merged_set$Log2_CBD_Control_Fold_Change))], n = 10)
 AD_CBD <- head(merged_set[order(-abs(merged_set$Log2_AD_CBD_Fold_Change))], n = 10)
 
-genes <- merged_set$Genes
-merged_set <- merged_set[ , 2:4]
-rownames(merged_set) <- genes
-datatable_download(merged_set) %>%
-  formatRound(columns = c(1:dim(merged_set)[2]), digits = 2)
-```
-
-To narrow down the data, we start by comparing the top 10 within-group differentially expressed proteins for each dataset.
-In order to capture both positive and negative relationships, we subset using the absolute value of the log2 fold changes.
-
-```{r}
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
   CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(
+  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
@@ -228,7 +230,63 @@ datatable_download(merged_top) %>%
 # Visualize in a heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top, cluster_rows = FALSE, cluster_cols = FALSE)
+pheatmap(merged_top, cluster_rows = FALSE, cluster_cols = FALSE, angle_col = 315)
+```
+
+## Positive Only
+
+```{r}
+AD_control <- head(merged_set[order(-merged_set$Log2_AD_Control_Fold_Change)], n = 10)
+CBD_control <- head(merged_set[order(-merged_set$Log2_CBD_Control_Fold_Change)], n = 10)
+AD_CBD <- head(merged_set[order(-merged_set$Log2_AD_CBD_Fold_Change)], n = 10)
+
+merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
+  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+merged_top <- merged_top[!duplicated(merged_top$Genes), ]
+merged_top <- merged_top[!is.na(merged_top$Genes), ]
+merged_top <- merged_top[!merged_top$Genes == "", ]
+merged_top <- replace(
+  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+top_genes <- merged_top$Genes
+merged_top <- merged_top[ , 2:4]
+rownames(merged_top) <- top_genes
+datatable_download(merged_top) %>%
+  formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
+
+# Visualize in a heatmap.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
+pheatmap(
+  merged_top, cluster_rows = FALSE, cluster_cols = FALSE,
+  angle_col = 315, color = colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100))
+```
+
+## Negative Only
+
+```{r}
+AD_control <- head(merged_set[order(merged_set$Log2_AD_Control_Fold_Change)], n = 10)
+CBD_control <- head(merged_set[order(merged_set$Log2_CBD_Control_Fold_Change)], n = 10)
+AD_CBD <- head(merged_set[order(merged_set$Log2_AD_CBD_Fold_Change)], n = 10)
+
+merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
+  CBD_control[ , c(1, 3)], AD_CBD[ , c(1, 4)]), AD_control[ , c(1, 2)])
+merged_top <- merged_top[!duplicated(merged_top$Genes), ]
+merged_top <- merged_top[!is.na(merged_top$Genes), ]
+merged_top <- merged_top[!merged_top$Genes == "", ]
+merged_top <- replace(
+  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+top_genes <- merged_top$Genes
+merged_top <- merged_top[ , 2:4]
+rownames(merged_top) <- top_genes
+datatable_download(merged_top) %>%
+  formatRound(columns = c(1:dim(merged_top)[2]), digits = 2)
+
+# Visualize in a heatmap.
+merged_top <- as.matrix(merged_top)
+rownames(merged_top) <- top_genes
+pheatmap(
+  merged_top, cluster_rows = FALSE, cluster_cols = FALSE,
+  angle_col = 315, color = colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100))
 ```
 
 # References
