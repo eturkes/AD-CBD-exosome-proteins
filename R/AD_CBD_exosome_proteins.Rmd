@@ -9,7 +9,7 @@ biblio-style: apalike
 link-citations: true
 output:
   html_document:
-    code_folding: show
+    code_folding: hide
     number_sections: true
     theme: lumen
     highlight: haddock
@@ -228,19 +228,15 @@ datatable_download(merged_top) %>%
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
+breaks <- c(
+  seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
+  seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
 
-# Generate heatmap, setting breaks to reveal NA values.
+# Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(
-  merged_top,
-  angle_col = 0,
-  fontsize = 9,
-  color = color,
-  cluster_cols = FALSE,
-  breaks = c(
-    seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
-    seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50)))
+  merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
 
 ```{r}
@@ -263,19 +259,15 @@ datatable_download(merged_top) %>%
 merged_top <- replace(merged_top, is.na(merged_top), 0)
 color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 color[50] <- "#DDDDDD"
+breaks <- c(
+  seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
+  seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
 
-# Generate heatmap, setting breaks to reveal NA values.
+# Generate heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(
-  merged_top,
-  angle_col = 0,
-  fontsize = 9,
-  color = color,
-  cluster_cols = FALSE,
-  breaks = c(
-    seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
-    seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50)))
+  merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
 
 ## Positive Only
@@ -390,6 +382,96 @@ color[100] <- "#DDDDDD"
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
+```
+
+# Disease Specific
+
+The analysis so far reveals proteins that are both differentially expressed in disease conditions compared to controls and between diseases.
+Such cases are interesting as they suggest with high confidence proteins that are specifically associated with disease over the other.
+We therefore make additional heatmaps to highlight these proteins in particular.
+
+## Positive + Negative
+
+```{r}
+merged_spec <- merged_set[!with(
+  merged_set, is.na(log2_AD_Control_Fold_Change) & is.na(log2_CBD_Control_Fold_Change)), ]
+merged_spec <- merged_spec[order(-abs(merged_spec$log2_AD_CBD_Fold_Change))]
+
+merged_genes <- merged_spec$Genes
+merged_spec <- merged_spec[ , 2:dim(merged_spec)[2]]
+rownames(merged_spec) <- merged_genes
+datatable_download(merged_spec) %>%
+  formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
+
+# Use grey for 0 in color palette to indicate NA values.
+merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color[50] <- "#DDDDDD"
+breaks <- c(
+  seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
+  seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
+
+# Generate heatmap.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
+pheatmap(
+  merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
+```
+
+## Positive Only
+
+```{r}
+merged_spec <- merged_set[!with(
+  merged_set, is.na(log2_AD_Control_Fold_Change) & is.na(log2_CBD_Control_Fold_Change)), ]
+merged_spec <- merged_spec[order(-merged_spec$log2_AD_CBD_Fold_Change)]
+
+merged_genes <- merged_spec$Genes
+merged_spec <- merged_spec[ , 2:dim(merged_spec)[2]]
+rownames(merged_spec) <- merged_genes
+datatable_download(merged_spec) %>%
+  formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
+
+# Use grey for 0 in color palette to indicate NA values.
+merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color[50] <- "#DDDDDD"
+breaks <- c(
+  seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
+  seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
+
+# Generate heatmap.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
+pheatmap(
+  merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
+```
+
+## Negative Only
+
+```{r}
+merged_spec <- merged_set[!with(
+  merged_set, is.na(log2_AD_Control_Fold_Change) & is.na(log2_CBD_Control_Fold_Change)), ]
+merged_spec <- merged_spec[order(merged_spec$log2_AD_CBD_Fold_Change)]
+
+merged_genes <- merged_spec$Genes
+merged_spec <- merged_spec[ , 2:dim(merged_spec)[2]]
+rownames(merged_spec) <- merged_genes
+datatable_download(merged_spec) %>%
+  formatRound(columns = c(2:dim(merged_spec)[2]), digits = 2)
+
+# Use grey for 0 in color palette to indicate NA values.
+merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
+color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color[50] <- "#DDDDDD"
+breaks <- c(
+  seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
+  seq(0.001, max(merged_spec), by = abs(max(merged_spec)) / 50))
+
+# Generate heatmap.
+merged_spec <- as.matrix(head(merged_spec, n = 50))
+rownames(merged_spec) <- head(merged_genes, n = 50)
+pheatmap(
+  merged_spec, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 ```
 
 # References
