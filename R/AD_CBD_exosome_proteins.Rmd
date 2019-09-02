@@ -104,7 +104,7 @@ datatable_download_exp <- function(dt) {
             "$('td:eq('+i+')', row).html(data[i].toExponential(2));}}}")))}
 ```
 
-# Original Data
+# Original Data {.tabset}
 
 This section contains the original data received from the mass spec facility and was mainly processed using MaxQuant.
 
@@ -116,34 +116,62 @@ CBD_control <- data.table(read_excel(
 AD_CBD <- data.table(read_excel(
   file.path(assets_dir, "max-quant", "AD_CDB_DIFFERENCE_08202019.xls"), na = "NaN"))
 sets <- list(AD_control, CBD_control, AD_CBD)
+```
 
+## AD vs. Control
+
+```{r}
 datatable_download_exp(sets[[1]])
+```
+
+## CBD vs. Control
+
+```{r}
 datatable_download_exp(sets[[2]])
+```
+
+## AD vs. CBD
+
+```{r}
 datatable_download_exp(sets[[3]])
 ```
 
-# Preliminary Cleaning
+# Preliminary Cleaning {.tabset}
 
-First, we do some very basic modifications that improve presentation of the table without any direct data manipulation.
+First, we clean up the data and apply a p-value cutoff at 0.05.
 
 ```{r}
 sets <- lapply(sets, function(x) x[ , c(6, 3, 2)])
-
 sets <- lapply(sets, function(x) rename(x, c("Gene names" = "Genes", "p value" = "p_value")))
 sets[[1]] <- rename(sets[[1]], c("AD_Control fold diff" = "AD_Control_Fold_Change"))
 sets[[2]] <- rename(sets[[2]], c("CBD_Control_Fold difference" = "CBD_Control_Fold_Change"))
 sets[[3]] <- rename(sets[[3]], c("AD_CDB_FoldDifference" = "AD_CBD_Fold_Change"))
 
+sets <- lapply(sets, function(x) x[x$p_value < 0.05, ])
 sets <- lapply(sets, function(x) x[!duplicated(x$Genes) | !is.na(x$Genes) | !x$Genes == "", ])
 sets <- lapply(sets, function(x) x[!is.na(x$Genes), ])
 sets <- lapply(sets, function(x) x[!x$Genes == "", ])
-sets <- lapply(sets, function(x) replace(x, is.na(x), 1)) # Replace remaining NA with 1.
+sets <- lapply(sets, function(x) replace(x, is.na(x), as.double("NA"))) # Properly type remaining NA.
 sets <- lapply(sets, function(x) x[order(-x[ , 2])]) # Order by fold change.
+```
 
+## AD vs. Control
+
+```{r}
 datatable_download_exp(sets[[1]]) %>%
   formatStyle("Genes", `text-align` = "center")
+```
+
+## CBD vs. Control
+
+```{r}
 datatable_download_exp(sets[[2]]) %>%
   formatStyle("Genes", `text-align` = "center")
+```
+
+## AD vs. CBD
+
+```{r}
 datatable_download_exp(sets[[3]]) %>%
   formatStyle("Genes", `text-align` = "center")
 ```
@@ -154,14 +182,12 @@ We start by characterizing the differential expression of proteins in our two tr
 The data is log-transformed to summarize both positive and negative relationships.
 
 ```{r}
-sets <- lapply(sets, function(x) x[x$p_value < 0.05, ]) # Set p-value cutoff.
-
 merged_set <- Reduce(function(...) merge(..., all = TRUE), list(
   sets[[2]][ , c(1, 2)], sets[[3]][ , c(1, 2)]), sets[[1]][ , c(1, 2)])
 merged_set <- merged_set[!duplicated(merged_set$Genes), ]
 merged_set <- merged_set[!is.na(merged_set$Genes), ]
 merged_set <- merged_set[!merged_set$Genes == "", ]
-merged_set <- replace(merged_set, is.na(merged_set), 1) # Replace remaining NA with 1.
+merged_set <- replace(merged_set, is.na(merged_set), as.double("NA")) # Properly type remaining NA.
 
 merged_set$AD_Control_Fold_Change <- log2(merged_set$AD_Control_Fold_Change)
 merged_set$CBD_Control_Fold_Change <- log2(merged_set$CBD_Control_Fold_Change)
@@ -172,9 +198,9 @@ merged_set <- rename(merged_set, c(
   "AD_CBD_Fold_Change" = "Log2_AD_CBD_Fold_Change"))
 
 # Data for the next chunk must be prepared here.
-AD_control <- head(merged_set[order(-merged_set$Log2_AD_Control_Fold_Change)], n = 10)
-CBD_control <- head(merged_set[order(-merged_set$Log2_CBD_Control_Fold_Change)], n = 10)
-AD_CBD <- head(merged_set[order(-merged_set$Log2_AD_CBD_Fold_Change)], n = 10)
+AD_control <- head(merged_set[order(-abs(merged_set$Log2_AD_Control_Fold_Change))], n = 10)
+CBD_control <- head(merged_set[order(-abs(merged_set$Log2_CBD_Control_Fold_Change))], n = 10)
+AD_CBD <- head(merged_set[order(-abs(merged_set$Log2_AD_CBD_Fold_Change))], n = 10)
 
 genes <- merged_set$Genes
 merged_set <- merged_set[ , 2:4]
@@ -183,7 +209,8 @@ datatable_download(merged_set) %>%
   formatRound(columns = c(1:dim(merged_set)[2]), digits = 2)
 ```
 
-We also compare the top 10 within-group differentially expressed proteins for each dataset.
+To narrow down the data, we start by comparing the top 10 within-group differentially expressed proteins for each dataset.
+In order to capture both positive and negative relationships, we subset using the absolute value of the log2 fold changes.
 
 ```{r}
 merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
@@ -191,7 +218,7 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(merged_top, is.na(merged_top), 1) # Replace remaining NA with 1.
+merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
@@ -201,7 +228,7 @@ datatable_download(merged_top) %>%
 # Visualize in a heatmap.
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
-pheatmap(merged_top)
+pheatmap(merged_top, cluster_rows = FALSE, cluster_cols = FALSE)
 ```
 
 # References
