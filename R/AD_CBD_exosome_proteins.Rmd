@@ -219,8 +219,8 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(
-  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
@@ -245,8 +245,8 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(
-  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
@@ -273,8 +273,8 @@ merged_top <- Reduce(function(...) merge(..., all = TRUE), list(
 merged_top <- merged_top[!duplicated(merged_top$Genes), ]
 merged_top <- merged_top[!is.na(merged_top$Genes), ]
 merged_top <- merged_top[!merged_top$Genes == "", ]
-merged_top <- replace(
-  merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+merged_top <- replace(merged_top, is.na(merged_top), as.double("NA")) # Properly type remaining NA.
+
 top_genes <- merged_top$Genes
 merged_top <- merged_top[ , 2:4]
 rownames(merged_top) <- top_genes
