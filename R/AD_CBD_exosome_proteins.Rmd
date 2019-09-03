@@ -79,8 +79,11 @@ We start by loading in any required packages and setting some global variables.
 assets_dir <- file.path(getwd(), "..", "assets")
 results_dir <- file.path(getwd(), "..", "results")
 
-packages <- c("conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr", "RColorBrewer")
+packages <- c(
+  "conflicted", "DT", "data.table", "readxl", "pheatmap","plyr", "RColorBrewer", "UpSetR", "grid")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+
+options(stringsAsFactors = FALSE)
 
 # Adds download buttons.
 datatable_download <- function(dt) {
@@ -235,6 +238,26 @@ breaks <- c(
   seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
 pheatmap(
   merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
+
+merged_top[merged_top != 0] <- 1
+merged_top <- as.data.frame(merged_top)
+merged_top <- setDT(merged_top, keep.rownames = TRUE)[]
+upset(merged_top, empty.intersections = "on")
+
+merged_top <- t(merged_top)
+colnames(merged_top) <- as.character(unlist(merged_top[1, ]))
+merged_top <- merged_top[-1, ]
+mode(merged_top) = "numeric"
+merged_top <- as.data.frame(merged_top)
+merged_top <- merged_top[, colSums(merged_top) != 1]
+upset(
+  merged_top, nsets = dim(merged_top)[2], mb.ratio = c(0, 0.1),
+  sets.x.label = "Genes", set_size.show = FALSE)
+grid.text(
+  "log2_AD_Control_Fold_Change     log2_CBD_Control_Fold_Change     log2_AD_CBD_Fold_Change",
+  x = 0.64,
+  y = 0.99,
+  gp = gpar(fontsize = 7))
 ```
 
 ```{r}

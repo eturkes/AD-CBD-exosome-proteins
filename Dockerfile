@@ -24,6 +24,7 @@ RUN Rscript -e "install.packages('rmarkdown')" \
         -e "install.packages('readxl')" \
         -e "install.packages('pheatmap')" \
         -e "install.packages('plyr')" \
+        -e "install.packages('UpSetR')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
