@@ -239,10 +239,22 @@ breaks <- c(
 pheatmap(
   merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
 
+top_abs <- apply(merged_top, 1, function(x) abs(max(x)))
+top_genes <- top_genes[order(-top_abs)]
 merged_top[merged_top != 0] <- 1
 merged_top <- as.data.frame(merged_top)
 merged_top <- setDT(merged_top, keep.rownames = TRUE)[]
-upset(merged_top, empty.intersections = "on")
+colnames(merged_top)[1] <- "Genes"
+
+queries <- list()
+for (i in 1:10) {
+  gene <- top_genes[i]
+  name <- paste("query", i, sep="")
+  tmp <- list(query = elements, params = list("Genes", gene), query.name = gene)
+  queries[[name]] <- tmp}
+
+set.seed(1)
+upset(merged_top, empty.intersections = "on", query.legend = "bottom", queries = queries)
 
 merged_top <- t(merged_top)
 colnames(merged_top) <- as.character(unlist(merged_top[1, ]))
@@ -250,6 +262,9 @@ merged_top <- merged_top[-1, ]
 mode(merged_top) = "numeric"
 merged_top <- as.data.frame(merged_top)
 merged_top <- merged_top[, colSums(merged_top) != 1]
+merged_top <- setDT(merged_top, keep.rownames = TRUE)[]
+colnames(merged_top)[1] <- "Conditions"
+
 upset(
   merged_top, nsets = dim(merged_top)[2], mb.ratio = c(0, 0.1),
   sets.x.label = "Genes", set_size.show = FALSE)
