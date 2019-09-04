@@ -9,7 +9,7 @@ biblio-style: apalike
 link-citations: true
 output:
   html_document:
-    code_folding: hide
+    code_folding: show
     number_sections: true
     theme: lumen
     highlight: haddock
@@ -208,7 +208,7 @@ To narrow down the data, we start by comparing the top within-group differential
 
 ## Positive + Negative
 
-In order to capture both positive and negative relationships, we subset using the absolute value of the log2 fold changes.
+In order to capture both positive and negative relationships, we subset the top 20 genes of each condition using the absolute value of the log2 fold changes.
 
 ```{r}
 AD_control <- head(merged_set[order(-abs(merged_set$log2_AD_Control_Fold_Change))], n = 20)
@@ -238,28 +238,95 @@ breaks <- c(
   seq(0.001, max(merged_top), by = abs(max(merged_top)) / 50))
 pheatmap(
   merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE, breaks = breaks)
+```
 
-top_abs <- apply(merged_top, 1, function(x) abs(max(x)))
-top_genes <- top_genes[order(-top_abs)]
-merged_top[merged_top != 0] <- 1
+UpSet plots [@conway_upsetr_2017] help visualize set interactions among entities, similar to a Venn diagram.
+Each dot depicts a set membership combination and the main bar plot shows how many genes pass statistical thresholds to exhibit the combination.
+Note that this provides no indication of directionality (i.e. up vs. downregulated), however the bottom right scatter plot is able to summarize that.
+The bottom left scatter plot are overall metrics of absolute maximum values for each gene and the absolute sums across all conditions, while the left bar plot indicates that 20 genes from each condition were used for this figure.
+The selected genes queried are the top 10 genes based on their absolute value maximums.
+
+```{r}
+# Prepare additional metadata.
+abs_max <- apply(merged_top, 1, function(x) max(abs(x)))
+abs_rowsums <- rowSums(abs(merged_top))
 merged_top <- as.data.frame(merged_top)
+log2_AD_Control_Fold_Change <- merged_top$log2_AD_Control_Fold_Change
+log2_CBD_Control_Fold_Change <- merged_top$log2_CBD_Control_Fold_Change
+
+# Convert into a binary matrix.
+merged_top <- as.matrix(merged_top)
+merged_top[merged_top != 0] <- 1
+
+# Add metadata after conversion.
+merged_top <- as.data.frame(merged_top)
+merged_top$absolute_max <- abs_max
+merged_top$absolute_rowsums <- abs_rowsums
+merged_top <- rename(merged_top, c(
+  "log2_AD_Control_Fold_Change" = "AD_Control_Fold_Change",
+  "log2_CBD_Control_Fold_Change" = "CBD_Control_Fold_Change",
+  "log2_AD_CBD_Fold_Change" = "AD_CBD_Fold_Change"))
+merged_top$log2_AD_Control_Fold_Change <- log2_AD_Control_Fold_Change
+merged_top$log2_CBD_Control_Fold_Change <- log2_CBD_Control_Fold_Change
 merged_top <- setDT(merged_top, keep.rownames = TRUE)[]
 colnames(merged_top)[1] <- "Genes"
 
+# Query the top 10 genes based on row wise absolute value maximums.
+max_genes <- top_genes[order(-abs_max)]
 queries <- list()
 for (i in 1:10) {
-  gene <- top_genes[i]
+  gene <- max_genes[i]
   name <- paste("query", i, sep="")
   tmp <- list(query = elements, params = list("Genes", gene), query.name = gene)
   queries[[name]] <- tmp}
 
-set.seed(1)
-upset(merged_top, empty.intersections = "on", query.legend = "bottom", queries = queries)
+set.seed(3) # Placement of jitter points is non-deterministic.
+upset(
+  merged_top,
+  empty.intersections = "on",
+  query.legend = "bottom",
+  queries = queries,
+  attribute.plots = list(gridrows = 45, plots = list(
+    list(plot = scatter_plot, x = "absolute_max", y = "absolute_rowsums", queries = TRUE),
+    list(
+      plot = scatter_plot, x = "log2_AD_Control_Fold_Change",
+      y = "log2_CBD_Control_Fold_Change", queries = TRUE)), ncols = 2))
+```
 
+We create the same plot, this time with the top 10 genes based on their absolute value sum across conditions.
+
+```{r}
+# Query the top 10 genes based on row wise absolute value rowsums.
+rowsums_genes <- top_genes[order(-abs_rowsums)]
+queries <- list()
+for (i in 1:10) {
+  gene <- rowsums_genes[i]
+  name <- paste("query", i, sep="")
+  tmp <- list(query = elements, params = list("Genes", gene), query.name = gene)
+  queries[[name]] <- tmp}
+
+set.seed(3) # Placement of jitter points is non-deterministic.
+upset(
+  merged_top,
+  empty.intersections = "on",
+  query.legend = "bottom",
+  queries = queries,
+  attribute.plots = list(gridrows = 45, plots = list(
+    list(plot = scatter_plot, x = "absolute_max", y = "absolute_rowsums", queries = TRUE),
+    list(
+      plot = scatter_plot, x = "log2_AD_Control_Fold_Change",
+      y = "log2_CBD_Control_Fold_Change", queries = TRUE)), ncols = 2))
+```
+
+We construct a different UpSet plot depicting genes that have membership in two or more sets.
+
+```{r}
+# Transpose the data for a second UpSet plot.
+merged_top <- merged_top[ , 1:4]
 merged_top <- t(merged_top)
 colnames(merged_top) <- as.character(unlist(merged_top[1, ]))
 merged_top <- merged_top[-1, ]
-mode(merged_top) = "numeric"
+mode(merged_top) = "numeric" # Transformations originally produced a character matrix.
 merged_top <- as.data.frame(merged_top)
 merged_top <- merged_top[, colSums(merged_top) != 1]
 merged_top <- setDT(merged_top, keep.rownames = TRUE)[]
@@ -268,12 +335,16 @@ colnames(merged_top)[1] <- "Conditions"
 upset(
   merged_top, nsets = dim(merged_top)[2], mb.ratio = c(0, 0.1),
   sets.x.label = "Genes", set_size.show = FALSE)
+
+# Use titles as column labels as a workaround.
 grid.text(
   "log2_AD_Control_Fold_Change     log2_CBD_Control_Fold_Change     log2_AD_CBD_Fold_Change",
   x = 0.64,
   y = 0.99,
   gp = gpar(fontsize = 7))
 ```
+
+We make another heatmap, this time excluding the AD vs. CBD group, using the top 30 genes of each condition from the absolute value of the log2 fold changes.
 
 ```{r}
 AD_control <- head(merged_set[order(-abs(merged_set$log2_AD_Control_Fold_Change))], n = 30)
