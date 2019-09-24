@@ -80,7 +80,7 @@ assets_dir <- file.path(getwd(), "..", "assets")
 results_dir <- file.path(getwd(), "..", "results")
 
 packages <- c(
-  "conflicted", "DT", "data.table", "readxl", "pheatmap","plyr", "RColorBrewer", "UpSetR", "grid")
+  "conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr", "RColorBrewer", "UpSetR", "grid")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 
 options(stringsAsFactors = FALSE)
@@ -231,7 +231,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "RdYlBu"))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
@@ -366,7 +366,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "RdYlBu"))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_top), -0.001, by = abs(min(merged_top)) / 50), 0,
@@ -398,7 +398,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "Reds"))(100)
 color[1] <- "#DDDDDD"
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
@@ -423,7 +423,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Reds")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "Reds"))(100)
 color[1] <- "#DDDDDD"
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
@@ -451,7 +451,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "Blues"))(100)
 color[100] <- "#DDDDDD"
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
@@ -476,7 +476,7 @@ datatable_download(merged_top) %>%
 merged_top <- as.matrix(merged_top)
 rownames(merged_top) <- top_genes
 merged_top <- replace(merged_top, is.na(merged_top), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "Blues")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "Blues"))(100)
 color[100] <- "#DDDDDD"
 pheatmap(merged_top, angle_col = 0, fontsize = 9, color = color, cluster_cols = FALSE)
 ```
@@ -504,7 +504,7 @@ datatable_download(merged_spec) %>%
 merged_spec <- as.matrix(head(merged_spec, n = 50))
 rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "RdYlBu"))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
@@ -530,7 +530,7 @@ datatable_download(merged_spec) %>%
 merged_spec <- as.matrix(head(merged_spec, n = 50))
 rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "RdYlBu"))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
@@ -556,7 +556,7 @@ datatable_download(merged_spec) %>%
 merged_spec <- as.matrix(head(merged_spec, n = 50))
 rownames(merged_spec) <- head(merged_genes, n = 50)
 merged_spec <- replace(merged_spec, is.na(merged_spec), 0)
-color <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
+color <- colorRampPalette(brewer.pal(n = 7, name = "RdYlBu"))(100)
 color[50] <- "#DDDDDD"
 breaks <- c(
   seq(min(merged_spec), -0.001, by = abs(min(merged_spec)) / 50), 0,
