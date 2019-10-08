@@ -29,3 +29,5 @@ RUN Rscript -e "install.packages('rmarkdown')" \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
         /tmp/*.rds
+
+COPY user-settings /home/rstudio/.rstudio/monitored/user-settings/
