@@ -16,9 +16,12 @@ FROM rocker/rstudio:3.6.1
 
 LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 
-RUN Rscript -e "install.packages('rmarkdown')" \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        zlib1g-dev \
+    && Rscript -e "install.packages('conflicted')" \
+        -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
-        -e "install.packages('conflicted')" \
         -e "install.packages('DT')" \
         -e "install.packages('data.table')" \
         -e "install.packages('readxl')" \
