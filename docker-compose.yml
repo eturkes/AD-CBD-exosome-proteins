@@ -18,14 +18,14 @@ services:
   all:
     image: eturkes/ad-cbd-exosome-proteins:R3.6.1v6
     volumes:
-      - ".:/AD-CBD-exosome-proteins:rw"
-    command: Rscript -e "setwd('/AD-CBD-exosome-proteins/R/')" -e "rmarkdown::render('AD_CBD_exosome_proteins_report.Rmd', output_file = '../results/AD-CBD-exosome-proteins-report.html')"
+      - ".:/home/rstudio/AD-CBD-exosome-proteins:rw"
+    command: Rscript -e "source('/home/rstudio/AD-CBD-exosome-proteins/R/run_all.R')"
 
   rstudio:
     image: eturkes/ad-cbd-exosome-proteins:R3.6.1v6
     volumes:
       - ".:/home/rstudio/AD-CBD-exosome-proteins:rw"
     ports:
-      - "127.0.0.1:8792:8787"
+      - "127.0.0.1:${PORT}:8787"
     environment:
       -  DISABLE_AUTH=true
