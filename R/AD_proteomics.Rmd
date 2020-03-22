@@ -79,9 +79,11 @@ if (!dir.exists(file.path(assets_dir, "cache"))) {
 }
 ```
 
-# Prep
+# All Data
 
-```{r, analysis}
+## Prep
+
+```{r, all-analysis}
 data <- read.csv(
   file.path(
     assets_dir, "Label_Free_Quantitative_Proteomics_Analyses_Results", "proteinGroups.txt"
@@ -115,41 +117,41 @@ data <- readProteinGroups(
 summary(data)
 ```
 
-# QC {.tabset}
+## QC {.tabset}
 
-```{r, qc}
+```{r, all-qc}
 plotCount(data)
 plotDetectionSimilarity(data, bin.size = 0.02)
 missmap(as.data.frame(data$tab))
 ```
 
-## Pre-normalization
+### Pre-normalization
 
-```{r, pre-norm}
+```{r, all-pre-norm}
 plotSampleDistributions(data, fill = "condition")
 proteus::plotPCA(data)
 ```
 
-## Normalized {.active}
+### Normalized {.active}
 
-```{r, norm}
+```{r, all-norm}
 data <- normalizeData(data)
 plotSampleDistributions(data, fill = "condition")
 proteus::plotPCA(data)
 ```
 
-# Modeling
+## Modeling
 
-```{r, clust}
+```{r, all-clust}
 plotMV(data, with.loess = TRUE)
 plotDistanceMatrix(data)
 plotClustering(data)
 ```
 
-# Annotation
+## Annotation
 
-```{r, anno}
-rds <- file.path(assets_dir, "cache", "anno.rds")
+```{r, all-anno}
+rds <- file.path(assets_dir, "cache", "all_anno.rds")
 if (file.exists(rds)) {
   data <- readRDS(rds)
 } else {
@@ -168,9 +170,113 @@ if (file.exists(rds)) {
 }
 ```
 
-# Differential Expression
+## Differential Expression
 
-```{r, de}
+```{r, all-de}
+results <- limmaDE(data)
+results <- results[order(results$adj.P.Val), ]
+rownames(results) <- NULL
+datatable_custom(results[c("protein", "genes", "logFC", "adj.P.Val")])
+```
+
+# Outlier Removal
+
+AD_5521 appears to be an outlier, so we remove it and see if it improves statistical power.
+
+## Prep
+
+```{r, outlier-analysis}
+data <- read.csv(
+  file.path(
+    assets_dir, "Label_Free_Quantitative_Proteomics_Analyses_Results", "proteinGroups.txt"
+  ),
+  sep = "\t"
+)
+
+# Reverse order of sample columns to make DE analysis more intuitive later.
+col_start <- grep("AD_5333", x = colnames(data))
+for (i in 1:length(col_start)) {
+  section1_end <- col_start[i] - 1
+  col_end <- col_start[i] + 8
+  section2_start <- col_end + 1
+  data <- data.frame(
+    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
+  )
+}
+
+data[ , grep("AD_5521", x = colnames(data))] <- NULL
+
+meta <- data.frame(
+  "sample" = gsub("Peptides.", "", colnames(data)[13:20]),
+  "conditions" = c(rep("Contr", 4), rep("AD", 4))
+)
+
+data <- readProteinGroups(
+  file.path(
+    assets_dir, "Label_Free_Quantitative_Proteomics_Analyses_Results", "proteinGroups.txt"
+  ),
+  meta
+)
+
+summary(data)
+```
+
+## QC {.tabset}
+
+```{r, outlier-qc}
+plotCount(data)
+plotDetectionSimilarity(data, bin.size = 0.02)
+missmap(as.data.frame(data$tab))
+```
+
+### Pre-normalization
+
+```{r, outlier-pre-norm}
+plotSampleDistributions(data, fill = "condition")
+proteus::plotPCA(data)
+```
+
+### Normalized {.active}
+
+```{r, outlier-norm}
+data <- normalizeData(data)
+plotSampleDistributions(data, fill = "condition")
+proteus::plotPCA(data)
+```
+
+## Modeling
+
+```{r, outlier-clust}
+plotMV(data, with.loess = TRUE)
+plotDistanceMatrix(data)
+plotClustering(data)
+```
+
+## Annotation
+
+```{r, outlier-anno}
+rds <- file.path(assets_dir, "cache", "outlier_anno.rds")
+if (file.exists(rds)) {
+  data <- readRDS(rds)
+} else {
+  ids <- lapply(as.character(data$proteins), function(prot) {
+    protein <- unlist(strsplit(prot, ";", fixed = TRUE))[1]
+  })
+  ids <- data.frame(protein = do.call(rbind, ids))
+  anno <- fetchFromUniProt(ids$protein)
+  anno_id <- merge(ids, anno, by.x = "protein", by.y = "id")
+  anno_id <- anno_id[-which(duplicated(anno_id$genes)), ]
+  data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
+  anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
+  anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
+  data <- annotateProteins(data, anno_id)
+  saveRDS(data, rds)
+}
+```
+
+## Differential Expression
+
+```{r, outlier-de}
 results <- limmaDE(data)
 results <- results[order(results$adj.P.Val), ]
 rownames(results) <- NULL
