@@ -57,9 +57,11 @@ The data here is derived from @`r unlist(strsplit(getwd(), "/"))[4]` and will be
 # These should be checked per document.
 # -------------------------------------
 
-packages <- c("proteus", "Amelia", "DT")
+packages <- c("proteus", "Amelia", "DT", "data.table", "tidyr", "limma", "RColorBrewer", "ggplot2")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
+
+color <- c(brewer.pal(4, "Blues"), brewer.pal(4, "Reds"))
 
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
@@ -103,8 +105,8 @@ for (i in 1:length(col_start)) {
 }
 
 meta <- data.frame(
-  "sample" = gsub("Peptides.", "", colnames(data)[13:21]),
-  "conditions" = c(rep("Contr", 4), rep("AD", 5))
+  sample = gsub("Peptides.", "", colnames(data)[13:21]),
+  condition = c(rep("Contr", 4), rep("AD", 5))
 )
 
 data <- readProteinGroups(
@@ -113,6 +115,9 @@ data <- readProteinGroups(
   ),
   meta
 )
+data$metadata$condition <- c(rep("Contr", 4), rep("AD", 5))
+levels(data$metadata$condition) <- c("Contr", "AD")
+data$conditions <- c("Contr", "AD")
 
 summary(data)
 ```
@@ -129,7 +134,7 @@ missmap(as.data.frame(data$tab))
 
 ```{r, all-pre-norm}
 plotSampleDistributions(data, fill = "condition")
-proteus::plotPCA(data)
+plotPCA(data)
 ```
 
 ### Normalized {.active}
@@ -137,7 +142,7 @@ proteus::plotPCA(data)
 ```{r, all-norm}
 data <- normalizeData(data)
 plotSampleDistributions(data, fill = "condition")
-proteus::plotPCA(data)
+plotPCA(data)
 ```
 
 ## Modeling
@@ -173,10 +178,14 @@ data <- annotateProteins(data, anno_id)
 ## Differential Expression
 
 ```{r, all-de}
-results <- limmaDE(data)
-results <- results[order(results$adj.P.Val), ]
-rownames(results) <- NULL
-datatable_custom(results[c("protein", "genes", "logFC", "adj.P.Val")])
+mat <- log10(data$tab)
+conditions <- data$metadata$condition
+design <- model.matrix(~0 + conditions, data = as.data.frame(mat))
+fit <- lmFit(mat, design = design)
+cont_mat <- makeContrasts(conditionsAD - conditionsContr, levels = design)
+cont_fit <- eBayes(contrasts.fit(fit, cont_mat), trend = TRUE, robust = TRUE)
+table <- topTable(cont_fit, coef = 1, number = Inf)
+datatable_custom(table)
 ```
 
 # Outlier Removal
@@ -207,8 +216,8 @@ for (i in 1:length(col_start)) {
 data[ , grep("AD_5521", x = colnames(data))] <- NULL
 
 meta <- data.frame(
-  "sample" = gsub("Peptides.", "", colnames(data)[13:20]),
-  "conditions" = c(rep("Contr", 4), rep("AD", 4))
+  sample = gsub("Peptides.", "", colnames(data)[13:20]),
+  condition = c(rep("Contr", 4), rep("AD", 4))
 )
 
 data <- readProteinGroups(
@@ -217,6 +226,9 @@ data <- readProteinGroups(
   ),
   meta
 )
+data$metadata$condition <- c(rep("Contr", 4), rep("AD", 4))
+levels(data$metadata$condition) <- c("Contr", "AD")
+data$conditions <- c("Contr", "AD")
 
 summary(data)
 ```
@@ -233,7 +245,7 @@ missmap(as.data.frame(data$tab))
 
 ```{r, outlier-pre-norm}
 plotSampleDistributions(data, fill = "condition")
-proteus::plotPCA(data)
+plotPCA(data)
 ```
 
 ### Normalized {.active}
@@ -241,7 +253,7 @@ proteus::plotPCA(data)
 ```{r, outlier-norm}
 data <- normalizeData(data)
 plotSampleDistributions(data, fill = "condition")
-proteus::plotPCA(data)
+plotPCA(data)
 ```
 
 ## Modeling
@@ -277,10 +289,34 @@ data <- annotateProteins(data, anno_id)
 ## Differential Expression
 
 ```{r, outlier-de}
-results <- limmaDE(data)
-results <- results[order(results$adj.P.Val), ]
-rownames(results) <- NULL
-datatable_custom(results[c("protein", "genes", "logFC", "adj.P.Val")])
+mat <- log10(data$tab)
+conditions <- data$metadata$condition
+design <- model.matrix(~0 + conditions, data = as.data.frame(mat))
+fit <- lmFit(mat, design = design)
+cont_mat <- makeContrasts(conditionsAD - conditionsContr, levels = design)
+cont_fit <- eBayes(contrasts.fit(fit, cont_mat), trend = TRUE, robust = TRUE)
+table <- topTable(cont_fit, coef = 1, number = Inf)
+datatable_custom(table)
+```
+
+## Visualization
+
+```{r, vis}
+# Some of these reshaping commands are not compatible with data frames, so use data table at first.
+df <- data.table(rownames(data$tab), log10(data$tab))
+df <- melt.data.table(df, id = "V1", variable.name = "sample")
+df <- spread(df, "V1", "value")
+setDF(df)
+
+df <- data.frame(sample = df[ , 1], condition = data$metadata$condition, df[ , 2:ncol(df)])
+df$condition <- factor(df$condition, levels = c("Contr", "AD"))
+df_sub <- df[ , c(1:2, which(colnames(df) == "P10636"))]
+colnames(df_sub)[3] <- "MAPT"
+
+ggplot(df_sub, aes(condition, y = MAPT)) + 
+  geom_violin() +
+  geom_jitter(height = 0, width = 0, aes(colour = sample)) +
+  scale_color_manual(values = color)
 ```
 
 # References
