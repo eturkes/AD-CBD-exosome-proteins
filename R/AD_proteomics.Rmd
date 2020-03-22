@@ -153,7 +153,7 @@ plotClustering(data)
 ```{r, all-anno}
 rds <- file.path(assets_dir, "cache", "all_anno.rds")
 if (file.exists(rds)) {
-  data <- readRDS(rds)
+  anno_id <- readRDS(rds)
 } else {
   ids <- lapply(as.character(data$proteins), function(prot) {
     protein <- unlist(strsplit(prot, ";", fixed = TRUE))[1]
@@ -162,12 +162,12 @@ if (file.exists(rds)) {
   anno <- fetchFromUniProt(ids$protein)
   anno_id <- merge(ids, anno, by.x = "protein", by.y = "id")
   anno_id <- anno_id[-which(duplicated(anno_id$genes)), ]
-  data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
-  anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
-  anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
-  data <- annotateProteins(data, anno_id)
-  saveRDS(data, rds)
+  saveRDS(anno_id, rds)
 }
+data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
+anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
+anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
+data <- annotateProteins(data, anno_id)
 ```
 
 ## Differential Expression
@@ -257,7 +257,7 @@ plotClustering(data)
 ```{r, outlier-anno}
 rds <- file.path(assets_dir, "cache", "outlier_anno.rds")
 if (file.exists(rds)) {
-  data <- readRDS(rds)
+  anno_id <- readRDS(rds)
 } else {
   ids <- lapply(as.character(data$proteins), function(prot) {
     protein <- unlist(strsplit(prot, ";", fixed = TRUE))[1]
@@ -266,12 +266,12 @@ if (file.exists(rds)) {
   anno <- fetchFromUniProt(ids$protein)
   anno_id <- merge(ids, anno, by.x = "protein", by.y = "id")
   anno_id <- anno_id[-which(duplicated(anno_id$genes)), ]
-  data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
-  anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
-  anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
-  data <- annotateProteins(data, anno_id)
-  saveRDS(data, rds)
+  saveRDS(anno_id, rds)
 }
+data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
+anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
+anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
+data <- annotateProteins(data, anno_id)
 ```
 
 ## Differential Expression
