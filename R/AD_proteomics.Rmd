@@ -57,11 +57,11 @@ The data here is derived from @`r unlist(strsplit(getwd(), "/"))[4]` and will be
 # These should be checked per document.
 # -------------------------------------
 
-packages <- c("proteus", "Amelia", "DT", "data.table", "tidyr", "limma", "RColorBrewer", "ggplot2")
+packages <- c("dplyr", "DEP", "DT")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 
-color <- c(brewer.pal(4, "Blues"), brewer.pal(4, "Reds"))
+options(stringsAsFactors = FALSE)
 
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
@@ -83,8 +83,6 @@ if (!dir.exists(file.path(assets_dir, "cache"))) {
 
 # All Data
 
-## Prep
-
 ```{r, all-analysis}
 data <- read.csv(
   file.path(
@@ -104,95 +102,54 @@ for (i in 1:length(col_start)) {
   )
 }
 
-meta <- data.frame(
-  sample = gsub("Peptides.", "", colnames(data)[13:21]),
-  condition = c(rep("Contr", 4), rep("AD", 5))
+data <- filter(data, Reverse != "+", Potential.contaminant != "+")
+data_unique <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
+LFQ_columns <- grep("Intensity.", colnames(data_unique))
+experimental_design <- data.frame(
+  label = gsub("Peptides.", "", colnames(data)[13:21]),
+  condition = c(rep("Contr", 4), rep("AD", 5)),
+  replicate = c(seq(1, 4), seq(1, 5))
 )
 
-data <- readProteinGroups(
-  file.path(
-    assets_dir, "Label_Free_Quantitative_Proteomics_Analyses_Results", "proteinGroups.txt"
-  ),
-  meta
-)
-data$metadata$condition <- c(rep("Contr", 4), rep("AD", 5))
-levels(data$metadata$condition) <- c("Contr", "AD")
-data$conditions <- c("Contr", "AD")
-
-summary(data)
+data_se <- make_se(data_unique, LFQ_columns, experimental_design)
+data_se
 ```
 
-## QC {.tabset}
+## QC
 
 ```{r, all-qc}
-plotCount(data)
-plotDetectionSimilarity(data, bin.size = 0.02)
-missmap(as.data.frame(data$tab))
-```
-
-### Pre-normalization
-
-```{r, all-pre-norm}
-plotSampleDistributions(data, fill = "condition")
-plotPCA(data)
-```
-
-### Normalized {.active}
-
-```{r, all-norm}
-data <- normalizeData(data)
-plotSampleDistributions(data, fill = "condition")
-plotPCA(data)
-```
-
-## Modeling
-
-```{r, all-clust}
-plotMV(data, with.loess = TRUE)
-plotDistanceMatrix(data)
-plotClustering(data)
-```
-
-## Annotation
-
-```{r, all-anno}
-rds <- file.path(assets_dir, "cache", "all_anno.rds")
-if (file.exists(rds)) {
-  anno_id <- readRDS(rds)
-} else {
-  ids <- lapply(as.character(data$proteins), function(prot) {
-    protein <- unlist(strsplit(prot, ";", fixed = TRUE))[1]
-  })
-  ids <- data.frame(protein = do.call(rbind, ids))
-  anno <- fetchFromUniProt(ids$protein)
-  anno_id <- merge(ids, anno, by.x = "protein", by.y = "id")
-  anno_id <- anno_id[-which(duplicated(anno_id$genes)), ]
-  saveRDS(anno_id, rds)
-}
-data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
-anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
-anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
-data <- annotateProteins(data, anno_id)
+plot_frequency(data_se)
+data_filt <- filter_missval(data_se)
+plot_numbers(data_filt)
+plot_coverage(data_filt)
+data_norm <- normalize_vsn(data_filt)
+plot_normalization(data_filt, data_norm)
+meanSdPlot(data_norm)
+plot_missval(data_filt)
+plot_detect(data_filt)
+set.seed(1)
+data_imp <- impute(data_norm, fun = "QRILC")
+plot_imputation(data_norm, data_imp)
 ```
 
 ## Differential Expression
 
 ```{r, all-de}
-mat <- log10(data$tab)
-conditions <- data$metadata$condition
-design <- model.matrix(~0 + conditions, data = as.data.frame(mat))
-fit <- lmFit(mat, design = design)
-cont_mat <- makeContrasts(conditionsAD - conditionsContr, levels = design)
-cont_fit <- eBayes(contrasts.fit(fit, cont_mat), trend = TRUE, robust = TRUE)
-table <- topTable(cont_fit, coef = 1, number = Inf)
-datatable_custom(table)
+data_diff <- test_diff(data_imp, type = "control", control = "Contr")
+dep <- add_rejections(data_diff, lfc = 0)
+plot_pca(dep, n = round(dim(dep)[1] * 0.1))
+plot_cor(dep, pal = "RdBu", pal_rev = TRUE)
+plot_heatmap(dep, type = "centered", kmeans = TRUE, k = 3, row_font_size = 9)
+plot_volcano(dep, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
+plot_single(dep, proteins = c("MAPT", "CD63"))
+plot_single(dep, proteins = c("MAPT", "CD63"), type = "centered")
+data_results <- get_results(dep)
+datatable_custom(data_results)
 ```
 
 # Outlier Removal
 
-AD_5521 appears to be an outlier, so we remove it and see if it improves statistical power.
-
-## Prep
+AD Replicate 1 (AD_5521) appears to be an outlier, so we remove it and see if it improves statistical power.
 
 ```{r, outlier-analysis}
 data <- read.csv(
@@ -215,108 +172,49 @@ for (i in 1:length(col_start)) {
 
 data[ , grep("AD_5521", x = colnames(data))] <- NULL
 
-meta <- data.frame(
-  sample = gsub("Peptides.", "", colnames(data)[13:20]),
-  condition = c(rep("Contr", 4), rep("AD", 4))
+data <- filter(data, Reverse != "+", Potential.contaminant != "+")
+data_unique <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
+LFQ_columns <- grep("Intensity.", colnames(data_unique))
+experimental_design <- data.frame(
+  label = gsub("Peptides.", "", colnames(data)[13:20]),
+  condition = c(rep("Contr", 4), rep("AD", 4)),
+  replicate = c(seq(1, 4), seq(1, 4))
 )
 
-data <- readProteinGroups(
-  file.path(
-    assets_dir, "Label_Free_Quantitative_Proteomics_Analyses_Results", "proteinGroups.txt"
-  ),
-  meta
-)
-data$metadata$condition <- c(rep("Contr", 4), rep("AD", 4))
-levels(data$metadata$condition) <- c("Contr", "AD")
-data$conditions <- c("Contr", "AD")
-
-summary(data)
+data_se <- make_se(data_unique, LFQ_columns, experimental_design)
+data_se
 ```
 
-## QC {.tabset}
+## QC
 
 ```{r, outlier-qc}
-plotCount(data)
-plotDetectionSimilarity(data, bin.size = 0.02)
-missmap(as.data.frame(data$tab))
-```
-
-### Pre-normalization
-
-```{r, outlier-pre-norm}
-plotSampleDistributions(data, fill = "condition")
-plotPCA(data)
-```
-
-### Normalized {.active}
-
-```{r, outlier-norm}
-data <- normalizeData(data)
-plotSampleDistributions(data, fill = "condition")
-plotPCA(data)
-```
-
-## Modeling
-
-```{r, outlier-clust}
-plotMV(data, with.loess = TRUE)
-plotDistanceMatrix(data)
-plotClustering(data)
-```
-
-## Annotation
-
-```{r, outlier-anno}
-rds <- file.path(assets_dir, "cache", "outlier_anno.rds")
-if (file.exists(rds)) {
-  anno_id <- readRDS(rds)
-} else {
-  ids <- lapply(as.character(data$proteins), function(prot) {
-    protein <- unlist(strsplit(prot, ";", fixed = TRUE))[1]
-  })
-  ids <- data.frame(protein = do.call(rbind, ids))
-  anno <- fetchFromUniProt(ids$protein)
-  anno_id <- merge(ids, anno, by.x = "protein", by.y = "id")
-  anno_id <- anno_id[-which(duplicated(anno_id$genes)), ]
-  saveRDS(anno_id, rds)
-}
-data$proteins <- data$proteins[data$proteins %in% anno_id$protein]
-anno_id <- anno_id[anno_id$protein %in% data$proteins, ]
-anno_id <- anno_id[order(match(anno_id$protein, data$proteins)), ]
-data <- annotateProteins(data, anno_id)
+plot_frequency(data_se)
+data_filt <- filter_missval(data_se)
+plot_numbers(data_filt)
+plot_coverage(data_filt)
+data_norm <- normalize_vsn(data_filt)
+plot_normalization(data_filt, data_norm)
+meanSdPlot(data_norm)
+plot_missval(data_filt)
+plot_detect(data_filt)
+set.seed(1)
+data_imp <- impute(data_norm, fun = "QRILC")
+plot_imputation(data_norm, data_imp)
 ```
 
 ## Differential Expression
 
 ```{r, outlier-de}
-mat <- log10(data$tab)
-conditions <- data$metadata$condition
-design <- model.matrix(~0 + conditions, data = as.data.frame(mat))
-fit <- lmFit(mat, design = design)
-cont_mat <- makeContrasts(conditionsAD - conditionsContr, levels = design)
-cont_fit <- eBayes(contrasts.fit(fit, cont_mat), trend = TRUE, robust = TRUE)
-table <- topTable(cont_fit, coef = 1, number = Inf)
-datatable_custom(table)
-```
-
-## Visualization
-
-```{r, vis}
-# Some of these reshaping commands are not compatible with data frames, so use data table at first.
-df <- data.table(rownames(data$tab), log10(data$tab))
-df <- melt.data.table(df, id = "V1", variable.name = "sample")
-df <- spread(df, "V1", "value")
-setDF(df)
-
-df <- data.frame(sample = df[ , 1], condition = data$metadata$condition, df[ , 2:ncol(df)])
-df$condition <- factor(df$condition, levels = c("Contr", "AD"))
-df_sub <- df[ , c(1:2, which(colnames(df) == "P10636"))]
-colnames(df_sub)[3] <- "MAPT"
-
-ggplot(df_sub, aes(condition, y = MAPT)) + 
-  geom_violin() +
-  geom_jitter(height = 0, width = 0, aes(colour = sample)) +
-  scale_color_manual(values = color)
+data_diff <- test_diff(data_imp, type = "control", control = "Contr")
+dep <- add_rejections(data_diff, lfc = 0)
+plot_pca(dep, n = round(dim(dep)[1] * 0.1))
+plot_cor(dep, pal = "RdBu", pal_rev = TRUE)
+plot_heatmap(dep, type = "centered", kmeans = TRUE, k = 4, row_font_size = 9)
+plot_volcano(dep, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
+plot_single(dep, proteins = c("MAPT", "CD63"))
+plot_single(dep, proteins = c("MAPT", "CD63"), type = "centered")
+data_results <- get_results(dep)
+datatable_custom(data_results)
 ```
 
 # References
