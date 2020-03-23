@@ -57,7 +57,7 @@ The data here is derived from @`r unlist(strsplit(getwd(), "/"))[4]` and will be
 # These should be checked per document.
 # -------------------------------------
 
-packages <- c("dplyr", "DEP", "DT")
+packages <- c("dplyr", "DEP", "ggplot2", "DT")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 
@@ -146,7 +146,8 @@ plot_heatmap(data, type = "centered", kmeans = TRUE, k = 5, row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
 plot_single(data, proteins = c("MAPT", "CD63"))
-plot_single(data, proteins = c("MAPT", "CD63"), type = "centered")
+plot_single(data, proteins = c("MAPT", "CD63"), type = "centered") +
+  xlab(element_blank())
 data_results <- get_results(data)
 datatable_custom(data_results)
 ```
@@ -219,8 +220,9 @@ plot_pca(data, n = round(dim(data)[1] * 0.1))
 plot_heatmap(data, type = "centered", kmeans = TRUE, k = 4, row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
-plot_single(data, proteins = c("MAPT", "CD63"))
-plot_single(data, proteins = c("MAPT", "CD63"), type = "centered")
+plot_single(data, proteins = c("CD63", "MAPT"))
+plot_single(data, proteins = c("MAPT", "CD63"), type = "centered") +
+  xlab(element_blank())
 data_results <- get_results(data)
 datatable_custom(data_results)
 ```
