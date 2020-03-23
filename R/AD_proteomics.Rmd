@@ -103,48 +103,51 @@ for (i in 1:length(col_start)) {
 }
 
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data_unique <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
-LFQ_columns <- grep("Intensity.", colnames(data_unique))
+data <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
+LFQ_columns <- grep("Intensity.", colnames(data))
 experimental_design <- data.frame(
   label = gsub("Peptides.", "", colnames(data)[13:21]),
   condition = c(rep("Contr", 4), rep("AD", 5)),
   replicate = c(seq(1, 4), seq(1, 5))
 )
 
-data_se <- make_se(data_unique, LFQ_columns, experimental_design)
-data_se
+data <- make_se(data, LFQ_columns, experimental_design)
+data
 ```
 
 ## QC
 
 ```{r, all-qc}
-plot_frequency(data_se)
-plot_missval(data_se)
-data_filt <- filter_proteins(data_se, "condition", thr = 1)
-plot_missval(data_filt)
-plot_numbers(data_filt)
-plot_coverage(data_filt)
-data_norm <- normalize_vsn(data_filt)
-plot_normalization(data_filt, data_norm)
-meanSdPlot(data_norm)
-plot_detect(data_filt)
+plot_frequency(data)
+plot_missval(data)
+data <- filter_proteins(data, "condition", thr = 1)
+plot_missval(data)
+plot_numbers(data)
+plot_coverage(data)
+data_norm <- normalize_vsn(data)
+plot_normalization(data, data_norm)
+data <- data_norm
+rm(data_norm)
+meanSdPlot(data)
+plot_detect(data)
 set.seed(1)
-data_imp <- impute(data_norm, fun = "QRILC")
-plot_imputation(data_norm, data_imp)
+data_imp <- impute(data, fun = "QRILC")
+plot_imputation(data, data_imp)
+data <- data_imp
+rm(data_imp)
 ```
 
 ## Differential Expression
 
 ```{r, all-de}
-data_diff <- test_diff(data_imp, type = "control", control = "Contr")
-dep <- add_rejections(data_diff, lfc = 0)
-plot_pca(dep, n = round(dim(dep)[1] * 0.1))
-plot_heatmap(dep, type = "centered", kmeans = TRUE, k = 5, row_font_size = 9)
-plot_cor(dep, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(dep, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
-plot_single(dep, proteins = c("MAPT", "CD63"))
-plot_single(dep, proteins = c("MAPT", "CD63"), type = "centered")
-data_results <- get_results(dep)
+data <- add_rejections(test_diff(data, type = "control", control = "Contr"), lfc = 0)
+plot_pca(data, n = round(dim(data)[1] * 0.1))
+plot_heatmap(data, type = "centered", kmeans = TRUE, k = 5, row_font_size = 9)
+plot_cor(data, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
+plot_single(data, proteins = c("MAPT", "CD63"))
+plot_single(data, proteins = c("MAPT", "CD63"), type = "centered")
+data_results <- get_results(data)
 datatable_custom(data_results)
 ```
 
@@ -174,48 +177,51 @@ for (i in 1:length(col_start)) {
 data[ , grep("AD_5521", x = colnames(data))] <- NULL
 
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data_unique <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
-LFQ_columns <- grep("Intensity.", colnames(data_unique))
+data <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
+LFQ_columns <- grep("Intensity.", colnames(data))
 experimental_design <- data.frame(
   label = gsub("Peptides.", "", colnames(data)[13:20]),
   condition = c(rep("Contr", 4), rep("AD", 4)),
   replicate = c(seq(1, 4), seq(1, 4))
 )
 
-data_se <- make_se(data_unique, LFQ_columns, experimental_design)
-data_se
+data <- make_se(data, LFQ_columns, experimental_design)
+data
 ```
 
 ## QC
 
 ```{r, outlier-qc}
-plot_frequency(data_se)
-plot_missval(data_se)
-data_filt <- filter_proteins(data_se, "condition", thr = 2)
-plot_missval(data_filt)
-plot_numbers(data_filt)
-plot_coverage(data_filt)
-data_norm <- normalize_vsn(data_filt)
-plot_normalization(data_filt, data_norm)
-meanSdPlot(data_norm)
-plot_detect(data_filt)
+plot_frequency(data)
+plot_missval(data)
+data <- filter_proteins(data, "condition", thr = 2)
+plot_missval(data)
+plot_numbers(data)
+plot_coverage(data)
+data_norm <- normalize_vsn(data)
+plot_normalization(data, data_norm)
+data <- data_norm
+rm(data_norm)
+meanSdPlot(data)
+plot_detect(data)
 set.seed(1)
-data_imp <- impute(data_norm, fun = "QRILC")
-plot_imputation(data_norm, data_imp)
+data_imp <- impute(data, fun = "QRILC")
+plot_imputation(data, data_imp)
+data <- data_imp
+rm(data_imp)
 ```
 
 ## Differential Expression
 
 ```{r, outlier-de}
-data_diff <- test_diff(data_imp, type = "control", control = "Contr")
-dep <- add_rejections(data_diff, lfc = 0)
-plot_pca(dep, n = round(dim(dep)[1] * 0.1))
-plot_heatmap(dep, type = "centered", kmeans = TRUE, k = 4, row_font_size = 9)
-plot_cor(dep, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(dep, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
-plot_single(dep, proteins = c("MAPT", "CD63"))
-plot_single(dep, proteins = c("MAPT", "CD63"), type = "centered")
-data_results <- get_results(dep)
+data <- add_rejections(test_diff(data, type = "control", control = "Contr"), lfc = 0)
+plot_pca(data, n = round(dim(data)[1] * 0.1))
+plot_heatmap(data, type = "centered", kmeans = TRUE, k = 4, row_font_size = 9)
+plot_cor(data, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data, contrast = "AD_vs_Contr", adjusted = TRUE, label_size = 4)
+plot_single(data, proteins = c("MAPT", "CD63"))
+plot_single(data, proteins = c("MAPT", "CD63"), type = "centered")
+data_results <- get_results(data)
 datatable_custom(data_results)
 ```
 
