@@ -19,6 +19,9 @@ LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         zlib1g-dev \
+        libpng-dev \
+        libnetcdf-dev \
+        libxml2-dev \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
@@ -28,6 +31,9 @@ RUN apt-get update \
         -e "install.packages('pheatmap')" \
         -e "install.packages('plyr')" \
         -e "install.packages('UpSetR')" \
+        -e "install.packages('dplyr')" \
+        -e "install.packages('BiocManager')" \
+        -e "BiocManager::install('DEP')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
