@@ -43,3 +43,6 @@ vignettes/*.pdf
 
 # Container files
 .env
+
+# Temporary data and caches
+/tmp/
