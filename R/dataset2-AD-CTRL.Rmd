@@ -229,6 +229,7 @@ datatable_download(data_results)
 ## Gene Set Enrichment
 
 We perform gene set enrichment using GSVA [@hanzelmannGSVAGeneSet2013].
+All GMT files were downloaded from [g:Profiler](https://biit.cs.ut.ee/gprofiler/gost), except where noted.
 
 ### Cell-types
 
@@ -241,7 +242,8 @@ gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".g
 gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 
-gsva <- gsva(assay(data), gene_sets)
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+gsva <- gsva(assay(data_filt), gene_sets)
 datatable_download(gsva)
 
 Contr <- data[ , grep("Contr", colnames(data))]
@@ -257,31 +259,24 @@ colnames <- gsub("^.*?_", "", colnames(gsva))
 
 gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
 heatmap(
-  gsva,
-  ColSideColors = sample_color_map,
-  margins = c(6, 10),
-  col = color,
-  ylab = gene_set_name,
-  labCol = colnames,
-  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(gsva))),
-  Rowv = as.dendrogram(gene_set_clustering),
-  Colv = NA
+  gsva, ColSideColors = sample_color_map, margins = c(6, 10), col = color,
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(gene_set_clustering), Colv = NA
 )
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
 ```
 
-### GO Biological Processes
+### GO Biological Process
 
-We use a GO Biological Process (BP) GMT file from [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp).
 The results below are filtered for significance.
 
 ```{r}
-gene_set_name <- "broad-GO-BP"
+gene_set_name <- "gprofiler-GO-BP"
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
 gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 
-gsva <- gsva(assay(data), gene_sets)
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+gsva <- gsva(assay(data_filt), gene_sets)
 datatable_download(gsva)
 
 Contr <- data[ , grep("Contr", colnames(data))]
@@ -303,36 +298,10 @@ gsva <- gsva[rownames(DE_gene_sets), ]
 names(sample_color_map) <- colnames(gsva)
 gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
 heatmap(
-  gsva,
-  ColSideColors = sample_color_map,
-  margins = c(6, 25),
-  col = color,
-  labCol = colnames,
-  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(gsva))),
-  Rowv = as.dendrogram(gene_set_clustering),
-  Colv = NA
+  gsva, ColSideColors = sample_color_map, margins = c(6, 25), col = color,
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(gene_set_clustering), Colv = NA
 )
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
-
-print("RESPONSE_TO_MISFOLDED_PROTEIN")
-gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@shortDescription
-gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@geneIds
-
-genes <- data[rownames(data) %in% gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@geneIds, ]
-gene_set_clustering <- hclust(as.dist(1 - cor(t(assay(genes)), method = "pearson")), "complete")
-heatmap(
-  assay(genes),
-  ColSideColors = sample_color_map,
-  margins = c(6, 10),
-  col = color,
-  labCol = colnames,
-  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(genes))),
-  Rowv = as.dendrogram(gene_set_clustering),
-  Colv = NA
-)
-legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
-
-plot_single(data, c("VCP", "CLU"), "centered") + xlab(element_blank())
 ```
 
 # References
