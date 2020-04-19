@@ -32,8 +32,10 @@ RUN apt-get update \
         -e "install.packages('plyr')" \
         -e "install.packages('UpSetR')" \
         -e "install.packages('dplyr')" \
+        -e "install.packages('hexbin')" \
         -e "install.packages('BiocManager')" \
         -e "BiocManager::install('DEP')" \
+        -e "BiocManager::install('GSVA')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
