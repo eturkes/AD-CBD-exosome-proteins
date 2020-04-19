@@ -60,7 +60,7 @@ The data here is derived from @dataset1 and will be referenced using the name `d
 # This section should be checked per document.
 # --------------------------------------------
 options(stringsAsFactors = FALSE)
-packages <- c("dplyr", "DEP", "ggplot2", "DT")
+packages <- c("dplyr", "DEP", "SummarizedExperiment", "ggplot2", "DT")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 
@@ -104,12 +104,15 @@ experimental_design <- data.frame(
 )
 
 data <- make_se(data, LFQ_columns, experimental_design)
+# colnames(data) <- gsub("^.*?_", "", colnames(data)) # Remove redundant labels. # TODO: Fix this.
 data
 ```
 
 ## QC
 
 ```{r}
+hist(assay(data), n = 1000)
+
 plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
@@ -118,12 +121,23 @@ plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
 
+# Normalize data based on known concentrations of total protein in experiment.
+# ----------------------------------------------------------------------------
+concentrations <- c(1.61, 1.99, 1.92, 2.43, 1.07, 1.26, 1.43, NA, 1.41)
+multipliers <- min(concentrations, na.rm = TRUE) / concentrations
+missing_multiplier <- median(multipliers[5:length(multipliers)], TRUE)
+multipliers <- c(multipliers[1:7], missing_multiplier, multipliers[9])
+
 meanSdPlot(data)
-data_norm <- normalize_vsn(data)
+data_norm <- data
+assay(data_norm) <- 2 ^ assay(data_norm) # Undo log transformation.
+for (i in seq_along(multipliers)) {
+  assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
+}
+assay(data_norm) <- log2(assay(data_norm))
 plot_normalization(data, data_norm)
 data <- data_norm
-rm(data_norm)
-meanSdPlot(data)
+# ----------------------------------------------------------------------------
 
 plot_detect(data)
 set.seed(1)
@@ -131,16 +145,18 @@ data_imp <- impute(data, "QRILC")
 plot_imputation(data, data_imp)
 data <- data_imp
 rm(data_imp)
+
+plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
+
+data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
+data_results <- get_results(data)
+nsig <- data_results %>% filter(significant) %>% nrow()
+print(paste0(nsig, " significant proteins."))
 ```
 
 ## Differential Expression
 
 ```{r}
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
 plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
@@ -179,12 +195,15 @@ experimental_design <- data.frame(
 )
 
 data <- make_se(data, LFQ_columns, experimental_design)
+# colnames(data) <- gsub("^.*?_", "", colnames(data)) # Remove redundant labels. # TODO: Fix this.
 data
 ```
 
 ## QC
 
 ```{r}
+hist(assay(data), n = 1000)
+
 plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
@@ -193,89 +212,23 @@ plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
 
+# Normalize data based on known concentrations of total protein in experiment.
+# ----------------------------------------------------------------------------
+concentrations <- c(1.61, 1.99, 1.92, 2.43, 1.26, 1.43, NA, 1.41)
+multipliers <- min(concentrations, na.rm = TRUE) / concentrations
+missing_multiplier <- median(multipliers[5:length(multipliers)], TRUE)
+multipliers <- c(multipliers[1:6], missing_multiplier, multipliers[8])
+
 meanSdPlot(data)
-data_norm <- normalize_vsn(data)
-plot_normalization(data, data_norm)
-data <- data_norm
-rm(data_norm)
-meanSdPlot(data)
-
-plot_detect(data)
-set.seed(1)
-data_imp <- impute(data, "QRILC")
-plot_imputation(data, data_imp)
-data <- data_imp
-rm(data_imp)
-```
-
-## Differential Expression
-
-```{r}
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
-plot_cor(data, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
-
-plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
-
-datatable_download(data_results)
-```
-
-# More Outliers
-
-We also try removing `AD_5475` and `Contr_5382`, in addition to `AD_5521` from before.
-
-```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
-
-# Reverse order of sample columns to make DE analysis more intuitive later.
-col_start <- grep("AD_5333", colnames(data))
-for (i in 1:length(col_start)) {
-  section1_end <- col_start[i] - 1
-  col_end <- col_start[i] + 8
-  section2_start <- col_end + 1
-  data <- data.frame(
-    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
-  )
+data_norm <- data
+assay(data_norm) <- 2 ^ assay(data_norm) # Undo log transformation.
+for (i in seq_along(multipliers)) {
+  assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
 }
-
-data[ , grep("AD_5521", colnames(data))] <- NULL
-data[ , grep("AD_5475", colnames(data))] <- NULL
-data[ , grep("Contr_5382", colnames(data))] <- NULL
-
-data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
-LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:18])
-experimental_design <- data.frame(
-  label = label, condition = c(rep("Contr", 3), rep("AD", 3)), replicate = label
-)
-
-data <- make_se(data, LFQ_columns, experimental_design)
-data
-```
-
-## QC
-
-```{r}
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-data <- filter_proteins(data, "condition", 1)
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-
-meanSdPlot(data)
-data_norm <- normalize_vsn(data)
+assay(data_norm) <- log2(assay(data_norm))
 plot_normalization(data, data_norm)
 data <- data_norm
-rm(data_norm)
-meanSdPlot(data)
+# ----------------------------------------------------------------------------
 
 plot_detect(data)
 set.seed(1)
@@ -283,97 +236,19 @@ data_imp <- impute(data, "QRILC")
 plot_imputation(data, data_imp)
 data <- data_imp
 rm(data_imp)
+
+plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
+
+data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
+data_results <- get_results(data)
+nsig <- data_results %>% filter(significant) %>% nrow()
+print(paste0(nsig, " significant proteins."))
 ```
 
 ## Differential Expression
 
 ```{r}
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
-plot_cor(data, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
-
-plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
-
-datatable_download(data_results)
-```
-
-# MAPT Outliers
-
-We try removing outliers of the expected difference in MAPT.
-In total, we remove `AD_5398`, `AD_5365`, `Contr_159`.
-
-```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
-
-# Reverse order of sample columns to make DE analysis more intuitive later.
-col_start <- grep("AD_5333", colnames(data))
-for (i in 1:length(col_start)) {
-  section1_end <- col_start[i] - 1
-  col_end <- col_start[i] + 8
-  section2_start <- col_end + 1
-  data <- data.frame(
-    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
-  )
-}
-
-
-data[ , grep("AD_5398", colnames(data))] <- NULL
-data[ , grep("AD_5365", colnames(data))] <- NULL
-data[ , grep("Contr_159", colnames(data))] <- NULL
-
-data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
-LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:18])
-experimental_design <- data.frame(
-  label = label, condition = c(rep("Contr", 3), rep("AD", 3)), replicate = label
-)
-
-
-data <- make_se(data, LFQ_columns, experimental_design)
-data
-```
-
-## QC
-
-```{r}
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-data <- filter_proteins(data, "condition", 1)
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-
-meanSdPlot(data)
-data_norm <- normalize_vsn(data)
-plot_normalization(data, data_norm)
-data <- data_norm
-rm(data_norm)
-meanSdPlot(data)
-
-plot_detect(data)
-set.seed(1)
-data_imp <- impute(data, "QRILC")
-plot_imputation(data, data_imp)
-data <- data_imp
-rm(data_imp)
-```
-
-## Differential Expression
-
-```{r}
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
+plot_heatmap(data, "centered", row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
 
