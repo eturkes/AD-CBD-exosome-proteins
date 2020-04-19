@@ -46,3 +46,6 @@ vignettes/*.pdf
 
 # Temporary data and caches
 /tmp/
+
+# HPC files
+nohup.out
