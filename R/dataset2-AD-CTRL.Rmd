@@ -40,7 +40,7 @@ div.main-container {max-width: none; width: 100%;}
 
 *This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins). Please email me for access.*
 
-The data here is derived from @dataset1 and will be referenced using the name `dataset1`.
+The data here is derived from @dataset2 and will be referenced using the name `dataset2`.
 
 ```{r}
 # Copyright 2019-2020 Emir Turkes
