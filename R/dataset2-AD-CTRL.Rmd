@@ -79,6 +79,77 @@ if (!dir.exists(cache_dir)) {
 knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 ```
 
+# All Data
+
+```{r}
+data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+
+# Reverse order of sample columns to make DE analysis more intuitive later.
+col_start <- grep("AD_5333", colnames(data))
+for (i in 1:length(col_start)) {
+  section1_end <- col_start[i] - 1
+  col_end <- col_start[i] + 8
+  section2_start <- col_end + 1
+  data <- data.frame(
+    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
+  )
+}
+
+data <- filter(data, Reverse != "+", Potential.contaminant != "+")
+data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
+LFQ_columns <- grep("Intensity.", colnames(data))
+label = gsub("Peptides.", "", colnames(data)[13:21])
+experimental_design <- data.frame(
+  label = label, condition = c(rep("Contr", 4), rep("AD", 5)), replicate = label
+)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
+```
+
+## QC
+
+```{r}
+plot_numbers(data)
+plot_frequency(data)
+plot_missval(data)
+data <- filter_proteins(data, "condition", 1)
+plot_numbers(data)
+plot_frequency(data)
+plot_missval(data)
+
+meanSdPlot(data)
+data_norm <- normalize_vsn(data)
+plot_normalization(data, data_norm)
+data <- data_norm
+rm(data_norm)
+meanSdPlot(data)
+
+plot_detect(data)
+set.seed(1)
+data_imp <- impute(data, "QRILC")
+plot_imputation(data, data_imp)
+data <- data_imp
+rm(data_imp)
+```
+
+## Differential Expression
+
+```{r}
+data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
+data_results <- get_results(data)
+nsig <- data_results %>% filter(significant) %>% nrow()
+
+plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
+plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
+plot_cor(data, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
+
+plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
+
+datatable_download(data_results)
+```
+
 # Outlier Removal
 
 AD Replicate 1 (`AD_5521`) appears to be an outlier, so we remove it and see if it improves statistical power.
@@ -182,77 +253,6 @@ LFQ_columns <- grep("Intensity.", colnames(data))
 label = gsub("Peptides.", "", colnames(data)[13:18])
 experimental_design <- data.frame(
   label = label, condition = c(rep("Contr", 3), rep("AD", 3)), replicate = label
-)
-
-data <- make_se(data, LFQ_columns, experimental_design)
-data
-```
-
-## QC
-
-```{r}
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-data <- filter_proteins(data, "condition", 1)
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-
-meanSdPlot(data)
-data_norm <- normalize_vsn(data)
-plot_normalization(data, data_norm)
-data <- data_norm
-rm(data_norm)
-meanSdPlot(data)
-
-plot_detect(data)
-set.seed(1)
-data_imp <- impute(data, "QRILC")
-plot_imputation(data, data_imp)
-data <- data_imp
-rm(data_imp)
-```
-
-## Differential Expression
-
-```{r}
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
-plot_cor(data, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
-
-plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
-
-datatable_download(data_results)
-```
-
-# All Data
-
-```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
-
-# Reverse order of sample columns to make DE analysis more intuitive later.
-col_start <- grep("AD_5333", colnames(data))
-for (i in 1:length(col_start)) {
-  section1_end <- col_start[i] - 1
-  col_end <- col_start[i] + 8
-  section2_start <- col_end + 1
-  data <- data.frame(
-    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
-  )
-}
-
-data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
-LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:21])
-experimental_design <- data.frame(
-  label = label, condition = c(rep("Contr", 4), rep("AD", 5)), replicate = label
 )
 
 data <- make_se(data, LFQ_columns, experimental_design)
