@@ -60,11 +60,16 @@ The data here is derived from @dataset1 and will be referenced using the name `d
 # This section should be checked per document.
 # --------------------------------------------
 options(stringsAsFactors = FALSE)
-packages <- c("dplyr", "DEP", "SummarizedExperiment", "ggplot2", "DT")
+packages <- c(
+  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2",
+  "DT", "GSEABase", "GSVA", "limma"
+)
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 
 data_name <- "dataset2"
+color <- colorRampPalette(rev(brewer.pal(7, "RdBu")))(100)
+color_legend <- c("lightgray", "darkgray")
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -108,6 +113,18 @@ data <- make_se(data, LFQ_columns, experimental_design)
 data
 ```
 
+**Unaltered data, already log2 transformed.**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**After removal of log transformation.**
+
+```{r}
+datatable_download(2 ^ assay(data))
+```
+
 ## QC
 
 ```{r}
@@ -120,6 +137,13 @@ data <- filter_proteins(data, "condition", 1)
 plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
+```
+
+**Data before normalization but after removal of missing values.**
+**Retained proteins are those identified in 2 out of 3 replicates of at least one condition, a standard procedure for less stringent filtering.**
+
+```{r}
+datatable_download(assay(data))
 
 # Normalize data based on known concentrations of total protein in experiment.
 # ----------------------------------------------------------------------------
@@ -137,6 +161,12 @@ for (i in seq_along(multipliers)) {
 assay(data_norm) <- log2(assay(data_norm))
 plot_normalization(data, data_norm)
 data <- data_norm
+```
+
+**Data after normalization by total protein concentration and then log2 transformation.**
+
+```{r}
+datatable_download(assay(data))
 # ----------------------------------------------------------------------------
 
 plot_detect(data)
@@ -145,6 +175,13 @@ data_imp <- impute(data, "QRILC")
 plot_imputation(data, data_imp)
 data <- data_imp
 rm(data_imp)
+```
+
+**Data after missing value imputation using the QRILC method, which targets missing-not-at-random values AKA those that are likely missing due to being below the mass-spec quantification threshold.**
+**This is final form used for differential expression analysis**
+
+```{r}
+datatable_download(assay(data))
 
 plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
 
@@ -164,6 +201,109 @@ plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
 plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
 
 datatable_download(data_results)
+```
+
+## Gene Set Enrichment
+
+### Cell-types
+
+```{r}
+gene_set_name <- "panglao-brain-ctypes"
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+gene_sets <- filterGeneSets(gene_sets, 5, 500)
+gene_sets
+
+gsva <- gsva(assay(data), gene_sets)
+datatable_download(gsva)
+
+Contr <- data[ , grep("Contr", colnames(data))]
+AD <- data[ , grep("AD", colnames(data))]
+conditions <- c("Contr", "AD")
+comb_mat <- cbind(assay(Contr), assay(AD))
+rownames(comb_mat) <- rownames(data)
+groups <- factor(rep(rev(conditions), c(dim(Contr)[2], dim(AD)[2])))
+levels(groups) <- conditions
+names(color_legend) <- conditions
+sample_color_map <- color_legend[groups]
+colnames <- gsub("^.*?_", "", colnames(gsva))
+
+gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+heatmap(
+  gsva,
+  ColSideColors = sample_color_map,
+  margins = c(6, 10),
+  col = color,
+  ylab = gene_set_name,
+  labCol = colnames,
+  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(gsva))),
+  Rowv = as.dendrogram(gene_set_clustering),
+  Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+```
+
+### GO Biological Processes
+
+```{r}
+gene_set_name <- "broad-GO-BP"
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+gene_sets <- filterGeneSets(gene_sets, 5, 500)
+gene_sets
+
+gsva <- gsva(assay(data), gene_sets)
+datatable_download(gsva)
+
+Contr <- data[ , grep("Contr", colnames(data))]
+AD <- data[ , grep("AD", colnames(data))]
+conditions <- c("Contr", "AD")
+comb_mat <- cbind(assay(Contr), assay(AD))
+rownames(comb_mat) <- rownames(data)
+groups <- factor(rep(rev(conditions), c(dim(Contr)[2], dim(AD)[2])))
+levels(groups) <- conditions
+names(color_legend) <- conditions
+sample_color_map <- color_legend[groups]
+colnames <- gsub("^.*?_", "", colnames(gsva))
+
+fit <- eBayes(lmFit(gsva, model.matrix(~ groups)))
+DE_gene_sets <- topTable(fit, paste0("groups", conditions[2]), Inf, p.value = 0.05)
+datatable_download_exp(DE_gene_sets)
+
+gsva <- gsva[rownames(DE_gene_sets), ]
+names(sample_color_map) <- colnames(gsva)
+gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+heatmap(
+  gsva,
+  ColSideColors = sample_color_map,
+  margins = c(6, 25),
+  col = color,
+  labCol = colnames,
+  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(gsva))),
+  Rowv = as.dendrogram(gene_set_clustering),
+  Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+```
+
+```{r}
+print("RESPONSE_TO_MISFOLDED_PROTEIN")
+gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@shortDescription
+gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@geneIds
+
+genes <- data[rownames(data) %in% gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@geneIds, ]
+gene_set_clustering <- hclust(as.dist(1 - cor(t(assay(genes)), method = "pearson")), "complete")
+heatmap(
+  assay(genes),
+  ColSideColors = sample_color_map,
+  margins = c(6, 10),
+  col = color,
+  labCol = colnames,
+  labRow = toupper(gsub("^GO_|^REACTOME_", "", rownames(genes))),
+  Rowv = as.dendrogram(gene_set_clustering),
+  Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+
+plot_single(data, c("VCP", "CLU"), "centered") + xlab(element_blank())
 ```
 
 # Outlier Removal
