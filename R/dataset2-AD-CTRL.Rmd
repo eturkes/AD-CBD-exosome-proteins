@@ -86,6 +86,8 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 
 # All Data
 
+## Prep
+
 ```{r}
 data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
 
@@ -127,26 +129,37 @@ datatable_download(2 ^ assay(data))
 
 ## QC
 
-```{r}
-hist(assay(data), n = 1000)
+### Histogram
 
+```{r}
+hist(assay(data), n = 100)
+```
+
+### Missing Value Removal
+
+Retained proteins are those identified in 2 out of 3 replicates of at least one condition, a standard procedure for less stringent filtering.
+
+```{r}
 plot_numbers(data)
 plot_frequency(data)
 plot_missval(data)
 data <- filter_proteins(data, "condition", 1)
+plot_missval(data)
 plot_numbers(data)
 plot_frequency(data)
-plot_missval(data)
 ```
 
 **Data before normalization but after removal of missing values.**
-**Retained proteins are those identified in 2 out of 3 replicates of at least one condition, a standard procedure for less stringent filtering.**
 
 ```{r}
 datatable_download(assay(data))
+```
 
-# Normalize data based on known concentrations of total protein in experiment.
-# ----------------------------------------------------------------------------
+### Normalization
+
+Normalize data using scaling factors based on known concentrations of total protein in experiment, then log2 transform.
+
+```{r}
 concentrations <- c(1.61, 1.99, 1.92, 2.43, 1.07, 1.26, 1.43, NA, 1.41)
 multipliers <- min(concentrations, na.rm = TRUE) / concentrations
 missing_multiplier <- median(multipliers[5:length(multipliers)], TRUE)
@@ -159,16 +172,22 @@ for (i in seq_along(multipliers)) {
   assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
 }
 assay(data_norm) <- log2(assay(data_norm))
+meanSdPlot(data_norm)
 plot_normalization(data, data_norm)
 data <- data_norm
 ```
 
-**Data after normalization by total protein concentration and then log2 transformation.**
+**Data after normalization and log2 transformation.**
 
 ```{r}
 datatable_download(assay(data))
-# ----------------------------------------------------------------------------
+```
 
+### Missing Value Imputation
+
+Using the QRILC method, which targets missing-not-at-random values AKA those that are likely missing due to being below the mass-spec quantification threshold.
+
+```{r}
 plot_detect(data)
 set.seed(1)
 data_imp <- impute(data, "QRILC")
@@ -177,23 +196,27 @@ data <- data_imp
 rm(data_imp)
 ```
 
-**Data after missing value imputation using the QRILC method, which targets missing-not-at-random values AKA those that are likely missing due to being below the mass-spec quantification threshold.**
+**Data after missing value imputation.**
 **This is final form used for differential expression analysis**
 
 ```{r}
 datatable_download(assay(data))
+```
 
+### PCA
+
+```{r}
 plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-print(paste0(nsig, " significant proteins."))
 ```
 
 ## Differential Expression
 
 ```{r}
+data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
+data_results <- get_results(data)
+nsig <- data_results %>% filter(significant) %>% nrow()
+print(paste0(nsig, " significant proteins."))
+
 plot_heatmap(data, "centered", TRUE, round((nsig -1) / 2), row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
@@ -205,7 +228,12 @@ datatable_download(data_results)
 
 ## Gene Set Enrichment
 
+We perform gene set enrichment using GSVA [@hanzelmannGSVAGeneSet2013].
+
 ### Cell-types
+
+We use a custom GMT file compiled from [PanglaoDB](https://panglaodb.se/).
+The results below are **NOT** filtered for significance.
 
 ```{r}
 gene_set_name <- "panglao-brain-ctypes"
@@ -243,6 +271,9 @@ legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "
 ```
 
 ### GO Biological Processes
+
+We use a GO Biological Process (BP) GMT file from [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp).
+The results below are filtered for significance.
 
 ```{r}
 gene_set_name <- "broad-GO-BP"
@@ -282,9 +313,7 @@ heatmap(
   Colv = NA
 )
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
-```
 
-```{r}
 print("RESPONSE_TO_MISFOLDED_PROTEIN")
 gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@shortDescription
 gene_sets[["GO_RESPONSE_TO_MISFOLDED_PROTEIN"]]@geneIds
@@ -304,97 +333,6 @@ heatmap(
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
 
 plot_single(data, c("VCP", "CLU"), "centered") + xlab(element_blank())
-```
-
-# Outlier Removal
-
-AD Replicate 1 (`AD_5521`) appears to be an outlier, so we remove it and see if it improves statistical power.
-
-```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
-
-# Reverse order of sample columns to make DE analysis more intuitive later.
-col_start <- grep("AD_5333", colnames(data))
-for (i in 1:length(col_start)) {
-  section1_end <- col_start[i] - 1
-  col_end <- col_start[i] + 8
-  section2_start <- col_end + 1
-  data <- data.frame(
-    data[ , 1:section1_end], rev(data[ , col_start[i]:col_end]), data[ , section2_start:ncol(data)]
-  )
-}
-
-data[ , grep("AD_5521", colnames(data))] <- NULL
-
-data <- filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
-LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:20])
-experimental_design <- data.frame(
-  label = label, condition = c(rep("Contr", 4), rep("AD", 4)), replicate = label
-)
-
-data <- make_se(data, LFQ_columns, experimental_design)
-# colnames(data) <- gsub("^.*?_", "", colnames(data)) # Remove redundant labels. # TODO: Fix this.
-data
-```
-
-## QC
-
-```{r}
-hist(assay(data), n = 1000)
-
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-data <- filter_proteins(data, "condition", 1)
-plot_numbers(data)
-plot_frequency(data)
-plot_missval(data)
-
-# Normalize data based on known concentrations of total protein in experiment.
-# ----------------------------------------------------------------------------
-concentrations <- c(1.61, 1.99, 1.92, 2.43, 1.26, 1.43, NA, 1.41)
-multipliers <- min(concentrations, na.rm = TRUE) / concentrations
-missing_multiplier <- median(multipliers[5:length(multipliers)], TRUE)
-multipliers <- c(multipliers[1:6], missing_multiplier, multipliers[8])
-
-meanSdPlot(data)
-data_norm <- data
-assay(data_norm) <- 2 ^ assay(data_norm) # Undo log transformation.
-for (i in seq_along(multipliers)) {
-  assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
-}
-assay(data_norm) <- log2(assay(data_norm))
-plot_normalization(data, data_norm)
-data <- data_norm
-# ----------------------------------------------------------------------------
-
-plot_detect(data)
-set.seed(1)
-data_imp <- impute(data, "QRILC")
-plot_imputation(data, data_imp)
-data <- data_imp
-rm(data_imp)
-
-plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(0, length(label)))
-
-data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
-data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-print(paste0(nsig, " significant proteins."))
-```
-
-## Differential Expression
-
-```{r}
-plot_heatmap(data, "centered", row_font_size = 9)
-plot_cor(data, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
-
-plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
-
-datatable_download(data_results)
 ```
 
 # References

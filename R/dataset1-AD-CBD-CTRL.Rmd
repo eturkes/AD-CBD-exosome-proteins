@@ -222,7 +222,7 @@ breaks <- c(
 pheatmap(merged_top, color, angle_col = 0, fontsize = 9, cluster_cols = FALSE, breaks = breaks)
 ```
 
-UpSet plots [@conway_upsetr_2017] help visualize set interactions among entities, similar to a Venn diagram.
+UpSet plots [@conwayUpSetRPackageVisualization2017] help visualize set interactions among entities, similar to a Venn diagram.
 Each dot depicts a set membership combination and the main bar plot shows how many genes pass statistical thresholds to exhibit the combination.
 These provide no indication of directionality (i.e. up vs. downregulated), however the bottom right scatter plot is able to summarize that (note that genes not passing the statistical threshold are reported with a value of 0).
 The bottom left scatter plot are overall metrics of absolute maximum values for each gene and the absolute sums across all conditions, while the left bar plot indicates that 20 genes from each condition were used for this figure.
