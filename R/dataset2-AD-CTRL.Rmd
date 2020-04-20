@@ -70,6 +70,7 @@ source(file.path(getwd(), "utils.R"))
 data_name <- "dataset2"
 color <- colorRampPalette(rev(brewer.pal(7, "RdBu")))(100)
 color_legend <- c("lightgray", "darkgray")
+`%notin%` <- Negate(`%in%`)
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -211,17 +212,19 @@ plot_pca(data, n = round(dim(data)[1] * 0.1)) + scale_shape_manual(values = seq(
 
 ## Differential Expression
 
+The results below are filtered for significance ($adjP < 0.05$).
+
 ```{r}
 data <- add_rejections(test_diff(data, "control", "Contr"), lfc = 0)
 data_results <- get_results(data)
-nsig <- data_results %>% filter(significant) %>% nrow()
-print(paste0(nsig, " significant proteins."))
+sig <- data_results[data_results$significant, ]
+print(paste0(nrow(sig), " significant proteins."))
 
-plot_heatmap(data, "centered", TRUE, round((nsig - 1) / 2), row_font_size = 9)
+plot_heatmap(data, "centered", TRUE, round((nrow(sig) - 1) / 2), row_font_size = 9)
 plot_cor(data, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data, "AD_vs_Contr", 4, adjusted = TRUE)
 
-plot_single(data, c("MAPT", "APOE"), "centered") + xlab(element_blank())
+plot_single(data, sig$name, "centered") + xlab(element_blank())
 
 datatable_download(data_results)
 ```
@@ -231,10 +234,10 @@ datatable_download(data_results)
 We perform gene set enrichment using GSVA [@hanzelmannGSVAGeneSet2013].
 All GMT files were downloaded from [g:Profiler](https://biit.cs.ut.ee/gprofiler/gost), except where noted.
 
-### Cell-types
+### Cell Types
 
 We use a custom GMT file compiled from [PanglaoDB](https://panglaodb.se/).
-The results below are **NOT** filtered for significance.
+**NOTE: The results below are NOT significant.**
 
 ```{r}
 gene_set_name <- "panglao-brain-ctypes"
@@ -257,22 +260,28 @@ names(color_legend) <- conditions
 sample_color_map <- color_legend[groups]
 colnames <- gsub("^.*?_", "", colnames(gsva))
 
-gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
 heatmap(
   gsva, ColSideColors = sample_color_map, margins = c(6, 10), col = color,
-  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(gene_set_clustering), Colv = NA
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(clustering), Colv = NA
 )
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
 ```
 
 ### GO Biological Process
 
-The results below are filtered for significance.
+The results below are filtered for significance ($adjP < 0.05$).
 
 ```{r}
-gene_set_name <- "gprofiler-GO-BP"
-gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
-gene_sets <- filterGeneSets(gene_sets, 5, 500)
+rds <- file.path(cache_dir, "Human_GO_bp_with_GO_iea_symbol.rds")
+if (file.exists(rds)) {
+  gene_sets <- readRDS(rds)
+} else {
+  gene_set_name <- "Human_GO_bp_with_GO_iea_symbol"
+  gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+  gene_sets <- filterGeneSets(gene_sets, 5, 500)
+  saveRDS(gene_sets, rds)
+}
 gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
@@ -296,12 +305,299 @@ datatable_download_exp(DE_gene_sets)
 
 gsva <- gsva[rownames(DE_gene_sets), ]
 names(sample_color_map) <- colnames(gsva)
-gene_set_clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
 heatmap(
   gsva, ColSideColors = sample_color_map, margins = c(6, 25), col = color,
-  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(gene_set_clustering), Colv = NA
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(clustering), Colv = NA
 )
 legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+
+for (i in seq(nrow(gsva))) {
+  genes <- data_filt[rownames(data_filt) %in% sig$name]
+  genes <- genes[rownames(genes) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ", gene_sets[[rownames(gsva)[i]]]@setName
+    )
+  )
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ",
+      paste(gene_sets[[rownames(gsva)[i]]]@geneIds, collapse = ", ")
+    )
+  )
+
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Differentially expressed genes in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+
+  genes <- data_filt[rownames(data_filt) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  genes <- genes[rownames(genes) %notin% sig$name, ]
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Genes NOT differentially expressed in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+}
+```
+
+### GO Cellular Component
+
+The results below are filtered for significance ($adjP < 0.05$).
+
+```{r}
+rds <- file.path(cache_dir, "Human_GO_cc_with_GO_iea_symbol.rds")
+if (file.exists(rds)) {
+  gene_sets <- readRDS(rds)
+} else {
+  gene_set_name <- "Human_GO_cc_with_GO_iea_symbol"
+  gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+  gene_sets <- filterGeneSets(gene_sets, 5, 500)
+  saveRDS(gene_sets, rds)
+}
+gene_sets
+
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+gsva <- gsva(assay(data_filt), gene_sets)
+datatable_download(gsva)
+
+Contr <- data[ , grep("Contr", colnames(data))]
+AD <- data[ , grep("AD", colnames(data))]
+conditions <- c("Contr", "AD")
+comb_mat <- cbind(assay(Contr), assay(AD))
+rownames(comb_mat) <- rownames(data)
+groups <- factor(rep(rev(conditions), c(dim(Contr)[2], dim(AD)[2])))
+levels(groups) <- conditions
+names(color_legend) <- conditions
+sample_color_map <- color_legend[groups]
+colnames <- gsub("^.*?_", "", colnames(gsva))
+
+fit <- eBayes(lmFit(gsva, model.matrix(~ groups)))
+DE_gene_sets <- topTable(fit, paste0("groups", conditions[2]), Inf, p.value = 0.05)
+datatable_download_exp(DE_gene_sets)
+
+gsva <- gsva[rownames(DE_gene_sets), ]
+names(sample_color_map) <- colnames(gsva)
+clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+heatmap(
+  gsva, ColSideColors = sample_color_map, margins = c(6, 25), col = color,
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(clustering), Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+
+for (i in seq(nrow(gsva))) {
+  genes <- data_filt[rownames(data_filt) %in% sig$name]
+  genes <- genes[rownames(genes) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ", gene_sets[[rownames(gsva)[i]]]@setName
+    )
+  )
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ",
+      paste(gene_sets[[rownames(gsva)[i]]]@geneIds, collapse = ", ")
+    )
+  )
+
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Differentially expressed genes in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+
+  genes <- data_filt[rownames(data_filt) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  genes <- genes[rownames(genes) %notin% sig$name, ]
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Genes NOT differentially expressed in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+}
+```
+
+### GO Molecular Function
+
+**NOTE: The results below are NOT significant.**
+
+```{r}
+rds <- file.path(cache_dir, "Human_GO_mf_with_GO_iea_symbol.rds")
+if (file.exists(rds)) {
+  gene_sets <- readRDS(rds)
+} else {
+  gene_set_name <- "Human_GO_mf_with_GO_iea_symbol"
+  gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+  gene_sets <- filterGeneSets(gene_sets, 5, 500)
+  saveRDS(gene_sets, rds)
+}
+gene_sets
+
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+gsva <- gsva(assay(data_filt), gene_sets)
+datatable_download(gsva)
+
+Contr <- data[ , grep("Contr", colnames(data))]
+AD <- data[ , grep("AD", colnames(data))]
+conditions <- c("Contr", "AD")
+comb_mat <- cbind(assay(Contr), assay(AD))
+rownames(comb_mat) <- rownames(data)
+groups <- factor(rep(rev(conditions), c(dim(Contr)[2], dim(AD)[2])))
+levels(groups) <- conditions
+names(color_legend) <- conditions
+sample_color_map <- color_legend[groups]
+colnames <- gsub("^.*?_", "", colnames(gsva))
+
+fit <- eBayes(lmFit(gsva, model.matrix(~ groups)))
+DE_gene_sets <- topTable(fit, paste0("groups", conditions[2]), Inf, p.value = 0.11)
+datatable_download_exp(DE_gene_sets)
+
+gsva <- gsva[rownames(DE_gene_sets), ]
+names(sample_color_map) <- colnames(gsva)
+clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+heatmap(
+  gsva, ColSideColors = sample_color_map, margins = c(6, 25), col = color,
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(clustering), Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+
+for (i in seq(nrow(gsva))) {
+  genes <- data_filt[rownames(data_filt) %in% sig$name]
+  genes <- genes[rownames(genes) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ", gene_sets[[rownames(gsva)[i]]]@setName
+    )
+  )
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ",
+      paste(gene_sets[[rownames(gsva)[i]]]@geneIds, collapse = ", ")
+    )
+  )
+
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Differentially expressed genes in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+
+  genes <- data_filt[rownames(data_filt) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  genes <- genes[rownames(genes) %notin% sig$name, ]
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Genes NOT differentially expressed in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+}
+```
+
+### Reactome
+
+**NOTE: The results below are NOT significant.**
+
+```{r}
+rds <- file.path(cache_dir, "Human_Reactome_April_01_2020_symbol.rds")
+if (file.exists(rds)) {
+  gene_sets <- readRDS(rds)
+} else {
+  gene_set_name <- "Human_Reactome_April_01_2020_symbol"
+  gene_sets <- getGmt(file.path(assets_dir, "gene-sets", paste0(gene_set_name, ".gmt")))
+  gene_sets <- filterGeneSets(gene_sets, 5, 500)
+  saveRDS(gene_sets, rds)
+}
+gene_sets
+
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+gsva <- gsva(assay(data_filt), gene_sets)
+datatable_download(gsva)
+
+Contr <- data[ , grep("Contr", colnames(data))]
+AD <- data[ , grep("AD", colnames(data))]
+conditions <- c("Contr", "AD")
+comb_mat <- cbind(assay(Contr), assay(AD))
+rownames(comb_mat) <- rownames(data)
+groups <- factor(rep(rev(conditions), c(dim(Contr)[2], dim(AD)[2])))
+levels(groups) <- conditions
+names(color_legend) <- conditions
+sample_color_map <- color_legend[groups]
+colnames <- gsub("^.*?_", "", colnames(gsva))
+
+fit <- eBayes(lmFit(gsva, model.matrix(~ groups)))
+DE_gene_sets <- topTable(fit, paste0("groups", conditions[2]), Inf, p.value = 0.133)
+datatable_download_exp(DE_gene_sets)
+
+gsva <- gsva[rownames(DE_gene_sets), ]
+names(sample_color_map) <- colnames(gsva)
+clustering <- hclust(as.dist(1 - cor(t(gsva), method = "pearson")), "complete")
+heatmap(
+  gsva, ColSideColors = sample_color_map, margins = c(6, 25), col = color,
+  labCol = colnames, labRow = rownames(gsva), Rowv = as.dendrogram(clustering), Colv = NA
+)
+legend("topleft", names(color_legend), fill = color_legend, inset = 0.01, bg = "white")
+
+for (i in seq(nrow(gsva))) {
+  genes <- data_filt[rownames(data_filt) %in% sig$name]
+  genes <- genes[rownames(genes) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ", gene_sets[[rownames(gsva)[i]]]@setName
+    )
+  )
+  print(
+    paste0(
+      gene_sets[[rownames(gsva)[i]]]@shortDescription, ": ",
+      paste(gene_sets[[rownames(gsva)[i]]]@geneIds, collapse = ", ")
+    )
+  )
+
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Differentially expressed genes in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+
+  genes <- data_filt[rownames(data_filt) %in% gene_sets[[rownames(gsva)[i]]]@geneIds, ]
+  genes <- genes[rownames(genes) %notin% sig$name, ]
+  if (length(genes) > 0) {
+    print(
+      paste0(
+        "Genes NOT differentially expressed in ", gene_sets[[rownames(gsva)[i]]]@shortDescription,
+        ": ", paste(rownames(genes), collapse = ", ")
+      )
+    )
+    print(plot_single(genes, rownames(genes), "centered") + xlab(element_blank()))
+  }
+}
 ```
 
 # References
