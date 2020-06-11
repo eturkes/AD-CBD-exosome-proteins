@@ -477,8 +477,48 @@ rm(no_mult_testing)
 
 ## Gene Set Enrichment
 
+### Johnson et al. 2020 Modules
+
 ```{r}
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
+gene_sets
+
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
+print(paste0("Unique proteins in proteomics modules: ", length(unique(unlist(geneIds(gene_sets))))))
+print(
+  paste0("Unique proteins in post-QC protein matrix within proteomics modules: ", dim(data_filt)[1])
+)
+
+gsva <- gsva(assay(data_filt), gene_sets, verbose = FALSE)
+datatable_download(gsva)
+
+Heatmap(
+  gsva,
+  color,
+  cluster_columns = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  heatmap_legend_param = list(
+    title = "GSVA enrichment", title_position = "leftcenter-rot"
+  ),
+)
+
+limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
+colnames(limma_design) <- unique(design$condition)
+fit <- lmFit(gsva, limma_design)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+
+datatable_download_exp(results)
+```
+
+### Panglao Cell Types
+
+```{r}
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
 gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
