@@ -241,10 +241,10 @@ datatable_download(assay(data))
 ### Missing Value Imputation
 
 ```{r}
-Unimputed_Data <- data
+unimputed_data <- data
+Unimputed_Data <- unimputed_data
 Non_Missing_data <- complete_cases
 plot_imputation(Unimputed_Data, Non_Missing_data)
-rm(Non_Missing_data)
 
 impute1 <- data[ , 1:ceiling(ncol(data) / 2)]
 impute_vector <- rownames(impute1) %in% AD_MNAR_passQC
@@ -262,7 +262,7 @@ assay(Imputed_Data) <- cbind(assay(impute1), assay(impute2))
 plot_imputation(Imputed_Data)
 
 data <- Imputed_Data
-rm(impute1, impute2)
+rm(impute1, impute2, Non_Missing_data)
 ```
 
 ```{r, fig.height = 100}
@@ -310,7 +310,7 @@ meanSdPlot(Unimputed_Data)
 print("Imputed Data")
 meanSdPlot(Imputed_Data)
 
-rm(Imputed_Data, heatmap_data)
+rm(Imputed_Data, Unimputed_Data)
 ```
 
 **Data after missing value imputation.**
@@ -394,8 +394,8 @@ heatmap <- Heatmap(
 )
 draw(heatmap)
 
-unimputed_missing_no_mult_testing <- Unimputed_Data[
-  rownames(Unimputed_Data) %in% rownames(missing_no_mult_testing),
+unimputed_missing_no_mult_testing <- unimputed_data[
+  rownames(unimputed_data) %in% rownames(missing_no_mult_testing),
 ]
 Heatmap(
   assay(unimputed_missing_no_mult_testing),
@@ -411,6 +411,7 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+rm(unimputed_missing_no_mult_testing, missing_no_mult_testing)
 ```
 
 ## Non-Missing Data
@@ -471,6 +472,7 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+rm(no_mult_testing)
 ```
 
 ## Gene Set Enrichment
