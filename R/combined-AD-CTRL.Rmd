@@ -62,14 +62,14 @@ The data here is derived from @combined and will be referenced using the name `c
 # --------------------------------------------
 options(stringsAsFactors = FALSE)
 packages <- c(
-  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2", "DT", "ComplexHeatmap"
+  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2",
+  "DT", "ComplexHeatmap", "GSEABase", "GSVA", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 
 data_name <- "combined"
-color <- colorRampPalette(rev(brewer.pal(7, "RdBu")))(100)
-color_legend <- c("lightgray", "darkgray")
+color <- colorRampPalette(rev(brewer.pal(9, "RdBu")))(100)
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -469,6 +469,44 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+```
+
+## Gene Set Enrichment
+
+```{r}
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
+gene_sets
+
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
+print(paste0("Unique proteins in proteomics modules: ", length(unique(unlist(geneIds(gene_sets))))))
+print(
+  paste0("Unique proteins in post-QC protein matrix within proteomics modules: ", dim(data_filt)[1])
+)
+
+gsva <- gsva(assay(data_filt), gene_sets, verbose = FALSE)
+datatable_download(gsva)
+
+Heatmap(
+  gsva,
+  color,
+  cluster_columns = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  heatmap_legend_param = list(
+    title = "GSVA enrichment", title_position = "leftcenter-rot"
+  ),
+)
+
+limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
+colnames(limma_design) <- unique(design$condition)
+fit <- lmFit(gsva, limma_design)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+
+datatable_download_exp(results)
 ```
 
 # References
