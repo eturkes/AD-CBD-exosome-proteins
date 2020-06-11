@@ -70,6 +70,7 @@ source(file.path(getwd(), "utils.R"))
 
 data_name <- "combined"
 color <- colorRampPalette(rev(brewer.pal(9, "RdBu")))(100)
+`%notin%` <- Negate(`%in%`)
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -97,7 +98,6 @@ data <- make_unique(data, "Gene.names", "Protein.IDs.x", ";")
 LFQ_columns <- grep("Intensity.", colnames(data))
 
 data <- make_se(data, LFQ_columns, design)
-# colnames(data) <- gsub("^.*?_", "", colnames(data)) # Remove redundant labels. # TODO: Fix this.
 data
 ```
 
@@ -128,52 +128,64 @@ discard <- which(is.na(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE)
 data <- data[-discard, ]
 discard <- which(is.na(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE)))
 data <- data[-discard, ]
-
-data <- data[order(rowMeans(assay(data), TRUE)), ]
+complete_cases <- filter_proteins(data, "complete")
 
 plot_numbers(data)
 plot_frequency(data)
 plot_detect(data)
 ```
 
-```{r, fig.height = 30}
+```{r, fig.height = 100}
+AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
+data <- data[AD_order, ]
+AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TMX4
 plot_missval_custom(data)
 
-complete_cases <- filter_proteins(data, "complete")
+Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
+data <- data[Control_order, ]
+Control_MNAR <- rownames(data)[1:which(rownames(data) == "PMP2")] # MGST1
+plot_missval_custom(data)
 
-missing_data <- assay(data) %>% data.frame(.)
+AD_data <- data[ , 1:ceiling(ncol(data) / 2)]
+AD_data <- AD_data[rownames(AD_data) %notin% AD_MNAR, ]
+missing_data <- assay(AD_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
-discard <- which(
-  rowSums(missing_data[ , 1:ceiling(ncol(missing_data) / 2)], TRUE) <= 4
-)
-data <- data[-discard, ]
+discard <- which(rowSums(missing_data, TRUE) < 5)
+AD_data <- AD_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from AD group."))
 
-missing_data <- assay(data) %>% data.frame(.)
+Control_data <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
+Control_data <- Control_data[rownames(Control_data) %notin% Control_MNAR, ]
+missing_data <- assay(Control_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
-discard <- which(
-  rowSums(missing_data[ , (ceiling(ncol(missing_data) / 2) + 1):ncol(missing_data)], TRUE) <= 4
-)
-data <- data[-discard, ]
+discard <- which(rowSums(missing_data, TRUE) < 5)
+Control_data <- Control_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Control group."))
+
+AD_MAR <- rownames(AD_data)[
+  rownames(AD_data) %in% Control_MNAR | rownames(AD_data) %in% rownames(Control_data)
+]
+Control_MAR <- rownames(Control_data)[
+  rownames(Control_data) %in% AD_MNAR | rownames(Control_data) %in% rownames(AD_data)
+]
+rm(AD_data, Control_data)
+MAR <- unique(append(AD_MAR, Control_MAR))
+
+AD_MNAR_passQC <- AD_MNAR[AD_MNAR %in% Control_MAR | AD_MNAR %in% Control_MNAR]
+Control_MNAR_passQC <- Control_MNAR[Control_MNAR %in% AD_MAR | Control_MNAR %in% AD_MNAR]
+MNAR <- unique(append(AD_MNAR_passQC, Control_MNAR_passQC))
+
+keep <- unique(append(MAR, MNAR))
+data <- data[rownames(data) %in% keep, ]
 
 data <- data[sort(rownames(data)), ]
 AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
-data <- data[AD_order, ]
-AD_MNAR <- rownames(data)[1:which(rownames(data) == "SLC12A2")]
-plot_missval_custom(data)
-
-data <- data[sort(rownames(data)), ]
 Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
-data <- data[Control_order, ]
-Control_MNAR <- rownames(data)[1:which(rownames(data) == "FRRS1L")]
-plot_missval_custom(data)
+missing_data <- assay(data) %>% data.frame(.)
+missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), ]
 ```
 
 ```{r}
-missing_data <- assay(data) %>% data.frame(.)
-missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), ]
-
 plot_numbers(data)
 plot_frequency(data)
 plot_detect(data)
@@ -220,16 +232,6 @@ rm(
 )
 ```
 
-```{r, fig.height = 30}
-data <- data[sort(rownames(data)), ]
-data <- data[AD_order, ]
-plot_missval_custom(data)
-
-data <- data[sort(rownames(data)), ]
-data <- data[Control_order, ]
-plot_missval_custom(data)
-```
-
 **Data after normalization and log2 transformation.**
 
 ```{r}
@@ -245,12 +247,12 @@ plot_imputation(Unimputed_Data, Non_Missing_data)
 rm(Non_Missing_data)
 
 impute1 <- data[ , 1:ceiling(ncol(data) / 2)]
-impute_vector <- rownames(impute1) %in% AD_MNAR
+impute_vector <- rownames(impute1) %in% AD_MNAR_passQC
 set.seed(1)
 impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinDet")
 
 impute2 <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
-impute_vector <- rownames(impute2) %in% Control_MNAR
+impute_vector <- rownames(impute2) %in% Control_MNAR_passQC
 set.seed(1)
 impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinDet")
 
@@ -263,7 +265,7 @@ data <- Imputed_Data
 rm(impute1, impute2)
 ```
 
-```{r, fig.height = 30}
+```{r, fig.height = 100}
 data <- data[sort(rownames(data)), ]
 data <- data[AD_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
@@ -336,8 +338,8 @@ results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
-plot_heatmap_custom(data_results, "centered", TRUE, round((nrow(sig) - 1) / 2), row_font_size = 9)
-plot_heatmap(data_results, "centered", TRUE, round((nrow(sig) - 1) / 2), row_font_size = 9)
+plot_heatmap_custom(data_results, "centered", row_font_size = 9)
+plot_heatmap(data_results, "centered", row_font_size = 9)
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
@@ -345,7 +347,7 @@ plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 datatable_download(results)
 ```
 
-```{r, fig.height = 30}
+```{r, fig.height = 100}
 Heatmap(
   assay(data),
   colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(data)))),
@@ -430,8 +432,8 @@ results <- get_results(complete_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
-plot_heatmap_custom(complete_results, "centered", TRUE, round((nrow(sig) - 1) / 2), row_font_size = 9)
-plot_heatmap(complete_results, "centered", TRUE, round((nrow(sig) - 1) / 2), row_font_size = 9)
+plot_heatmap_custom(complete_results, "centered", row_font_size = 9)
+plot_heatmap(complete_results, "centered", row_font_size = 9)
 plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
 plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
@@ -439,7 +441,7 @@ plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
 datatable_download(results)
 ```
 
-```{r, fig.height = 30}
+```{r, fig.height = 100}
 Heatmap(
   assay(complete_results),
   colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(complete_results)))),
