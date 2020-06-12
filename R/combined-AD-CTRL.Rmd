@@ -258,11 +258,10 @@ impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar =
 
 Imputed_Data <- data
 assay(Imputed_Data) <- cbind(assay(impute1), assay(impute2))
+rm(impute1, impute2, Non_Missing_data)
+data <- Imputed_Data
 
 plot_imputation(Imputed_Data)
-
-data <- Imputed_Data
-rm(impute1, impute2, Non_Missing_data)
 ```
 
 ```{r, fig.height = 100}
@@ -305,6 +304,7 @@ Heatmap(
 
 ```{r}
 plot_normalization(Unimputed_Data, Imputed_Data)
+
 print("Unimputed Data")
 meanSdPlot(Unimputed_Data)
 print("Imputed Data")
@@ -338,19 +338,10 @@ results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
-plot_heatmap_custom(data_results, "centered", row_font_size = 9)
-plot_heatmap(data_results, "centered", row_font_size = 9)
-plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
-plot_single(data_results, sig$name, "centered") + xlab(element_blank())
-
-datatable_download(results)
-```
-
-```{r, fig.height = 100}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
-  assay(data),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(data)))),
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(heatmap_data))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -361,7 +352,13 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
+plot_single(data_results, sig$name, "centered") + xlab(element_blank())
+datatable_download(results)
+```
 
+```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- data_results[rownames(data_results) %in% no_mult_testing$name, ]
 Heatmap(
@@ -379,6 +376,7 @@ Heatmap(
 )
 
 missing_no_mult_testing <- no_mult_testing[rownames(no_mult_testing) %in% rownames(missing_data), ]
+missing_no_mult_testing <- missing_no_mult_testing[sort(rownames(missing_no_mult_testing)), ]
 heatmap <- Heatmap(
   assay(missing_no_mult_testing),
   colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(missing_no_mult_testing)))),
@@ -397,6 +395,9 @@ draw(heatmap)
 unimputed_missing_no_mult_testing <- unimputed_data[
   rownames(unimputed_data) %in% rownames(missing_no_mult_testing),
 ]
+unimputed_missing_no_mult_testing <- unimputed_missing_no_mult_testing[
+  sort(rownames(unimputed_missing_no_mult_testing)),
+]
 Heatmap(
   assay(unimputed_missing_no_mult_testing),
   colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(missing_no_mult_testing)))),
@@ -411,6 +412,7 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+
 rm(unimputed_missing_no_mult_testing, missing_no_mult_testing)
 ```
 
@@ -433,19 +435,10 @@ results <- get_results(complete_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 
-plot_heatmap_custom(complete_results, "centered", row_font_size = 9)
-plot_heatmap(complete_results, "centered", row_font_size = 9)
-plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
-plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
-
-datatable_download(results)
-```
-
-```{r, fig.height = 100}
+heatmap_data <- assay(complete_cases)[rownames(complete_cases) %in% sig$name, ]
 Heatmap(
-  assay(complete_results),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(complete_results)))),
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(heatmap_data))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -456,7 +449,13 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
+plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
+datatable_download(results)
+```
 
+```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- complete_results[rownames(complete_results) %in% no_mult_testing$name, ]
 Heatmap(
@@ -481,6 +480,7 @@ rm(no_mult_testing)
 
 ```{r}
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
+gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
@@ -511,14 +511,37 @@ contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
-
 datatable_download_exp(results)
+```
+
+```{r, fig.height = 30}
+for (sets in names(gene_sets)) {
+  genes <- gene_sets[[sets]]@geneIds
+  heatmap_data <- data[rownames(data) %in% genes, ]
+  print(sets)
+  draw(
+    Heatmap(
+      assay(heatmap_data),
+      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+      column_names_side = "top",
+      show_column_names = TRUE,
+      cluster_columns = FALSE,
+      row_names_side = "left",
+      heatmap_legend_param = list(
+        title = "log2 Intensity", title_position = "leftcenter-rot"
+      ),
+      row_names_gp = gpar(fontsize = 6),
+      column_names_gp = gpar(fontsize = 16)
+    )
+  )
+}
 ```
 
 ### Panglao Cell Types
 
 ```{r}
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
+gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
@@ -549,8 +572,30 @@ contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
-
 datatable_download_exp(results)
+```
+
+```{r, fig.height = 30}
+for (sets in names(gene_sets)) {
+  genes <- gene_sets[[sets]]@geneIds
+  heatmap_data <- data[rownames(data) %in% genes, ]
+  print(sets)
+  draw(
+    Heatmap(
+      assay(heatmap_data),
+      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+      column_names_side = "top",
+      show_column_names = TRUE,
+      cluster_columns = FALSE,
+      row_names_side = "left",
+      heatmap_legend_param = list(
+        title = "log2 Intensity", title_position = "leftcenter-rot"
+      ),
+      row_names_gp = gpar(fontsize = 6),
+      column_names_gp = gpar(fontsize = 16)
+    )
+  )
+}
 ```
 
 # References
