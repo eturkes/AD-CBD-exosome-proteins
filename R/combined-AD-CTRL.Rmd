@@ -69,7 +69,6 @@ invisible(suppressPackageStartupMessages(lapply(packages, library, character.onl
 source(file.path(getwd(), "utils.R"))
 
 data_name <- "combined"
-color <- colorRampPalette(rev(brewer.pal(9, "RdBu")))(100)
 `%notin%` <- Negate(`%in%`)
 # --------------------------------------------
 
@@ -143,7 +142,7 @@ plot_missval_custom(data)
 
 Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
 data <- data[Control_order, ]
-Control_MNAR <- rownames(data)[1:which(rownames(data) == "PMP2")] # MGST1
+Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # MGST1
 plot_missval_custom(data)
 
 AD_data <- data[ , 1:ceiling(ncol(data) / 2)]
@@ -249,12 +248,12 @@ plot_imputation(Unimputed_Data, Non_Missing_data)
 impute1 <- data[ , 1:ceiling(ncol(data) / 2)]
 impute_vector <- rownames(impute1) %in% AD_MNAR_passQC
 set.seed(1)
-impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinDet")
+impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
 
 impute2 <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
 impute_vector <- rownames(impute2) %in% Control_MNAR_passQC
 set.seed(1)
-impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinDet")
+impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
 
 Imputed_Data <- data
 assay(Imputed_Data) <- cbind(assay(impute1), assay(impute2))
@@ -270,7 +269,7 @@ data <- data[AD_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
 Heatmap(
   assay(heatmap_data),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -288,7 +287,7 @@ data <- data[Control_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
 Heatmap(
   assay(heatmap_data),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -341,7 +340,7 @@ print(paste0(nrow(sig), " significant proteins."))
 heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(heatmap_data))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -363,7 +362,7 @@ no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- data_results[rownames(data_results) %in% no_mult_testing$name, ]
 Heatmap(
   assay(no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(no_mult_testing)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -379,7 +378,7 @@ missing_no_mult_testing <- no_mult_testing[rownames(no_mult_testing) %in% rownam
 missing_no_mult_testing <- missing_no_mult_testing[sort(rownames(missing_no_mult_testing)), ]
 heatmap <- Heatmap(
   assay(missing_no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(missing_no_mult_testing)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -400,7 +399,7 @@ unimputed_missing_no_mult_testing <- unimputed_missing_no_mult_testing[
 ]
 Heatmap(
   assay(unimputed_missing_no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(missing_no_mult_testing)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -438,7 +437,7 @@ print(paste0(nrow(sig), " significant proteins."))
 heatmap_data <- assay(complete_cases)[rownames(complete_cases) %in% sig$name, ]
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(heatmap_data))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -460,7 +459,7 @@ no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- complete_results[rownames(complete_results) %in% no_mult_testing$name, ]
 Heatmap(
   assay(no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(no_mult_testing)))),
+  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -485,22 +484,48 @@ gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
 print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
-print(paste0("Unique proteins in proteomics modules: ", length(unique(unlist(geneIds(gene_sets))))))
+print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
 print(
-  paste0("Unique proteins in post-QC protein matrix within proteomics modules: ", dim(data_filt)[1])
+  paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
 
-gsva <- gsva(assay(data_filt), gene_sets, verbose = FALSE)
+gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
 datatable_download(gsva)
 
 Heatmap(
   gsva,
-  color,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
   heatmap_legend_param = list(
-    title = "GSVA enrichment", title_position = "leftcenter-rot"
+    title = "Z-score enrichment", title_position = "leftcenter-rot"
+  ),
+)
+
+limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
+colnames(limma_design) <- unique(design$condition)
+fit <- lmFit(gsva, limma_design)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+datatable_download_exp(results)
+
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+gsva <- gsva + abs(min(gsva))
+datatable_download(gsva)
+
+gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
+Heatmap(
+  gsva,
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  heatmap_legend_param = list(
+    title = "SSGSEA enrichment", title_position = "leftcenter-rot"
   ),
 )
 
@@ -522,7 +547,7 @@ for (sets in names(gene_sets)) {
   draw(
     Heatmap(
       assay(heatmap_data),
-      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,
@@ -546,22 +571,48 @@ gene_sets
 
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
 print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
-print(paste0("Unique proteins in proteomics modules: ", length(unique(unlist(geneIds(gene_sets))))))
+print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
 print(
-  paste0("Unique proteins in post-QC protein matrix within proteomics modules: ", dim(data_filt)[1])
+  paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
 
-gsva <- gsva(assay(data_filt), gene_sets, verbose = FALSE)
+gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
 datatable_download(gsva)
 
 Heatmap(
   gsva,
-  color,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
   heatmap_legend_param = list(
-    title = "GSVA enrichment", title_position = "leftcenter-rot"
+    title = "Z-score enrichment", title_position = "leftcenter-rot"
+  ),
+)
+
+limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
+colnames(limma_design) <- unique(design$condition)
+fit <- lmFit(gsva, limma_design)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+datatable_download_exp(results)
+
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+gsva <- gsva + abs(min(gsva))
+datatable_download(gsva)
+
+gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
+Heatmap(
+  gsva,
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  heatmap_legend_param = list(
+    title = "SSGSEA enrichment", title_position = "leftcenter-rot"
   ),
 )
 
@@ -583,7 +634,7 @@ for (sets in names(gene_sets)) {
   draw(
     Heatmap(
       assay(heatmap_data),
-      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(max(assay(heatmap_data)))),
+      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,
