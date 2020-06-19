@@ -90,13 +90,27 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 ## Prep
 
 ```{r}
-data <- read.csv(file.path(assets_dir, data_name, "data_comb_steph.csv"), row.names = "Gene.names_")
-design <- read.csv(file.path(assets_dir, data_name, "comb_steph_newexp_design.csv"))
+data <- read.csv(file.path(assets_dir, data_name, "data_comb_steph.csv"))
+design <- read.csv(file.path(assets_dir, data_name, "metadata.csv"))
+design$replicate <- c(seq(9), seq(8))
 
 data <- make_unique(data, "Gene.names", "Protein.IDs.x", ";")
-LFQ_columns <- grep("Intensity.", colnames(data))
+keep <- grep("Intensity.", colnames(data))
+data_minimal <- data[ , keep]
+colnames(data_minimal) <- c(
+  "AD_5475_jan", "AD_5475_jan2", "AD_5521_jan", "AD_5521_jan2", "CTRL_328_jan",
+  "CTRL_328_jan2", "CTRL_4070_jan", "CTRL_4070_jan2", "AD_5333_mar", "AD_5365_mar_levy",
+  "AD_5398_mar", "AD_5475_mar", "AD_5521_mar", "CTRL_159_mar", "CTRL_328_mar",
+  "CTRL_4070_mar", "CTRL_5382_mar"
+)
+data_minimal <- data_minimal[ , order(match(colnames(data_minimal), design$label))]
+data_minimal <- cbind(data_minimal, data[ , c((ncol(data) - 1):ncol(data))])
 
-data <- make_se(data, LFQ_columns, design)
+data <- make_se(data_minimal, seq(nrow(design)), design)
+short_names <- colnames(data)
+long_names <- colnames(data_minimal)[seq(nrow(design))]
+rm(data_minimal)
+colnames(data) <- long_names
 data
 ```
 
@@ -129,7 +143,9 @@ discard <- which(is.na(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):nco
 data <- data[-discard, ]
 complete_cases <- filter_proteins(data, "complete")
 
+colnames(data) <- short_names
 plot_numbers(data)
+colnames(data) <- long_names
 plot_frequency(data)
 plot_detect(data)
 ```
@@ -185,7 +201,9 @@ missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), 
 ```
 
 ```{r}
+colnames(data) <- short_names
 plot_numbers(data)
+colnames(data) <- long_names
 plot_frequency(data)
 plot_detect(data)
 ```
@@ -205,9 +223,11 @@ datatable_download(assay(complete_cases))
 ### Normalization
 
 ```{r}
+colnames(data) <- short_names
 VSN_Normalized <- normalize_vsn(data)
 Log_Transform_Only <- data
 
+colnames(complete_cases) <- short_names
 VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
 Log_Transform_Only_Non_Missing_Data <- complete_cases
 
@@ -259,11 +279,13 @@ Imputed_Data <- data
 assay(Imputed_Data) <- cbind(assay(impute1), assay(impute2))
 rm(impute1, impute2, Non_Missing_data)
 data <- Imputed_Data
-
 plot_imputation(Imputed_Data)
 ```
 
 ```{r, fig.height = 100}
+colnames(data) <- long_names
+colnames(complete_cases) <- long_names
+
 data <- data[sort(rownames(data)), ]
 data <- data[AD_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
@@ -322,9 +344,11 @@ datatable_download(assay(data))
 ### PCA
 
 ```{r}
+colnames(data) <- short_names
 plot_pca(data, n = dim(data)[1], indicate = c("condition", "label"), label = TRUE) +
   scale_shape_manual(values = seq(0, ncol(data))) +
   ggtitle("PCA Plot")
+colnames(data) <- long_names
 ```
 
 ## Differential Expression
@@ -353,7 +377,9 @@ Heatmap(
 )
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
+colnames(data_results) <- short_names
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
+colnames(data_results) <- long_names
 datatable_download(results)
 ```
 
@@ -420,10 +446,12 @@ rm(unimputed_missing_no_mult_testing, missing_no_mult_testing)
 ### PCA
 
 ```{r}
+colnames(complete_cases) <- short_names
 plot_pca(
   complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
   ) + scale_shape_manual(values = seq(0, ncol(data))) +
   ggtitle("PCA Plot")
+colnames(complete_cases) <- long_names
 ```
 
 ### Differential Expression
@@ -450,7 +478,9 @@ Heatmap(
 )
 plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
+colnames(complete_results) <- short_names
 plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
+colnames(complete_results) <- long_names
 datatable_download(results)
 ```
 
