@@ -1,5 +1,6 @@
 gdrive
 .git
+graphviz
 R
 assets
 AD-CBD-exosome-proteins.bib
@@ -10,3 +11,4 @@ LICENSE
 NOTICE
 README.md
 results
+singularity.sh
