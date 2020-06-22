@@ -109,8 +109,8 @@ design <- read.delim(file.path(assets_dir, data_name, "metadata.tsv"))
 # --------------------------------
 design$replicate <- c(seq(9), seq(8))
 design$bio_rep <- c(
-  "AD_1", "AD_2", "AD_3", "AD_4", "AD_4", "AD_4", "AD_5", "AD_5", "AD_5",
-  "CTRL_1", "CTRL_2", "CTRL_2", "CTRL_2", "CTRL_3", "CTRL_4", "CTRL_4", "CTRL_4"
+  "AD_5333", "AD_5365", "AD_5398", "AD_5475", "AD_5475", "AD_5475", "AD_5521", "AD_5521", "AD_5521",
+  "CTRL_159", "CTRL_4070", "CTRL_4070", "CTRL_4070", "CTRL_5382", "CTRL_328", "CTRL_328", "CTRL_328"
 )
 # --------------------------------
 
@@ -144,22 +144,24 @@ bio_rep_color <- hue_pal()(length(unique(design$bio_rep)))
 sex_color <- hue_pal()(length(unique(design$sex)))
 month_color <- hue_pal()(length(unique(design$month)))
 top_anno <- HeatmapAnnotation(
-  biological_replicates = design$bio_rep,
+  biological_replicate = design$bio_rep,
   sex = design$sex,
-  month_of_run = design$month,
+  month = design$month,
   col = list(
-    biological_replicates = c(
-      "AD_1" = bio_rep_color[1], "AD_2" = bio_rep_color[2], "AD_3" = bio_rep_color[3],
-      "AD_4" = bio_rep_color[4], "AD_5" = bio_rep_color[5], "CTRL_1" = bio_rep_color[6],
-      "CTRL_2" = bio_rep_color[7], "CTRL_3" = bio_rep_color[8], "CTRL_4" = bio_rep_color[9]
+    biological_replicate = c(
+      "AD_5333" = bio_rep_color[1], "AD_5365" = bio_rep_color[2],
+      "AD_5398" = bio_rep_color[3], "AD_5475" = bio_rep_color[4],
+      "AD_5521" = bio_rep_color[5], "CTRL_159" = bio_rep_color[6],
+      "CTRL_4070" = bio_rep_color[7], "CTRL_5382" = bio_rep_color[8],
+      "CTRL_328" = bio_rep_color[9]
     ),
     sex = c("M" = sex_color[1], "F" = sex_color[2]),
-    month_of_run = c("March" = month_color[1], "Jan" = month_color[2])
+    month = c("March" = month_color[1], "Jan" = month_color[2])
   ),
   annotation_legend_param = list(
-    biological_replicates = list(title_position = "lefttop-rot"),
-    sex = list(title_position = "lefttop-rot"),
-    month_of_run = list(title_position = "lefttop-rot")
+    biological_replicate = list(title_position = "leftcenter-rot"),
+    sex = list(title_position = "leftcenter-rot"),
+    month = list(title_position = "leftcenter-rot")
   )
 )
 # ------------------------
@@ -435,7 +437,7 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   cluster_rows = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -454,7 +456,7 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   cluster_rows = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -521,13 +523,13 @@ Heatmap(
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
   heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16)
+  column_names_gp = gpar(fontsize = 16),
 )
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
@@ -549,7 +551,7 @@ Heatmap(
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -570,7 +572,7 @@ heatmap <- Heatmap(
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -597,7 +599,7 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_order = row_order(heatmap),
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -649,7 +651,7 @@ Heatmap(
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -677,7 +679,7 @@ Heatmap(
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
-  row_names_side = "left",
+  row_dend_side = "right",
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
@@ -728,6 +730,7 @@ Heatmap(
   gsva,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
+  row_dend_side = "right",
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
   top_anno = top_anno,
@@ -801,7 +804,7 @@ for (sets in names(gene_sets)) {
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,
-      row_names_side = "left",
+      row_dend_side = "right",
       top_anno = top_anno,
       column_split = design$condition,
       column_gap = unit(2, "mm"),
@@ -847,6 +850,7 @@ Heatmap(
   gsva,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
+  row_dend_side = "right",
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
   top_anno = top_anno,
@@ -920,7 +924,7 @@ for (sets in names(gene_sets)) {
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,
-      row_names_side = "left",
+      row_dend_side = "right",
       top_anno = top_anno,
       column_split = design$condition,
       column_gap = unit(2, "mm"),
