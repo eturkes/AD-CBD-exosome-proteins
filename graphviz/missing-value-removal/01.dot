@@ -1,0 +1,30 @@
+/*
+Copyright 2019-2020 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
+University Medical Center
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+digraph {
+    rankdir=LR;
+    node [shape=box, fontname=Verdana, fontsize=12];
+    edge [fontname=Verdana, fontsize=12];
+    splines=ortho;
+
+    rm_all_missing [label="Remove proteins missing entirely in a single condition"];
+    order [label="Order each condition by row means"];
+    select_MNAR [label="Select MNAR cutoff protein for each condition"];
+
+    rm_all_missing -> order;
+    order -> select_MNAR;
+}

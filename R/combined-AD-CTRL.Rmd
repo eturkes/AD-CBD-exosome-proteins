@@ -40,9 +40,13 @@ div.main-container {max-width: none; width: 100%;}
 *This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
 *Please email me for access.*
 
-The data here is derived from @combined and will be referenced using the name `combined`.
+The data here will be referenced using the name `combined`.
+It is a merged dataset of two proteomics runs done in January and in March.
+The data included here are label-free mass spec on exosomes derived from matched AD and control samples.
 
 ```{r}
+# Some standard boilerplate.
+# --------------------------
 # Copyright 2019-2020 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
 # University Medical Center
 # 
@@ -62,7 +66,7 @@ The data here is derived from @combined and will be referenced using the name `c
 # --------------------------------------------
 options(stringsAsFactors = FALSE)
 packages <- c(
-  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2",
+  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2",
   "DT", "ComplexHeatmap", "GSEABase", "GSVA", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
@@ -76,26 +80,44 @@ data_name <- "combined"
 # ----------------------------------------------------------
 assets_dir <- file.path(getwd(), "..", "assets") # Backed up data.
 
-cache_dir <- file.path(getwd(), "..", "tmp", "cache")
+cache_dir <- file.path(getwd(), "..", "tmp", "cache", data_name)
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
 knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 # ----------------------------------------------------------
+# --------------------------
 ```
 
 # All Data
 
+In this section we look at all of the data without any removal of possible outlier samples.
+
 ## Prep
 
-```{r}
-data <- read.csv(file.path(assets_dir, data_name, "data_comb_steph.csv"))
-design <- read.csv(file.path(assets_dir, data_name, "metadata.csv"))
-design$replicate <- c(seq(9), seq(8))
+Read in the data and organize into a `SummarizedExperiment` object.
 
+```{r}
+# Read in data.
+# -------------
+data <- read.csv(file.path(assets_dir, data_name, "data_comb_steph.csv"))
+design <- read.delim(file.path(assets_dir, data_name, "metadata.tsv"))
+# -------------
+
+# Add additional info to metadata.
+# --------------------------------
+design$replicate <- c(seq(9), seq(8))
+design$bio_rep <- c(
+  "AD_1", "AD_2", "AD_3", "AD_4", "AD_4", "AD_4", "AD_5", "AD_5", "AD_5",
+  "CTRL_1", "CTRL_2", "CTRL_2", "CTRL_2", "CTRL_3", "CTRL_4", "CTRL_4", "CTRL_4"
+)
+# --------------------------------
+
+# Clean up data and subset to the minimum necessary info.
+# -------------------------------------------------------
 data <- make_unique(data, "Gene.names", "Protein.IDs.x", ";")
-keep <- grep("Intensity.", colnames(data))
+keep <- grep("Intensity.", colnames(data)) # Get LFQ intensities.
 data_minimal <- data[ , keep]
 colnames(data_minimal) <- c(
   "AD_5475_jan", "AD_5475_jan2", "AD_5521_jan", "AD_5521_jan2", "CTRL_328_jan",
@@ -105,12 +127,43 @@ colnames(data_minimal) <- c(
 )
 data_minimal <- data_minimal[ , order(match(colnames(data_minimal), design$label))]
 data_minimal <- cbind(data_minimal, data[ , c((ncol(data) - 1):ncol(data))])
+# -------------------------------------------------------
 
+# Make SE object and differentiate between long and short versions of the column names.
+# -------------------------------------------------------------------------------------
 data <- make_se(data_minimal, seq(nrow(design)), design)
-short_names <- colnames(data)
-long_names <- colnames(data_minimal)[seq(nrow(design))]
+short_names <- colnames(data) # "AD_1" etc.
+long_names <- colnames(data_minimal)[seq(nrow(design))] # "AD_5475_jan" etc.
 rm(data_minimal)
 colnames(data) <- long_names
+# -------------------------------------------------------------------------------------
+
+# Create heatmap metadata.
+# ------------------------
+bio_rep_color <- hue_pal()(length(unique(design$bio_rep)))
+sex_color <- hue_pal()(length(unique(design$sex)))
+month_color <- hue_pal()(length(unique(design$month)))
+top_anno <- HeatmapAnnotation(
+  biological_replicates = design$bio_rep,
+  sex = design$sex,
+  month_of_run = design$month,
+  col = list(
+    biological_replicates = c(
+      "AD_1" = bio_rep_color[1], "AD_2" = bio_rep_color[2], "AD_3" = bio_rep_color[3],
+      "AD_4" = bio_rep_color[4], "AD_5" = bio_rep_color[5], "CTRL_1" = bio_rep_color[6],
+      "CTRL_2" = bio_rep_color[7], "CTRL_3" = bio_rep_color[8], "CTRL_4" = bio_rep_color[9]
+    ),
+    sex = c("M" = sex_color[1], "F" = sex_color[2]),
+    month_of_run = c("March" = month_color[1], "Jan" = month_color[2])
+  ),
+  annotation_legend_param = list(
+    biological_replicates = list(title_position = "lefttop-rot"),
+    sex = list(title_position = "lefttop-rot"),
+    month_of_run = list(title_position = "lefttop-rot")
+  )
+)
+# ------------------------
+
 data
 ```
 
@@ -128,6 +181,8 @@ datatable_download(2 ^ assay(data))
 
 ## QC
 
+We apply quality control to the data.
+
 ### Histogram
 
 ```{r}
@@ -136,14 +191,24 @@ hist(assay(data), n = 100)
 
 ### Missing Value Removal
 
+Here we remove proteins with too many missing values and mark those that are missing-not-at-random (MNAR) and missing-at-random (MAR) for imputation later.
+The basic workflow is shown below:
+
+![](../assets/figures/missing-value-removal.svg)
+
 ```{r}
+# Step 1 in flowchart.
+# Remove proteins missing entirely in one condition.
+# --------------------------------------------------
 discard <- which(is.na(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE)))
 data <- data[-discard, ]
 discard <- which(is.na(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE)))
 data <- data[-discard, ]
-complete_cases <- filter_proteins(data, "complete")
+# --------------------------------------------------
 
-colnames(data) <- short_names
+complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
+
+colnames(data) <- short_names # Below function doesn't currently work with `long_names`.
 plot_numbers(data)
 colnames(data) <- long_names
 plot_frequency(data)
@@ -151,21 +216,34 @@ plot_detect(data)
 ```
 
 ```{r, fig.height = 100}
+# Steps 2 and 3 in flowchart.
+# Order each condition by row means and select the last protein to be included as MNAR.
+# We choose row means over medians because high expression outliers may be decent indication a
+# protein is not MNAR.
+# --------------------------------------------------------------------------------------------
 AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
 data <- data[AD_order, ]
-AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TMX4
+AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TODO: Automate this.
 plot_missval_custom(data)
 
 Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
 data <- data[Control_order, ]
-Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # MGST1
+Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # TODO: Automate this.
 plot_missval_custom(data)
+# --------------------------------------------------------------------------------------------
 
+# Step 4 in flowchart.
+# In each condition, remove MAR (non-MNAR) proteins where the majority are missing.
+# This has not been empirically tested, but we have found that MAR imputation with a majority of
+# missing values leads to suspect imputation.
+# MNAR imputation however, does not suffer from this limitation, and in fact it is logical that MNAR
+# proteins would have a high number of missing values.
+# --------------------------------------------------------------------------------------------------
 AD_data <- data[ , 1:ceiling(ncol(data) / 2)]
 AD_data <- AD_data[rownames(AD_data) %notin% AD_MNAR, ]
 missing_data <- assay(AD_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
-discard <- which(rowSums(missing_data, TRUE) < 5)
+discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 AD_data <- AD_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from AD group."))
 
@@ -173,10 +251,18 @@ Control_data <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
 Control_data <- Control_data[rownames(Control_data) %notin% Control_MNAR, ]
 missing_data <- assay(Control_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
-discard <- which(rowSums(missing_data, TRUE) < 5)
+discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 Control_data <- Control_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Control group."))
+# --------------------------------------------------------------------------------------------------
 
+# Continuation of step 4 in flowchart.
+# In order to ensure that all conditions have MAR proteins with majority non-missing values, we
+# perform the unions below.
+# For example, out of the proteins that pass this QC in the AD condition, or have no missing values,
+# we only keep those that pass this QC, have no missing values, or are MNAR in the Control condition
+# as well.
+# --------------------------------------------------------------------------------------------------
 AD_MAR <- rownames(AD_data)[
   rownames(AD_data) %in% Control_MNAR | rownames(AD_data) %in% rownames(Control_data)
 ]
@@ -184,24 +270,32 @@ Control_MAR <- rownames(Control_data)[
   rownames(Control_data) %in% AD_MNAR | rownames(Control_data) %in% rownames(AD_data)
 ]
 rm(AD_data, Control_data)
-MAR <- unique(append(AD_MAR, Control_MAR))
+MAR <- unique(append(AD_MAR, Control_MAR)) # Note that complete proteins are also in here.
 
 AD_MNAR_passQC <- AD_MNAR[AD_MNAR %in% Control_MAR | AD_MNAR %in% Control_MNAR]
 Control_MNAR_passQC <- Control_MNAR[Control_MNAR %in% AD_MAR | Control_MNAR %in% AD_MNAR]
 MNAR <- unique(append(AD_MNAR_passQC, Control_MNAR_passQC))
+# --------------------------------------------------------------------------------------------------
 
+# Step 5 (last step) in flowchart.
+# We join MAR and MNAR lists and subset the data.
+# -----------------------------------------------
 keep <- unique(append(MAR, MNAR))
 data <- data[rownames(data) %in% keep, ]
+# -----------------------------------------------
 
+# Save some orders/subsets for later use.
+# ---------------------------------------
 data <- data[sort(rownames(data)), ]
 AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
 Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
 missing_data <- assay(data) %>% data.frame(.)
 missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), ]
+# ---------------------------------------
 ```
 
 ```{r}
-colnames(data) <- short_names
+colnames(data) <- short_names # Below function doesn't currently work with `long_names`.
 plot_numbers(data)
 colnames(data) <- long_names
 plot_frequency(data)
@@ -222,7 +316,20 @@ datatable_download(assay(complete_cases))
 
 ### Normalization
 
+Here we perform VSN normalization, but also include some output from NormalyzerDE [@willforssNormalyzerDEOnlineTool2019] (web tool at [http://130.235.214.136/](http://130.235.214.136/)) for evaulating the performance of various normalization methods.
+
 ```{r}
+# Export data without log transformation for NormalyzerDE.
+# --------------------------------------------------------
+write.table(
+  cbind(rownames(data), 2 ^ assay(data)), file.path(cache_dir, "data_assay.tsv"), quote = FALSE,
+  row.names = FALSE, sep = "\t"
+)
+# --------------------------------------------------------
+
+# Normalize using VSN.
+# We also create several extra variables for better plotting labels.
+# ------------------------------------------------------------------
 colnames(data) <- short_names
 VSN_Normalized <- normalize_vsn(data)
 Log_Transform_Only <- data
@@ -230,7 +337,10 @@ Log_Transform_Only <- data
 colnames(complete_cases) <- short_names
 VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
 Log_Transform_Only_Non_Missing_Data <- complete_cases
+# ------------------------------------------------------------------
 
+# Display results of normalization.
+# ---------------------------------
 print("Log_Transform_Only")
 meanSdPlot(Log_Transform_Only)
 print("Log_Transform_Only_Non_Missing_Data")
@@ -242,14 +352,24 @@ meanSdPlot(VSN_Normalized_Non_Missing_Data)
 
 plot_normalization(Log_Transform_Only, VSN_Normalized)
 plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data)
+# ---------------------------------
 
+# Move normalized data to main objects and clean up.
+# --------------------------------------------------
 data <- VSN_Normalized
 complete_cases <- VSN_Normalized_Non_Missing_Data
 rm(
   VSN_Normalized, VSN_Normalized_Non_Missing_Data,
   Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
 )
+# --------------------------------------------------
 ```
+
+**Boxplots from NormalyzerDE.**
+![](../assets/combined/normalization-boxplots.png)
+
+**RLE plots from NormalyzerDE.**
+![](../assets/combined/normalization-RLE.png)
 
 **Data after normalization and log2 transformation.**
 
@@ -259,26 +379,40 @@ datatable_download(assay(data))
 
 ### Missing Value Imputation
 
+Here we impute missing values using both MAR (`knn`) and MNAR methods (`MinProb`).
+We also apply this combo separately for each condition as each condition has their own MNAR cutoffs.
+
 ```{r}
+# We create several extra variables for better plotting labels.
+# -------------------------------------------------------------
 unimputed_data <- data
 Unimputed_Data <- unimputed_data
 Non_Missing_data <- complete_cases
+# -------------------------------------------------------------
+
 plot_imputation(Unimputed_Data, Non_Missing_data)
 
+# The main imputation code.
+# -------------------------
 impute1 <- data[ , 1:ceiling(ncol(data) / 2)]
-impute_vector <- rownames(impute1) %in% AD_MNAR_passQC
+impute_vector <- rownames(impute1) %in% AD_MNAR_passQC # Logical vector specifying MNAR.
 set.seed(1)
 impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
 
 impute2 <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
-impute_vector <- rownames(impute2) %in% Control_MNAR_passQC
+impute_vector <- rownames(impute2) %in% Control_MNAR_passQC # Logical vector specifying MNAR.
 set.seed(1)
 impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+# -------------------------
 
+# Move imputed data to main objects and clean up.
+# -----------------------------------------------
 Imputed_Data <- data
 assay(Imputed_Data) <- cbind(assay(impute1), assay(impute2))
 rm(impute1, impute2, Non_Missing_data)
 data <- Imputed_Data
+# -----------------------------------------------
+
 plot_imputation(Imputed_Data)
 ```
 
@@ -286,6 +420,11 @@ plot_imputation(Imputed_Data)
 colnames(data) <- long_names
 colnames(complete_cases) <- long_names
 
+# Assess the imputation using heatmaps similar to those when performing missing value removal,
+# heatmaps sorted by rowMeans (before imputation) for each condition.
+# These heatmaps intend to be directly comparable with those, though this approach may be revised
+# due to slighly different values from normalization and the colorscale.
+# -----------------------------------------------------------------------------------------------
 data <- data[sort(rownames(data)), ]
 data <- data[AD_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
@@ -297,9 +436,10 @@ Heatmap(
   cluster_columns = FALSE,
   cluster_rows = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
@@ -315,21 +455,26 @@ Heatmap(
   cluster_columns = FALSE,
   cluster_rows = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+# -----------------------------------------------------------------------------------------------
 ```
 
 ```{r}
+# Create a few more plots.
+# ------------------------
 plot_normalization(Unimputed_Data, Imputed_Data)
 
 print("Unimputed Data")
 meanSdPlot(Unimputed_Data)
 print("Imputed Data")
 meanSdPlot(Imputed_Data)
+# ------------------------
 
 rm(Imputed_Data, Unimputed_Data)
 ```
@@ -343,8 +488,10 @@ datatable_download(assay(data))
 
 ### PCA
 
+Principal component analysis using all proteins in dataset.
+
 ```{r}
-colnames(data) <- short_names
+colnames(data) <- short_names # Below function doesn't currently work with `long_names`.
 plot_pca(data, n = dim(data)[1], indicate = c("condition", "label"), label = TRUE) +
   scale_shape_manual(values = seq(0, ncol(data))) +
   ggtitle("PCA Plot")
@@ -353,14 +500,20 @@ colnames(data) <- long_names
 
 ## Differential Expression
 
-The results below are filtered for significance ($adjP < 0.05$).
+Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
+We filter using a 0.05 p-value cutoff after BH multiple testing correction.
 
 ```{r}
+# Perform the DE testing.
+# -----------------------
 data_results <- add_rejections(test_diff(data, "control", "Control"), lfc = 0)
 results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
+# -----------------------
 
+# Display the results.
+# --------------------
 heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
@@ -369,9 +522,10 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
@@ -381,7 +535,10 @@ colnames(data_results) <- short_names
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 colnames(data_results) <- long_names
 datatable_download(results)
+# --------------------
 ```
+
+**Proteins DE without multiple correction testing.**
 
 ```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
@@ -393,13 +550,18 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
+```
 
+**Imputed proteins DE without multiple correction testing.**
+
+```{r, fig.height = 30}
 missing_no_mult_testing <- no_mult_testing[rownames(no_mult_testing) %in% rownames(missing_data), ]
 missing_no_mult_testing <- missing_no_mult_testing[sort(rownames(missing_no_mult_testing)), ]
 heatmap <- Heatmap(
@@ -409,14 +571,19 @@ heatmap <- Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
 draw(heatmap)
+```
 
+**Proteins from above but without imputed values filled in.**
+
+```{r, fig.height = 30}
 unimputed_missing_no_mult_testing <- unimputed_data[
   rownames(unimputed_data) %in% rownames(missing_no_mult_testing),
 ]
@@ -431,9 +598,10 @@ Heatmap(
   cluster_columns = FALSE,
   row_order = row_order(heatmap),
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
@@ -441,12 +609,16 @@ Heatmap(
 rm(unimputed_missing_no_mult_testing, missing_no_mult_testing)
 ```
 
-## Non-Missing Data
+## Non-missing Data
+
+We perform similar procedures as above but now only using a matrix of proteins that did not require any imputation.
 
 ### PCA
 
+Principal component analysis using all proteins in dataset.
+
 ```{r}
-colnames(complete_cases) <- short_names
+colnames(complete_cases) <- short_names # Below function doesn't currently work with `long_names`.
 plot_pca(
   complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
   ) + scale_shape_manual(values = seq(0, ncol(data))) +
@@ -456,12 +628,20 @@ colnames(complete_cases) <- long_names
 
 ### Differential Expression
 
+Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
+We filter using a 0.05 p-value cutoff after BH multiple testing correction.
+
 ```{r}
+# Perform the DE testing.
+# -----------------------
 complete_results <- add_rejections(test_diff(complete_cases, "control", "Control"), lfc = 0)
 results <- get_results(complete_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
+# -----------------------
 
+# Plot the results.
+# -----------------
 heatmap_data <- assay(complete_cases)[rownames(complete_cases) %in% sig$name, ]
 Heatmap(
   heatmap_data,
@@ -470,19 +650,23 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
 plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
-colnames(complete_results) <- short_names
+colnames(complete_results) <- short_names # Below function doesn't currently work with `long_names`.
 plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
 colnames(complete_results) <- long_names
 datatable_download(results)
+# -----------------
 ```
+
+**Proteins DE without multiple correction testing.**
 
 ```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
@@ -494,9 +678,10 @@ Heatmap(
   show_column_names = TRUE,
   cluster_columns = FALSE,
   row_names_side = "left",
-  heatmap_legend_param = list(
-    title = "log2 Intensity", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16)
 )
@@ -505,34 +690,55 @@ rm(no_mult_testing)
 
 ## Gene Set Enrichment
 
+We perform gene set enrichment using methods available from the `GSVA` package [@hanzelmannGSVAGeneSet2013].
+The Z-score method appears to be generally better for separating conditions while SSGSEA appears to highlight differential enrichment between gene sets.
+`limma` is applied following these methods to test if differences are significant, note that while this approach is described in the `GSVA` vignette, I am not sure if it is applicable to all methods in the package.
+
 ### Johnson et al. 2020 Modules
 
+We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [@johnsonLargescaleProteomicAnalysis2020] as our gene sets.
+
 ```{r}
+# Load gene sets and filter to improve GSVA normalization.
+# --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
 gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
+# --------------------------------------------------------
 
+# Filter dataset to proteins in gene sets to reduce multiple testing correction burden.
+# -------------------------------------------------------------------------------------
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
 print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
 print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
 print(
   paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
+# -------------------------------------------------------------------------------------
 
+# Perform GSVA using `zscore` method.
+# -----------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
-datatable_download(gsva)
+# -----------------------------------
 
+# Display results.
+# ----------------
+datatable_download(gsva)
 Heatmap(
   gsva,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
-  heatmap_legend_param = list(
-    title = "Z-score enrichment", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
 )
+# ----------------
 
+# Use limma to test for significance.
+# -----------------------------------
 limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
 colnames(limma_design) <- unique(design$condition)
 fit <- lmFit(gsva, limma_design)
@@ -541,11 +747,18 @@ cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
 datatable_download_exp(results)
+# -----------------------------------
 
+# Perform GSVA using `ssgsea` method.
+# We also don't normalize and make all values positive to improve interpretability.
+# ---------------------------------------------------------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
 gsva <- gsva + abs(min(gsva))
-datatable_download(gsva)
+# ---------------------------------------------------------------------------------
 
+# Display results.
+# ----------------
+datatable_download(gsva)
 gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
 Heatmap(
   gsva,
@@ -554,11 +767,15 @@ Heatmap(
   cluster_rows = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
-  heatmap_legend_param = list(
-    title = "SSGSEA enrichment", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
 )
+# ----------------
 
+# Use limma to test for significance.
+# -----------------------------------
 limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
 colnames(limma_design) <- unique(design$condition)
 fit <- lmFit(gsva, limma_design)
@@ -567,7 +784,10 @@ cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
 datatable_download_exp(results)
+# -----------------------------------
 ```
+
+**Plotting individual genes for each gene set.**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
@@ -582,9 +802,10 @@ for (sets in names(gene_sets)) {
       show_column_names = TRUE,
       cluster_columns = FALSE,
       row_names_side = "left",
-      heatmap_legend_param = list(
-        title = "log2 Intensity", title_position = "leftcenter-rot"
-      ),
+      top_anno = top_anno,
+      column_split = design$condition,
+      column_gap = unit(2, "mm"),
+      heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
       row_names_gp = gpar(fontsize = 6),
       column_names_gp = gpar(fontsize = 16)
     )
@@ -594,32 +815,49 @@ for (sets in names(gene_sets)) {
 
 ### Panglao Cell Types
 
+We use cell-type markers from the PanglaoDB database [https://panglaodb.se/markers.html](https://panglaodb.se/markers.html).
+
 ```{r}
+# Load gene sets and filter to improve GSVA normalization.
+# --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
 gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
+# --------------------------------------------------------
 
+# Filter dataset to proteins in gene sets to reduce multiple testing correction burden.
+# -------------------------------------------------------------------------------------
 data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
 print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
 print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
 print(
   paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
+# -------------------------------------------------------------------------------------
 
+# Perform GSVA using `zscore` method.
+# -----------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
-datatable_download(gsva)
+# -----------------------------------
 
+# Display results.
+# ----------------
+datatable_download(gsva)
 Heatmap(
   gsva,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
   cluster_columns = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
-  heatmap_legend_param = list(
-    title = "Z-score enrichment", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
 )
+# ----------------
 
+# Use limma to test for significance.
+# -----------------------------------
 limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
 colnames(limma_design) <- unique(design$condition)
 fit <- lmFit(gsva, limma_design)
@@ -628,11 +866,18 @@ cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
 datatable_download_exp(results)
+# -----------------------------------
 
+# Perform GSVA using `ssgsea` method.
+# We also don't normalize and make all values positive to improve interpretability.
+# ---------------------------------------------------------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
 gsva <- gsva + abs(min(gsva))
-datatable_download(gsva)
+# ---------------------------------------------------------------------------------
 
+# Display results.
+# ----------------
+datatable_download(gsva)
 gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
 Heatmap(
   gsva,
@@ -641,11 +886,15 @@ Heatmap(
   cluster_rows = FALSE,
   row_names_max_width = max_text_width(rownames(gsva)),
   column_names_side = "top",
-  heatmap_legend_param = list(
-    title = "SSGSEA enrichment", title_position = "leftcenter-rot"
-  ),
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
 )
+# ----------------
 
+# Use limma to test for significance.
+# -----------------------------------
 limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
 colnames(limma_design) <- unique(design$condition)
 fit <- lmFit(gsva, limma_design)
@@ -654,7 +903,10 @@ cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
 results <- topTable(cont_fit, 1, Inf)
 datatable_download_exp(results)
+# -----------------------------------
 ```
+
+**Plotting individual genes for each gene set.**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
@@ -669,9 +921,10 @@ for (sets in names(gene_sets)) {
       show_column_names = TRUE,
       cluster_columns = FALSE,
       row_names_side = "left",
-      heatmap_legend_param = list(
-        title = "log2 Intensity", title_position = "leftcenter-rot"
-      ),
+      top_anno = top_anno,
+      column_split = design$condition,
+      column_gap = unit(2, "mm"),
+      heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
       row_names_gp = gpar(fontsize = 6),
       column_names_gp = gpar(fontsize = 16)
     )
