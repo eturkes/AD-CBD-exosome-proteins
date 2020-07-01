@@ -66,12 +66,13 @@ The data included here are label-free mass spec on exosomes derived from matched
 # --------------------------------------------
 options(stringsAsFactors = FALSE)
 packages <- c(
-  "conflicted", "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "scales",
-  "ggplot2", "DT", "ComplexHeatmap", "GSEABase", "GSVA", "limma"
+  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2",
+  "DT", "ComplexHeatmap", "GSEABase", "GSVA", "RColorBrewer", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
 conflict_prefer("rowMedians", "Biobase")
+conflict_prefer("which", "BiocGenerics")
 
 data_name <- "combined"
 `%notin%` <- Negate(`%in%`)
@@ -91,9 +92,10 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 # --------------------------
 ```
 
-# All Data
+# No Outlier Removal & Publication Ready Figs
 
 In this section we look at all of the data without any removal of possible outlier samples.
+Some figures are stripped of additional information to make them more suitable for publication.
 
 ## Prep
 
@@ -113,6 +115,7 @@ design$bio_rep <- c(
   "AD_5333", "AD_5365", "AD_5398", "AD_5475", "AD_5475", "AD_5475", "AD_5521", "AD_5521", "AD_5521",
   "CTRL_159", "CTRL_4070", "CTRL_4070", "CTRL_4070", "CTRL_5382", "CTRL_328", "CTRL_328", "CTRL_328"
 )
+design$sample <- as.factor(design$sample)
 # --------------------------------
 
 # Clean up data and subset to the minimum necessary info.
@@ -428,12 +431,17 @@ colnames(complete_cases) <- long_names
 # These heatmaps intend to be directly comparable with those, though this approach may be revised
 # due to slighly different values from normalization and the colorscale.
 # -----------------------------------------------------------------------------------------------
+color <- colorRamp2(
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+
 data <- data[sort(rownames(data)), ]
 data <- data[AD_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
 Heatmap(
   assay(heatmap_data),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -452,7 +460,7 @@ data <- data[Control_order, ]
 heatmap_data <- data[rownames(data) %in% rownames(missing_data), ]
 Heatmap(
   assay(heatmap_data),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -501,10 +509,32 @@ plot_pca(data, n = dim(data)[1], indicate = c("condition", "label"), label = TRU
 colnames(data) <- long_names
 ```
 
+### Variance Partitioning
+
+We use the `variancePartition` package to quantify and interpret drivers of variation.
+
+**All Covariates**
+
+```{r}
+formula <- ~ age + (1|sample) + (1|month) + (1|sex) + (1|region) + (1|condition)
+var_part <- suppressWarnings(
+  variancePartition::fitExtractVarPartModel(
+    assay(data), formula, design, useWeights = FALSE, quiet = TRUE
+  )
+)
+var_part <- variancePartition::sortCols(var_part)
+
+variancePartition::plotPercentBars(var_part[1:10, ])
+variancePartition::plotVarPart(var_part)
+```
+
 ## Differential Expression
 
 Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
 We filter using a 0.05 p-value cutoff after BH multiple testing correction.
+We also test DE while correcting for several combinations of covariates.
+
+### No Covariates Regressed
 
 ```{r}
 # Perform the DE testing.
@@ -514,13 +544,19 @@ results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 # -----------------------
+```
 
-# Display the results.
-# --------------------
+**Scaled heatmap**
+
+```{r}
 heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color2,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -532,13 +568,243 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
+```
+
+**Unscaled heatmap**
+
+```{r}
+Heatmap(
+  heatmap_data,
+  color,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Other figures**
+
+```{r}
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
 colnames(data_results) <- short_names
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 colnames(data_results) <- long_names
 datatable_download(results)
-# --------------------
+```
+
+### Month Regressed Out
+
+```{r}
+# Perform the DE testing.
+# -----------------------
+data_results <- add_rejections(
+  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + month),
+  lfc = 0
+)
+results <- get_results(data_results)
+sig <- results[results$significant, ]
+print(paste0(nrow(sig), " significant proteins."))
+# -----------------------
+```
+
+**Scaled heatmap**
+
+```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Unscaled heatmap**
+
+```{r}
+Heatmap(
+  heatmap_data,
+  color,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Other figures**
+
+```{r}
+plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
+colnames(data_results) <- short_names
+plot_single(data_results, sig$name, "centered") + xlab(element_blank())
+colnames(data_results) <- long_names
+datatable_download(results)
+```
+
+### Sex + Month
+
+```{r}
+# Perform the DE testing.
+# -----------------------
+data_results <- add_rejections(
+  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + sex + month),
+  lfc = 0
+)
+results <- get_results(data_results)
+sig <- results[results$significant, ]
+print(paste0(nrow(sig), " significant proteins."))
+# -----------------------
+```
+
+**Scaled heatmap**
+
+```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Unscaled heatmap**
+
+```{r}
+Heatmap(
+  heatmap_data,
+  color,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Other figures**
+
+```{r}
+plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
+colnames(data_results) <- short_names
+plot_single(data_results, sig$name, "centered") + xlab(element_blank())
+colnames(data_results) <- long_names
+datatable_download(results)
+```
+
+### Sex Regressed Out (Used Downstream)
+
+```{r}
+# Perform the DE testing.
+# -----------------------
+data_results <- add_rejections(
+  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + sex),
+  lfc = 0
+)
+results <- get_results(data_results)
+sig <- results[results$significant, ]
+print(paste0(nrow(sig), " significant proteins."))
+# -----------------------
+```
+
+**Scaled heatmap**
+
+```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Unscaled heatmap**
+
+```{r}
+Heatmap(
+  heatmap_data,
+  color,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Other figures**
+
+```{r}
+plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
+plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
+colnames(data_results) <- short_names
+plot_single(data_results, sig$name, "centered") + xlab(element_blank())
+colnames(data_results) <- long_names
+datatable_download(results)
 ```
 
 **Proteins DE without multiple correction testing.**
@@ -548,7 +814,7 @@ no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- data_results[rownames(data_results) %in% no_mult_testing$name, ]
 Heatmap(
   assay(no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -569,7 +835,7 @@ missing_no_mult_testing <- no_mult_testing[rownames(no_mult_testing) %in% rownam
 missing_no_mult_testing <- missing_no_mult_testing[sort(rownames(missing_no_mult_testing)), ]
 heatmap <- Heatmap(
   assay(missing_no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -595,7 +861,7 @@ unimputed_missing_no_mult_testing <- unimputed_missing_no_mult_testing[
 ]
 Heatmap(
   assay(unimputed_missing_no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -637,7 +903,12 @@ We filter using a 0.05 p-value cutoff after BH multiple testing correction.
 ```{r}
 # Perform the DE testing.
 # -----------------------
-complete_results <- add_rejections(test_diff(complete_cases, "control", "Control"), lfc = 0)
+complete_results <- add_rejections(
+  test_diff(
+    complete_cases, "control", "Control", design_formula = formula(~ 0 + condition + sex)
+  ),
+  lfc = 0
+)
 results <- get_results(complete_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
@@ -648,7 +919,7 @@ print(paste0(nrow(sig), " significant proteins."))
 heatmap_data <- assay(complete_cases)[rownames(complete_cases) %in% sig$name, ]
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -676,7 +947,7 @@ no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
 no_mult_testing <- complete_results[rownames(complete_results) %in% no_mult_testing$name, ]
 Heatmap(
   assay(no_mult_testing),
-  colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+  color,
   column_names_side = "top",
   show_column_names = TRUE,
   cluster_columns = FALSE,
@@ -743,8 +1014,9 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
-colnames(limma_design) <- unique(design$condition)
+limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
 fit <- lmFit(gsva, limma_design)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
@@ -780,8 +1052,9 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
-colnames(limma_design) <- unique(design$condition)
+limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
 fit <- lmFit(gsva, limma_design)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
@@ -801,7 +1074,7 @@ for (sets in names(gene_sets)) {
   draw(
     Heatmap(
       assay(heatmap_data),
-      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+      color,
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,
@@ -863,8 +1136,9 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
-colnames(limma_design) <- unique(design$condition)
+limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
 fit <- lmFit(gsva, limma_design)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
@@ -900,8 +1174,9 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition, as.data.frame(gsva))
-colnames(limma_design) <- unique(design$condition)
+limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
 fit <- lmFit(gsva, limma_design)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
@@ -921,7 +1196,7 @@ for (sets in names(gene_sets)) {
   draw(
     Heatmap(
       assay(heatmap_data),
-      colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(round(diff(range(assay(data))))),
+      color,
       column_names_side = "top",
       show_column_names = TRUE,
       cluster_columns = FALSE,

@@ -106,10 +106,10 @@ plot_missval_custom <- function(se) {
   missval <- missval[apply(missval, 1, function(x) any(is.na(x))), ]
   missval[is.na(missval)] <- min(missval, na.rm = TRUE) - 0.01
 
-  color <- colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(
-    round(diff(range(missval, na.rm = TRUE)))
+  color <- colorRamp2(
+    c(min(missval), min(missval) + 0.01, (max(missval) + min(missval)) / 2, max(missval)),
+    c("#DDDDDD", brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
   )
-  color[1] <- "#DDDDDD"
   ht2 = Heatmap(as.matrix(missval),
                 color,
                 column_names_side = "top",
