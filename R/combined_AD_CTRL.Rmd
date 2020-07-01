@@ -549,7 +549,7 @@ print(paste0(nrow(sig), " significant proteins."))
 **Scaled heatmap**
 
 ```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
   c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
@@ -564,7 +564,7 @@ Heatmap(
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
@@ -573,6 +573,7 @@ Heatmap(
 **Unscaled heatmap**
 
 ```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
   color,
@@ -618,7 +619,7 @@ print(paste0(nrow(sig), " significant proteins."))
 **Scaled heatmap**
 
 ```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
   c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
@@ -633,7 +634,7 @@ Heatmap(
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
@@ -642,6 +643,7 @@ Heatmap(
 **Unscaled heatmap**
 
 ```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
   color,
@@ -687,7 +689,7 @@ print(paste0(nrow(sig), " significant proteins."))
 **Scaled heatmap**
 
 ```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
   c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
@@ -702,7 +704,7 @@ Heatmap(
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
@@ -711,6 +713,7 @@ Heatmap(
 **Unscaled heatmap**
 
 ```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
   color,
@@ -756,7 +759,7 @@ print(paste0(nrow(sig), " significant proteins."))
 **Scaled heatmap**
 
 ```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
+heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
   c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
@@ -771,7 +774,7 @@ Heatmap(
   top_anno = top_anno,
   column_split = design$condition,
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
@@ -780,6 +783,7 @@ Heatmap(
 **Unscaled heatmap**
 
 ```{r}
+heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
 Heatmap(
   heatmap_data,
   color,
