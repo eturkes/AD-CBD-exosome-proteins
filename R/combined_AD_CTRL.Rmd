@@ -846,10 +846,12 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
 colnames(limma_design)[1:2] <- unique(design$condition)
 colnames(limma_design)[3] <- "sex"
-fit <- lmFit(gsva, limma_design)
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
@@ -884,10 +886,12 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
 colnames(limma_design)[1:2] <- unique(design$condition)
 colnames(limma_design)[3] <- "sex"
-fit <- lmFit(gsva, limma_design)
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
@@ -968,10 +972,12 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
 colnames(limma_design)[1:2] <- unique(design$condition)
 colnames(limma_design)[3] <- "sex"
-fit <- lmFit(gsva, limma_design)
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
@@ -1006,10 +1012,12 @@ Heatmap(
 
 # Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex, as.data.frame(gsva))
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
 colnames(limma_design)[1:2] <- unique(design$condition)
 colnames(limma_design)[3] <- "sex"
-fit <- lmFit(gsva, limma_design)
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
 contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit)
