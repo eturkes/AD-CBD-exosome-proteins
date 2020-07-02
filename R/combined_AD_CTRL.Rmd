@@ -550,10 +550,11 @@ data_results <- add_rejections(
 results <- get_results(data_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
+datatable_download(results)
 # -----------------------
 ```
 
-**Scaled Batch-corrected heatmap**
+### Scaled Batch-corrected Heatmap
 
 ```{r}
 heatmap_data <- removeBatchEffect(assay(data), design$sex, design$month)
@@ -578,7 +579,7 @@ Heatmap(
 )
 ```
 
-**Unscaled heatmap**
+### Unscaled Heatmap
 
 ```{r}
 heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
@@ -598,7 +599,108 @@ Heatmap(
 )
 ```
 
-**Other figures**
+### Johnson 2020 Module Proteins
+
+**M1-synapse (54% matching)**
+
+```{r}
+module <- read.delim(file.path(assets_dir, data_name, "johnson-synapse-matching.tsv"), FALSE)
+datatable_download(results[results$name %in% module$V1, ])
+
+heatmap_data <- removeBatchEffect(assay(data), design$sex, design$month)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+
+plot_volcano(
+  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
+) + ggtitle("M1-synapse proteins")
+```
+
+**M3-mitochondrial (55% matching)**
+
+```{r}
+module <- read.delim(file.path(assets_dir, data_name, "johnson-mito-matching.tsv"), FALSE)
+datatable_download(results[results$name %in% module$V1, ])
+
+heatmap_data <- removeBatchEffect(assay(data), design$sex, design$month)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+
+plot_volcano(
+  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
+) + ggtitle("M3-mitochondrial proteins")
+```
+
+**M4-sugar-metabolism (42.5% matching)**
+
+```{r}
+module <- read.delim(file.path(assets_dir, data_name, "johnson-sugar-matching.tsv"), FALSE)
+datatable_download(results[results$name %in% module$V1, ])
+
+heatmap_data <- removeBatchEffect(assay(data), design$sex, design$month)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+
+plot_volcano(
+  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
+) + ggtitle("M4-sugar-metabolism proteins")
+```
+
+### Other Figures
 
 ```{r}
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
@@ -606,7 +708,6 @@ plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
 colnames(data_results) <- short_names
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 colnames(data_results) <- long_names
-datatable_download(results)
 ```
 
 **Proteins DE without multiple correction testing.**
