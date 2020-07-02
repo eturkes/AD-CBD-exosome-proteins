@@ -73,6 +73,7 @@ invisible(suppressPackageStartupMessages(lapply(packages, library, character.onl
 source(file.path(getwd(), "utils.R"))
 conflict_prefer("rowMedians", "Biobase")
 conflict_prefer("which", "BiocGenerics")
+conflict_prefer("select", "dplyr")
 
 data_name <- "combined"
 `%notin%` <- Negate(`%in%`)
@@ -92,7 +93,7 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 # --------------------------
 ```
 
-# No Outlier Removal & Publication Ready Figs
+# No Outlier Removal & Full Metadata Figs
 
 In this section we look at all of the data without any removal of possible outlier samples.
 Some figures are stripped of additional information to make them more suitable for publication.
@@ -145,22 +146,20 @@ colnames(data) <- long_names
 # Create heatmap metadata.
 # ------------------------
 bio_rep_color <- hue_pal()(length(unique(design$bio_rep)))
-sex_color <- hue_pal()(length(unique(design$sex)))
-month_color <- hue_pal()(length(unique(design$month)))
 top_anno <- HeatmapAnnotation(
   biological_replicate = design$bio_rep,
   sex = design$sex,
   month = design$month,
   col = list(
     biological_replicate = c(
-      "AD_5333" = bio_rep_color[1], "AD_5365" = bio_rep_color[2],
-      "AD_5398" = bio_rep_color[3], "AD_5475" = bio_rep_color[4],
-      "AD_5521" = bio_rep_color[5], "CTRL_159" = bio_rep_color[6],
-      "CTRL_4070" = bio_rep_color[7], "CTRL_5382" = bio_rep_color[8],
-      "CTRL_328" = bio_rep_color[9]
+      "AD_5333" = bio_rep_color[1], "AD_5365" = bio_rep_color[3],
+      "AD_5398" = bio_rep_color[5], "AD_5475" = bio_rep_color[7],
+      "AD_5521" = bio_rep_color[9], "CTRL_159" = bio_rep_color[2],
+      "CTRL_4070" = bio_rep_color[4], "CTRL_5382" = bio_rep_color[6],
+      "CTRL_328" = bio_rep_color[8]
     ),
-    sex = c("M" = sex_color[1], "F" = sex_color[2]),
-    month = c("March" = month_color[1], "Jan" = month_color[2])
+    sex = c("M" = bio_rep_color[1], "F" = bio_rep_color[7]),
+    month = c("March" = bio_rep_color[1], "Jan" = bio_rep_color[7])
   ),
   annotation_legend_param = list(
     biological_replicate = list(title_position = "leftcenter-rot"),
@@ -511,12 +510,13 @@ colnames(data) <- long_names
 
 ### Variance Partitioning
 
-We use the `variancePartition` package to quantify and interpret drivers of variation.
+We use the `variancePartition` and `ExploreModelMatrix` packages to quantify and interpret drivers of variation.
+Note that for now we just paste images from `ExploreModelMatrix` as it is a Shiny app.
 
 **All Covariates**
 
 ```{r}
-formula <- ~ age + (1|sample) + (1|month) + (1|sex) + (1|region) + (1|condition)
+formula <- formula <- ~ (1|sex) + (1|month) + (1|condition) + age
 var_part <- suppressWarnings(
   variancePartition::fitExtractVarPartModel(
     assay(data), formula, design, useWeights = FALSE, quiet = TRUE
@@ -528,86 +528,21 @@ variancePartition::plotPercentBars(var_part[1:10, ])
 variancePartition::plotVarPart(var_part)
 ```
 
+![](../assets/combined/design-vif.png)
+
+![](../assets/combined/design-corr.png)
+
 ## Differential Expression
 
 Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
 We filter using a 0.05 p-value cutoff after BH multiple testing correction.
-We also test DE while correcting for several combinations of covariates.
-
-### No Covariates Regressed
-
-```{r}
-# Perform the DE testing.
-# -----------------------
-data_results <- add_rejections(test_diff(data, "control", "Control"), lfc = 0)
-results <- get_results(data_results)
-sig <- results[results$significant, ]
-print(paste0(nrow(sig), " significant proteins."))
-# -----------------------
-```
-
-**Scaled heatmap**
-
-```{r}
-heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Unscaled heatmap**
-
-```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
-Heatmap(
-  heatmap_data,
-  color,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Other figures**
-
-```{r}
-plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
-colnames(data_results) <- short_names
-plot_single(data_results, sig$name, "centered") + xlab(element_blank())
-colnames(data_results) <- long_names
-datatable_download(results)
-```
-
-### Month Regressed Out
+We also take into account technical replicates and covariates/random effects with low VIF, in this case, sex and age.
 
 ```{r}
 # Perform the DE testing.
 # -----------------------
 data_results <- add_rejections(
-  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + month),
+  test_diff_custom(data, "control", "Control", design_formula = ~ 0 + condition + sex + month),
   lfc = 0
 )
 results <- get_results(data_results)
@@ -616,150 +551,11 @@ print(paste0(nrow(sig), " significant proteins."))
 # -----------------------
 ```
 
-**Scaled heatmap**
+**Scaled Batch-corrected heatmap**
 
 ```{r}
-heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Unscaled heatmap**
-
-```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
-Heatmap(
-  heatmap_data,
-  color,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Other figures**
-
-```{r}
-plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
-colnames(data_results) <- short_names
-plot_single(data_results, sig$name, "centered") + xlab(element_blank())
-colnames(data_results) <- long_names
-datatable_download(results)
-```
-
-### Sex + Month
-
-```{r}
-# Perform the DE testing.
-# -----------------------
-data_results <- add_rejections(
-  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + sex + month),
-  lfc = 0
-)
-results <- get_results(data_results)
-sig <- results[results$significant, ]
-print(paste0(nrow(sig), " significant proteins."))
-# -----------------------
-```
-
-**Scaled heatmap**
-
-```{r}
-heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Unscaled heatmap**
-
-```{r}
-heatmap_data <- assay(data)[rownames(data) %in% sig$name, ]
-Heatmap(
-  heatmap_data,
-  color,
-  column_names_side = "top",
-  show_column_names = TRUE,
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
-```
-
-**Other figures**
-
-```{r}
-plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
-colnames(data_results) <- short_names
-plot_single(data_results, sig$name, "centered") + xlab(element_blank())
-colnames(data_results) <- long_names
-datatable_download(results)
-```
-
-### Sex Regressed Out (Used Downstream)
-
-```{r}
-# Perform the DE testing.
-# -----------------------
-data_results <- add_rejections(
-  test_diff(data, "control", "Control", design_formula = ~ 0 + condition + sex),
-  lfc = 0
-)
-results <- get_results(data_results)
-sig <- results[results$significant, ]
-print(paste0(nrow(sig), " significant proteins."))
-# -----------------------
-```
-
-**Scaled heatmap**
-
-```{r}
-heatmap_data <- t(scale(t(assay(data)[rownames(data) %in% sig$name, ])))
+heatmap_data <- removeBatchEffect(assay(data), design$sex, design$month)
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
   c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
@@ -908,8 +704,8 @@ We filter using a 0.05 p-value cutoff after BH multiple testing correction.
 # Perform the DE testing.
 # -----------------------
 complete_results <- add_rejections(
-  test_diff(
-    complete_cases, "control", "Control", design_formula = formula(~ 0 + condition + sex)
+  test_diff_custom(
+    complete_cases, "control", "Control", design_formula = formula(~ 0 + condition + sex + month)
   ),
   lfc = 0
 )
@@ -917,9 +713,36 @@ results <- get_results(complete_results)
 sig <- results[results$significant, ]
 print(paste0(nrow(sig), " significant proteins."))
 # -----------------------
+```
 
-# Plot the results.
-# -----------------
+**Scaled batch-corrected heatmap**
+
+```{r}
+heatmap_data <- removeBatchEffect(assay(complete_cases), design$sex, design$month)
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Unscaled heatmap**
+
+```{r}
 heatmap_data <- assay(complete_cases)[rownames(complete_cases) %in% sig$name, ]
 Heatmap(
   heatmap_data,
@@ -933,8 +756,13 @@ Heatmap(
   column_gap = unit(2, "mm"),
   heatmap_legend_param = list(title = "log2 Intensity", title_position = "leftcenter-rot"),
   row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16)
+  column_names_gp = gpar(fontsize = 16),
 )
+```
+
+**Other figures**
+
+```{r}
 plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
 plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
 colnames(complete_results) <- short_names # Below function doesn't currently work with `long_names`.
