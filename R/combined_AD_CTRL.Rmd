@@ -802,7 +802,7 @@ We perform gene set enrichment using methods available from the `GSVA` package [
 The Z-score method appears to be generally better for separating conditions while SSGSEA appears to highlight differential enrichment between gene sets.
 `limma` is applied following these methods to test if differences are significant, note that while this approach is described in the `GSVA` vignette, I am not sure if it is applicable to all methods in the package.
 
-### Johnson et al. 2020 Modules
+### Johnson 2020 Modules
 
 We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [@johnsonLargescaleProteomicAnalysis2020] as our gene sets.
 
@@ -1768,7 +1768,7 @@ We perform gene set enrichment using methods available from the `GSVA` package [
 The Z-score method appears to be generally better for separating conditions while SSGSEA appears to highlight differential enrichment between gene sets.
 `limma` is applied following these methods to test if differences are significant, note that while this approach is described in the `GSVA` vignette, I am not sure if it is applicable to all methods in the package.
 
-### Johnson et al. 2020 Modules
+### Johnson 2020 Modules
 
 We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [@johnsonLargescaleProteomicAnalysis2020] as our gene sets.
 
