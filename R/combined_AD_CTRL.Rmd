@@ -827,9 +827,9 @@ print(paste0(nrow(sig), " significant proteins."))
 
 ```{r}
 design_formula <- model.matrix(~ 0 + design$condition)
-corr_fit <- duplicateCorrelation(assay(data), design_formula, block = design$sample)
+corr_fit <- duplicateCorrelation(assay(complete_results), design_formula, block = design$sample)
 heatmap_data <- removeBatchEffect(
-  assay(data), design$sex, design$month,
+  assay(complete_results), design$sex, design$month,
   design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
 )
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
