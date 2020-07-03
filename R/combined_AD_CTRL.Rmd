@@ -554,7 +554,7 @@ datatable_download(results)
 # -----------------------
 ```
 
-### Scaled Batch-corrected Heatmap
+### Scaled Batch-corrected Heatmaps
 
 ```{r}
 design_formula <- model.matrix(~ 0 + design$condition)
@@ -563,6 +563,37 @@ corrected_data <- removeBatchEffect(
   assay(data), design$sex, design$month,
   design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
 )
+```
+
+**With metadata removed**
+
+```{r}
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Full metadata**
+
+```{r}
 heatmap_data <- t(scale(t(corrected_data[rownames(corrected_data) %in% sig$name, ])))
 color2 <- colorRamp2(
   c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
@@ -606,12 +637,46 @@ Heatmap(
 
 ### Johnson 2020 Module Proteins
 
+We take a look at proteins within certain modules from [@johnsonLargescaleProteomicAnalysis2020].
+All heatmaps are scaled and batch-corrected.
+
 **M1-synapse (54% matching)**
 
 ```{r}
 module <- read.delim(file.path(assets_dir, data_name, "johnson-synapse-matching.tsv"), FALSE)
 datatable_download(results[results$name %in% module$V1, ])
+```
 
+**Heatmap with metadata removed**
+
+```{r}
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Heatmap with full metadata**
+
+```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
 color2 <- colorRamp2(
@@ -632,7 +697,11 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
+```
 
+**Volcano plot**
+
+```{r}
 plot_volcano(
   data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
 ) + ggtitle("M1-synapse proteins")
@@ -643,7 +712,38 @@ plot_volcano(
 ```{r}
 module <- read.delim(file.path(assets_dir, data_name, "johnson-mito-matching.tsv"), FALSE)
 datatable_download(results[results$name %in% module$V1, ])
+```
 
+**Heatmap with metadata removed**
+
+```{r}
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Heatmap with full metadata**
+
+```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
 color2 <- colorRamp2(
@@ -664,7 +764,11 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
+```
 
+**Volcano plot**
+
+```{r}
 plot_volcano(
   data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
 ) + ggtitle("M3-mitochondrial proteins")
@@ -675,7 +779,38 @@ plot_volcano(
 ```{r}
 module <- read.delim(file.path(assets_dir, data_name, "johnson-sugar-matching.tsv"), FALSE)
 datatable_download(results[results$name %in% module$V1, ])
+```
 
+**Heatmap with metadata removed**
+
+```{r}
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
+heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  color2,
+  column_names_side = "top",
+  show_column_names = TRUE,
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+  row_names_gp = gpar(fontsize = 6),
+  column_names_gp = gpar(fontsize = 16),
+)
+```
+
+**Heatmap with full metadata**
+
+```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
 color2 <- colorRamp2(
@@ -696,7 +831,11 @@ Heatmap(
   row_names_gp = gpar(fontsize = 6),
   column_names_gp = gpar(fontsize = 16),
 )
+```
 
+**Volcano plot**
+
+```{r}
 plot_volcano(
   data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
 ) + ggtitle("M4-sugar-metabolism proteins")
