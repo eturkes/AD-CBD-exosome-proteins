@@ -1366,14 +1366,15 @@ color2 <- colorRamp2(
 )
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(heatmap_data))),
   cluster_columns = FALSE,
+  cluster_rows = FALSE,
   row_dend_side = "right",
   row_names_max_width = max_text_width(rownames(heatmap_data)),
   column_names_side = "top",
   column_split = c(rep("AD", 5), rep("Control", 4)),
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
 )
 ```
 
@@ -1563,14 +1564,15 @@ color2 <- colorRamp2(
 )
 Heatmap(
   heatmap_data,
-  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(heatmap_data))),
   cluster_columns = FALSE,
+  cluster_rows = FALSE,
   row_dend_side = "right",
   row_names_max_width = max_text_width(rownames(heatmap_data)),
   column_names_side = "top",
   column_split = c(rep("AD", 5), rep("Control", 4)),
   column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
 )
 ```
 
