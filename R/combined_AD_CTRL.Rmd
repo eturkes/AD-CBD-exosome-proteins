@@ -71,9 +71,9 @@ packages <- c(
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
-conflict_prefer("rowMedians", "Biobase")
-conflict_prefer("which", "BiocGenerics")
-conflict_prefer("select", "dplyr")
+conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
+conflict_prefer("which", "BiocGenerics", quiet = TRUE)
+conflict_prefer("select", "dplyr", quiet = TRUE)
 
 data_name <- "combined"
 `%notin%` <- Negate(`%in%`)
