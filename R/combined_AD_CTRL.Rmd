@@ -67,7 +67,7 @@ The data included here are label-free mass spec on exosomes derived from matched
 options(stringsAsFactors = FALSE)
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2",
-  "DT", "ComplexHeatmap", "GSEABase", "GSVA", "RColorBrewer", "limma"
+  "DT", "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
@@ -537,15 +537,14 @@ variancePartition::plotVarPart(var_part)
 ## Differential Expression
 
 Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
-We filter using a 0.05 p-value cutoff after BH multiple testing correction.
+We filter using a log2 fold change cutoff of 1 and a 0.05 p-value cutoff after BH multiple testing correction.
 We also take into account technical replicates and covariates/random effects with low VIF, in this case, sex and age.
 
 ```{r}
 # Perform the DE testing.
 # -----------------------
 data_results <- add_rejections(
-  test_diff_custom(data, "control", "Control", design_formula = ~ 0 + condition + sex + month),
-  lfc = 0
+  test_diff_custom(data, "control", "Control", design_formula = ~ 0 + condition + sex + month)
 )
 results <- get_results(data_results)
 sig <- results[results$significant, ]
@@ -639,6 +638,7 @@ Heatmap(
 
 We take a look at proteins within certain modules from [@johnsonLargescaleProteomicAnalysis2020].
 All heatmaps are scaled and batch-corrected.
+No new statistical tests are performed here, we use results from the differential expression section above.
 
 **M1-synapse (54% matching)**
 
@@ -702,9 +702,43 @@ Heatmap(
 **Volcano plot**
 
 ```{r}
-plot_volcano(
-  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
-) + ggtitle("M1-synapse proteins")
+volcano_data <- results[results$name %in% module$V1, ]
+EnhancedVolcano(
+  volcano_data,
+  volcano_data$name,
+  "AD_vs_Control_ratio",
+  "AD_vs_Control_p.adj",
+  ylim = c(0, ceiling(max(-log10(volcano_data$AD_vs_Control_p.adj)))),
+  xlab = bquote(~log[2]~"fold change"),
+  ylab = bquote(~-log[10]~"adjusted p-value"),
+  subtitle = NULL,
+  caption = NULL,
+  pCutoff = 0.05,
+  cutoffLineType = "dotted",
+  col = c(
+    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+  ),
+  legendLabels = c(
+    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    expression("p-value" < 0.05), "Both thresholds passed"
+  ),
+  legendPosition = "bottom",
+  legendDropLevels = FALSE,
+  drawConnectors = TRUE,
+  arrowheads = FALSE
+) + ggtitle("M1-synapse proteins") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(
+    data = data.frame(),
+    aes(
+      x = c(Inf, -Inf),
+      y = c(-Inf, -Inf),
+      hjust = c(1, 0),
+      vjust = c(-1, -1),
+      label = c("AD", " Control"),
+      size = 5,
+      fontface = "bold")
+    )
 ```
 
 **M3-mitochondrial (55% matching)**
@@ -769,9 +803,43 @@ Heatmap(
 **Volcano plot**
 
 ```{r}
-plot_volcano(
-  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
-) + ggtitle("M3-mitochondrial proteins")
+volcano_data <- results[results$name %in% module$V1, ]
+EnhancedVolcano(
+  volcano_data,
+  volcano_data$name,
+  "AD_vs_Control_ratio",
+  "AD_vs_Control_p.adj",
+  ylim = c(0, ceiling(max(-log10(volcano_data$AD_vs_Control_p.adj)))),
+  xlab = bquote(~log[2]~"fold change"),
+  ylab = bquote(~-log[10]~"adjusted p-value"),
+  subtitle = NULL,
+  caption = NULL,
+  pCutoff = 0.05,
+  cutoffLineType = "dotted",
+  col = c(
+    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+  ),
+  legendLabels = c(
+    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    expression("p-value" < 0.05), "Both thresholds passed"
+  ),
+  legendPosition = "bottom",
+  legendDropLevels = FALSE,
+  drawConnectors = TRUE,
+  arrowheads = FALSE
+) + ggtitle("M3-mitochondrial proteins") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(
+    data = data.frame(),
+    aes(
+      x = c(Inf, -Inf),
+      y = c(-Inf, -Inf),
+      hjust = c(1, 0),
+      vjust = c(-1, -1),
+      label = c("AD", " Control"),
+      size = 5,
+      fontface = "bold")
+    )
 ```
 
 **M4-sugar-metabolism (42.5% matching)**
@@ -836,16 +904,86 @@ Heatmap(
 **Volcano plot**
 
 ```{r}
-plot_volcano(
-  data_results[rownames(data_results) %in% module$V1, ], "AD_vs_Control", 4, adjusted = TRUE
-) + ggtitle("M4-sugar-metabolism proteins")
+volcano_data <- results[results$name %in% module$V1, ]
+EnhancedVolcano(
+  volcano_data,
+  volcano_data$name,
+  "AD_vs_Control_ratio",
+  "AD_vs_Control_p.adj",
+  ylim = c(0, ceiling(max(-log10(volcano_data$AD_vs_Control_p.adj)))),
+  xlab = bquote(~log[2]~"fold change"),
+  ylab = bquote(~-log[10]~"adjusted p-value"),
+  subtitle = NULL,
+  caption = NULL,
+  pCutoff = 0.05,
+  cutoffLineType = "dotted",
+  col = c(
+    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+  ),
+  legendLabels = c(
+    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    expression("p-value" < 0.05), "Both thresholds passed"
+  ),
+  legendPosition = "bottom",
+  legendDropLevels = FALSE,
+  drawConnectors = TRUE,
+  arrowheads = FALSE
+) + ggtitle("M4-sugar-metabolism proteins") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(
+    data = data.frame(),
+    aes(
+      x = c(Inf, -Inf),
+      y = c(-Inf, -Inf),
+      hjust = c(1, 0),
+      vjust = c(-1, -1),
+      label = c("AD", " Control"),
+      size = 5,
+      fontface = "bold")
+    )
 ```
 
 ### Other Figures
 
 ```{r}
+EnhancedVolcano(
+  results,
+  results$name,
+  "AD_vs_Control_ratio",
+  "AD_vs_Control_p.adj",
+  ylim = c(0, ceiling(max(-log10(results$AD_vs_Control_p.adj)))),
+  xlab = bquote(~log[2]~"fold change"),
+  ylab = bquote(~-log[10]~"adjusted p-value"),
+  subtitle = NULL,
+  caption = NULL,
+  pCutoff = 0.05,
+  cutoffLineType = "dotted",
+  col = c(
+    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+  ),
+  legendLabels = c(
+    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    expression("p-value" < 0.05), "Both thresholds passed"
+  ),
+  legendPosition = "bottom",
+  legendDropLevels = FALSE,
+  drawConnectors = TRUE,
+  arrowheads = FALSE
+) + ggtitle("All proteins") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(
+    data = data.frame(),
+    aes(
+      x = c(Inf, -Inf),
+      y = c(-Inf, -Inf),
+      hjust = c(1, 0),
+      vjust = c(-1, -1),
+      label = c("AD", " Control"),
+      size = 5,
+      fontface = "bold")
+    )
+
 plot_cor(data_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(data_results, "AD_vs_Control", 4, adjusted = TRUE)
 colnames(data_results) <- short_names
 plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 colnames(data_results) <- long_names
@@ -942,7 +1080,8 @@ colnames(complete_cases) <- long_names
 ### Differential Expression
 
 Here we test for differential expression using `limma` (currently through the `DEP` package) and plot the results.
-We filter using a 0.05 p-value cutoff after BH multiple testing correction.
+We filter using a log2 fold change cutoff of 1 and a 0.05 p-value cutoff after BH multiple testing correction.
+We also take into account technical replicates and covariates/random effects with low VIF, in this case, sex and age.
 
 ```{r}
 # Perform the DE testing.
@@ -950,8 +1089,7 @@ We filter using a 0.05 p-value cutoff after BH multiple testing correction.
 complete_results <- add_rejections(
   test_diff_custom(
     complete_cases, "control", "Control", design_formula = formula(~ 0 + condition + sex + month)
-  ),
-  lfc = 0
+  )
 )
 results <- get_results(complete_results)
 sig <- results[results$significant, ]
@@ -1012,8 +1150,44 @@ Heatmap(
 **Other figures**
 
 ```{r}
+EnhancedVolcano(
+  results,
+  results$name,
+  "AD_vs_Control_ratio",
+  "AD_vs_Control_p.adj",
+  ylim = c(0, ceiling(max(-log10(results$AD_vs_Control_p.adj)))),
+  xlab = bquote(~log[2]~"fold change"),
+  ylab = bquote(~-log[10]~"adjusted p-value"),
+  subtitle = NULL,
+  caption = NULL,
+  pCutoff = 0.05,
+  cutoffLineType = "dotted",
+  col = c(
+    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+  ),
+  legendLabels = c(
+    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    expression("p-value" < 0.05), "Both thresholds passed"
+  ),
+  legendPosition = "bottom",
+  legendDropLevels = FALSE,
+  drawConnectors = TRUE,
+  arrowheads = FALSE
+) + ggtitle("All non-missing proteins") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_text(
+    data = data.frame(),
+    aes(
+      x = c(Inf, -Inf),
+      y = c(-Inf, -Inf),
+      hjust = c(1, 0),
+      vjust = c(-1, -1),
+      label = c("AD", " Control"),
+      size = 5,
+      fontface = "bold")
+    )
+
 plot_cor(complete_results, pal = "RdBu", pal_rev = TRUE)
-plot_volcano(complete_results, "AD_vs_Control", label_size = 4, adjusted = TRUE)
 colnames(complete_results) <- short_names # Below function doesn't currently work with `long_names`.
 plot_single(complete_results, sig$name, "centered") + xlab(element_blank())
 colnames(complete_results) <- long_names
@@ -1047,7 +1221,8 @@ rm(no_mult_testing)
 
 We perform gene set enrichment using methods available from the `GSVA` package [@hanzelmannGSVAGeneSet2013].
 The Z-score method appears to be generally better for separating conditions while SSGSEA appears to highlight differential enrichment between gene sets.
-`limma` is applied following these methods to test if differences are significant, note that while this approach is described in the `GSVA` vignette, I am not sure if it is applicable to all methods in the package.
+`limma` is applied following these methods to test if differences are significant, using a similar design as in previous sections.
+Note that while this approach is described in the `GSVA` vignette, I am not sure if it is applicable to all methods in the package.
 
 ### Johnson 2020 Modules
 

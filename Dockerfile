@@ -23,6 +23,7 @@ RUN apt-get update \
         libpng-dev \
         libnetcdf-dev \
         libxml2-dev \
+        libproj-dev \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
@@ -35,9 +36,12 @@ RUN apt-get update \
         -e "install.packages('dplyr')" \
         -e "install.packages('hexbin')" \
         -e "install.packages('BiocManager')" \
+        -e "install.packages('devtools')" \
         -e "BiocManager::install('DEP')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('variancePartition')" \
+        -e "BiocManager::install('EnhancedVolcano')" \
+        -e "devtools::install_github('eturkes/EnhancedVolcano')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
