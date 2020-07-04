@@ -1245,68 +1245,16 @@ print(
   paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
 # -------------------------------------------------------------------------------------
+```
 
+**Z-score method**
+
+```{r}
 # Perform GSVA using `zscore` method.
 # -----------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
-# -----------------------------------
-
-# Display results.
-# ----------------
 datatable_download(gsva)
-Heatmap(
-  gsva,
-  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  row_names_max_width = max_text_width(rownames(gsva)),
-  column_names_side = "top",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
-)
-# ----------------
-
-# Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
-colnames(limma_design)[1:2] <- unique(design$condition)
-colnames(limma_design)[3] <- "sex"
-colnames(limma_design)[4] <- "month"
-corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
-fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
-contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
-cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
-tests <- decideTests(cont_fit)
-results <- topTable(cont_fit, 1, Inf)
-datatable_download_exp(results)
-# -----------------------------------
-
-# Perform GSVA using `ssgsea` method.
-# We also don't normalize and make all values positive to improve interpretability.
-# ---------------------------------------------------------------------------------
-gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
-gsva <- gsva + abs(min(gsva))
-# ---------------------------------------------------------------------------------
-
-# Display results.
-# ----------------
-datatable_download(gsva)
-gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
-Heatmap(
-  gsva,
-  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
-  cluster_columns = FALSE,
-  cluster_rows = FALSE,
-  row_names_max_width = max_text_width(rownames(gsva)),
-  column_names_side = "top",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
-)
-# ----------------
 
 # Use limma to test for significance.
 # -----------------------------------
@@ -1324,7 +1272,130 @@ datatable_download_exp(results)
 # -----------------------------------
 ```
 
-**Plotting individual genes for each gene set.**
+**Batch-corrected heatmap with metadata removed**
+
+```{r}
+design_formula <- model.matrix(~ 0 + design$condition)
+corr_fit <- duplicateCorrelation(gsva, design_formula, block = design$sample)
+corrected_data <- removeBatchEffect(
+  gsva, design$sex, design$month,
+  design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
+)
+
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(heatmap_data)),
+  column_names_side = "top",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Uncorrected heatmap with full metadata**
+
+```{r}
+Heatmap(
+  gsva,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**SSGSEA method**
+
+```{r}
+# Perform GSVA using `ssgsea` method.
+# We also don't normalize and make all values positive to improve interpretability.
+# ---------------------------------------------------------------------------------
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+gsva <- gsva + abs(min(gsva))
+datatable_download(gsva)
+# ---------------------------------------------------------------------------------
+
+# Use limma to test for significance.
+# -----------------------------------
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+datatable_download_exp(results)
+# -----------------------------------
+```
+
+**Batch-corrected heatmap with metadata removed**
+
+```{r}
+design_formula <- model.matrix(~ 0 + design$condition)
+corr_fit <- duplicateCorrelation(gsva, design_formula, block = design$sample)
+corrected_data <- removeBatchEffect(
+  gsva, design$sex, design$month,
+  design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
+)
+
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- heatmap_data[order(rowMedians(heatmap_data), decreasing = TRUE), ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(heatmap_data)),
+  column_names_side = "top",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Uncorrected heatmap with full metadata**
+
+```{r}
+gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
+Heatmap(
+  gsva,
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Plotting individual genes for each gene set (unscaled and uncorrected).**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
@@ -1371,68 +1442,16 @@ print(
   paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
 )
 # -------------------------------------------------------------------------------------
+```
 
+**Z-score method**
+
+```{r}
 # Perform GSVA using `zscore` method.
 # -----------------------------------
 gsva <- gsva(assay(data_filt), gene_sets, method = "zscore", verbose = FALSE)
-# -----------------------------------
-
-# Display results.
-# ----------------
 datatable_download(gsva)
-Heatmap(
-  gsva,
-  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  row_names_max_width = max_text_width(rownames(gsva)),
-  column_names_side = "top",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
-)
-# ----------------
-
-# Use limma to test for significance.
 # -----------------------------------
-limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
-colnames(limma_design)[1:2] <- unique(design$condition)
-colnames(limma_design)[3] <- "sex"
-colnames(limma_design)[4] <- "month"
-corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
-fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
-contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
-cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
-tests <- decideTests(cont_fit)
-results <- topTable(cont_fit, 1, Inf)
-datatable_download_exp(results)
-# -----------------------------------
-
-# Perform GSVA using `ssgsea` method.
-# We also don't normalize and make all values positive to improve interpretability.
-# ---------------------------------------------------------------------------------
-gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
-gsva <- gsva + abs(min(gsva))
-# ---------------------------------------------------------------------------------
-
-# Display results.
-# ----------------
-datatable_download(gsva)
-gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
-Heatmap(
-  gsva,
-  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
-  cluster_columns = FALSE,
-  cluster_rows = FALSE,
-  row_names_max_width = max_text_width(rownames(gsva)),
-  column_names_side = "top",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
-)
-# ----------------
 
 # Use limma to test for significance.
 # -----------------------------------
@@ -1450,7 +1469,130 @@ datatable_download_exp(results)
 # -----------------------------------
 ```
 
-**Plotting individual genes for each gene set.**
+**Batch-corrected heatmap with metadata removed**
+
+```{r}
+design_formula <- model.matrix(~ 0 + design$condition)
+corr_fit <- duplicateCorrelation(gsva, design_formula, block = design$sample)
+corrected_data <- removeBatchEffect(
+  gsva, design$sex, design$month,
+  design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
+)
+
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(heatmap_data)),
+  column_names_side = "top",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Uncorrected heatmap with full metadata**
+
+```{r}
+Heatmap(
+  gsva,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(gsva)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**SSGSEA method**
+
+```{r}
+# Perform GSVA using `ssgsea` method.
+# We also don't normalize and make all values positive to improve interpretability.
+# ---------------------------------------------------------------------------------
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+gsva <- gsva + abs(min(gsva))
+datatable_download(gsva)
+# ---------------------------------------------------------------------------------
+
+# Use limma to test for significance.
+# -----------------------------------
+limma_design <- model.matrix(~ 0 + design$condition + design$sex + design$month)
+colnames(limma_design)[1:2] <- unique(design$condition)
+colnames(limma_design)[3] <- "sex"
+colnames(limma_design)[4] <- "month"
+corr_fit <- duplicateCorrelation(gsva, limma_design, block = design$sample)
+fit <- lmFit(gsva, limma_design, block = design$sample, cor = corr_fit$consensus)
+contrast_mat <- makeContrasts(AD-Control, levels = limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit)
+results <- topTable(cont_fit, 1, Inf)
+datatable_download_exp(results)
+# -----------------------------------
+```
+
+**Batch-corrected heatmap with metadata removed**
+
+```{r}
+design_formula <- model.matrix(~ 0 + design$condition)
+corr_fit <- duplicateCorrelation(gsva, design_formula, block = design$sample)
+corrected_data <- removeBatchEffect(
+  gsva, design$sex, design$month,
+  design = model.matrix(~ 0 + design$condition), block = design$sample, cor = corr_fit$consensus
+)
+
+heatmap_data <- corrected_data
+colnames(heatmap_data) <- design$sample
+heatmap_data <- avearrays(heatmap_data)
+heatmap_data <- heatmap_data[order(rowMedians(heatmap_data), decreasing = TRUE), ]
+color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+Heatmap(
+  heatmap_data,
+  colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
+  cluster_columns = FALSE,
+  row_dend_side = "right",
+  row_names_max_width = max_text_width(rownames(heatmap_data)),
+  column_names_side = "top",
+  column_split = c(rep("AD", 5), rep("Control", 4)),
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "Z-score enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Uncorrected heatmap with full metadata**
+
+```{r}
+gsva <- gsva[order(rowMedians(gsva), decreasing = TRUE), ]
+Heatmap(
+  gsva,
+  colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(gsva))),
+  cluster_columns = FALSE,
+  cluster_rows = FALSE,
+  row_names_max_width = max_text_width(rownames(gsva)),
+  column_names_side = "top",
+  top_anno = top_anno,
+  column_split = design$condition,
+  column_gap = unit(2, "mm"),
+  heatmap_legend_param = list(title = "SSGSEA enrichment", title_position = "leftcenter-rot")
+)
+```
+
+**Plotting individual genes for each gene set (unscaled and uncorrected).**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
