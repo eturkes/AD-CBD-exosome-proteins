@@ -444,7 +444,6 @@ Heatmap(
   assay(heatmap_data),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   cluster_rows = FALSE,
   row_dend_side = "right",
@@ -463,7 +462,6 @@ Heatmap(
   assay(heatmap_data),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   cluster_rows = FALSE,
   row_dend_side = "right",
@@ -579,7 +577,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   column_split = c(rep("AD", 5), rep("Control", 4)),
@@ -602,7 +599,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -622,7 +618,6 @@ Heatmap(
   heatmap_data,
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -663,7 +658,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   column_split = c(rep("AD", 5), rep("Control", 4)),
@@ -687,7 +681,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -764,7 +757,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   column_split = c(rep("AD", 5), rep("Control", 4)),
@@ -788,7 +780,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -865,7 +856,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   column_split = c(rep("AD", 5), rep("Control", 4)),
@@ -889,7 +879,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -998,7 +987,6 @@ Heatmap(
   assay(no_mult_testing),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -1019,7 +1007,6 @@ heatmap <- Heatmap(
   assay(missing_no_mult_testing),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -1045,7 +1032,6 @@ Heatmap(
   assay(unimputed_missing_no_mult_testing),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_order = row_order(heatmap),
   row_dend_side = "right",
@@ -1115,7 +1101,6 @@ Heatmap(
   heatmap_data,
   color2,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -1135,7 +1120,6 @@ Heatmap(
   heatmap_data,
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -1204,7 +1188,6 @@ Heatmap(
   assay(no_mult_testing),
   color,
   column_names_side = "top",
-  show_column_names = TRUE,
   cluster_columns = FALSE,
   row_dend_side = "right",
   top_anno = top_anno,
@@ -1285,10 +1268,6 @@ corrected_data <- removeBatchEffect(
 heatmap_data <- corrected_data
 colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
 Heatmap(
   heatmap_data,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
@@ -1360,10 +1339,6 @@ heatmap_data <- corrected_data
 colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
 heatmap_data <- heatmap_data[order(rowMedians(heatmap_data), decreasing = TRUE), ]
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
 Heatmap(
   heatmap_data,
   colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(heatmap_data))),
@@ -1408,7 +1383,6 @@ for (sets in names(gene_sets)) {
       assay(heatmap_data),
       color,
       column_names_side = "top",
-      show_column_names = TRUE,
       cluster_columns = FALSE,
       row_dend_side = "right",
       top_anno = top_anno,
@@ -1483,10 +1457,6 @@ corrected_data <- removeBatchEffect(
 heatmap_data <- corrected_data
 colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
 Heatmap(
   heatmap_data,
   colorRampPalette(rev(brewer.pal(9, "RdBu")))(round(diff(range(heatmap_data)))),
@@ -1558,10 +1528,6 @@ heatmap_data <- corrected_data
 colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
 heatmap_data <- heatmap_data[order(rowMedians(heatmap_data), decreasing = TRUE), ]
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
 Heatmap(
   heatmap_data,
   colorRampPalette(brewer.pal(9, "YlOrBr"))(round(max(heatmap_data))),
@@ -1606,7 +1572,6 @@ for (sets in names(gene_sets)) {
       assay(heatmap_data),
       color,
       column_names_side = "top",
-      show_column_names = TRUE,
       cluster_columns = FALSE,
       row_dend_side = "right",
       top_anno = top_anno,
