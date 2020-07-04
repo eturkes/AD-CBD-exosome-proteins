@@ -171,13 +171,13 @@ top_anno <- HeatmapAnnotation(
 data
 ```
 
-**Unaltered data, already log2 transformed.**
+**Unaltered data, already log2 transformed**
 
 ```{r}
 datatable_download(assay(data))
 ```
 
-**After removal of log transformation.**
+**After removal of log transformation**
 
 ```{r}
 datatable_download(2 ^ assay(data))
@@ -309,13 +309,13 @@ plot_frequency(data)
 plot_detect(data)
 ```
 
-**Data before normalization but after removal of missing values.**
+**Data before normalization but after removal of missing values**
 
 ```{r}
 datatable_download(assay(data))
 ```
 
-**Complete cases before normalization but after removal of missing values.**
+**Complete cases before normalization but after removal of missing values**
 
 ```{r}
 datatable_download(assay(complete_cases))
@@ -372,13 +372,13 @@ rm(
 # --------------------------------------------------
 ```
 
-**Boxplots from NormalyzerDE.**
+**Boxplots from NormalyzerDE**
 ![](../assets/combined/normalization-boxplots.png)
 
-**RLE plots from NormalyzerDE.**
+**RLE plots from NormalyzerDE**
 ![](../assets/combined/normalization-RLE.png)
 
-**Data after normalization and log2 transformation.**
+**Data after normalization and log2 transformation**
 
 ```{r}
 datatable_download(assay(data))
@@ -491,7 +491,7 @@ meanSdPlot(Imputed_Data)
 rm(Imputed_Data, Unimputed_Data)
 ```
 
-**Data after missing value imputation.**
+**Data after missing value imputation**
 **This is final form used for differential expression analysis**
 
 ```{r}
@@ -515,7 +515,7 @@ colnames(data) <- long_names
 We use the `variancePartition` and `ExploreModelMatrix` packages to quantify and interpret drivers of variation.
 Note that for now we just paste images from the `ExploreModelMatrix` Shiny app (also note that they were only generated without outlier removal).
 
-**All Covariates**
+**All covariates**
 
 ```{r}
 formula <- formula <- ~ (1|sex) + (1|month) + (1|condition) + age
@@ -989,7 +989,7 @@ plot_single(data_results, sig$name, "centered") + xlab(element_blank())
 colnames(data_results) <- long_names
 ```
 
-**Proteins DE without multiple correction testing.**
+**Proteins DE without multiple correction testing**
 
 ```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
@@ -1010,7 +1010,7 @@ Heatmap(
 )
 ```
 
-**Imputed proteins DE without multiple correction testing.**
+**Imputed proteins DE without multiple correction testing**
 
 ```{r, fig.height = 30}
 missing_no_mult_testing <- no_mult_testing[rownames(no_mult_testing) %in% rownames(missing_data), ]
@@ -1032,7 +1032,7 @@ heatmap <- Heatmap(
 draw(heatmap)
 ```
 
-**Proteins from above but without imputed values filled in.**
+**Proteins from above but without imputed values filled in**
 
 ```{r, fig.height = 30}
 unimputed_missing_no_mult_testing <- unimputed_data[
@@ -1195,7 +1195,7 @@ datatable_download(results)
 # -----------------
 ```
 
-**Proteins DE without multiple correction testing.**
+**Proteins DE without multiple correction testing**
 
 ```{r, fig.height = 30}
 no_mult_testing <- results[results$AD_vs_Control_p.val < 0.05, ]
@@ -1395,7 +1395,7 @@ Heatmap(
 )
 ```
 
-**Plotting individual genes for each gene set (unscaled and uncorrected).**
+**Plot individual genes for each gene set (unscaled and uncorrected)**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
@@ -1592,7 +1592,7 @@ Heatmap(
 )
 ```
 
-**Plotting individual genes for each gene set (unscaled and uncorrected).**
+**Plot individual genes for each gene set (unscaled and uncorrected)**
 
 ```{r, fig.height = 30}
 for (sets in names(gene_sets)) {
