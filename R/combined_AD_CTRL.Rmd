@@ -709,16 +709,17 @@ EnhancedVolcano(
   pCutoff = 0.05,
   cutoffLineType = "dotted",
   col = c(
-    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+    "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
     "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
-    expression("p-value" < 0.05), "Both thresholds passed"
+    expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
   legendDropLevels = FALSE,
   drawConnectors = TRUE,
-  arrowheads = FALSE
+  arrowheads = FALSE,
+  widthConnectors = 0.001
 ) + ggtitle("M1-synapse proteins") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_text(
@@ -808,16 +809,17 @@ EnhancedVolcano(
   pCutoff = 0.05,
   cutoffLineType = "dotted",
   col = c(
-    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+    "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
     "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
-    expression("p-value" < 0.05), "Both thresholds passed"
+    expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
   legendDropLevels = FALSE,
   drawConnectors = TRUE,
-  arrowheads = FALSE
+  arrowheads = FALSE,
+  widthConnectors = 0.001
 ) + ggtitle("M3-mitochondrial proteins") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_text(
@@ -907,16 +909,17 @@ EnhancedVolcano(
   pCutoff = 0.05,
   cutoffLineType = "dotted",
   col = c(
-    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+    "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
     "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
-    expression("p-value" < 0.05), "Both thresholds passed"
+    expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
   legendDropLevels = FALSE,
   drawConnectors = TRUE,
-  arrowheads = FALSE
+  arrowheads = FALSE,
+  widthConnectors = 0.001
 ) + ggtitle("M4-sugar-metabolism proteins") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_text(
@@ -948,16 +951,17 @@ EnhancedVolcano(
   pCutoff = 0.05,
   cutoffLineType = "dotted",
   col = c(
-    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+    "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
     "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
-    expression("p-value" < 0.05), "Both thresholds passed"
+    expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
   legendDropLevels = FALSE,
   drawConnectors = TRUE,
-  arrowheads = FALSE
+  arrowheads = FALSE,
+  widthConnectors = 0.001
 ) + ggtitle("All proteins") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_text(
@@ -1147,16 +1151,17 @@ EnhancedVolcano(
   pCutoff = 0.05,
   cutoffLineType = "dotted",
   col = c(
-    "grey80", brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[3], brewer.pal(9, "RdYlBu")[1]
+    "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
     "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
-    expression("p-value" < 0.05), "Both thresholds passed"
+    expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
   legendDropLevels = FALSE,
   drawConnectors = TRUE,
-  arrowheads = FALSE
+  arrowheads = FALSE,
+  widthConnectors = 0.001
 ) + ggtitle("All non-missing proteins") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_text(
