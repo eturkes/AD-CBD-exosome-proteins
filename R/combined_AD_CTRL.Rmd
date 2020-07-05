@@ -715,7 +715,7 @@ EnhancedVolcano(
     "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
-    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    "No thresholds passed", expression("|"~log[2]~"fold change |" > 1),
     expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
@@ -818,7 +818,7 @@ EnhancedVolcano(
     "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
-    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    "No thresholds passed", expression("|"~log[2]~"fold change |" > 1),
     expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
@@ -921,7 +921,7 @@ EnhancedVolcano(
     "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
-    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    "No thresholds passed", expression("|"~log[2]~"fold change |" > 1),
     expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
@@ -966,7 +966,7 @@ EnhancedVolcano(
     "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
-    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    "No thresholds passed", expression("|"~log[2]~"fold change |" > 1),
     expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
@@ -1169,7 +1169,7 @@ EnhancedVolcano(
     "grey80", brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[4], brewer.pal(10, "RdYlBu")[1]
   ),
   legendLabels = c(
-    "No thesholds passed", expression("|"~log[2]~"fold change |" > 1),
+    "No thresholds passed", expression("|"~log[2]~"fold change |" > 1),
     expression("Adjusted p" < 0.05), "Both thresholds passed"
   ),
   legendPosition = "bottom",
