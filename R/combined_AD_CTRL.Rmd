@@ -38,7 +38,7 @@ div.main-container {max-width: none; width: 100%;}
 </style>
 
 *This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
-*Please email me for access.*
+*Please email for access.*
 
 The data here will be referenced using the name `combined`.
 It is a merged dataset of two proteomics runs done in January and in March.
