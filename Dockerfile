@@ -41,7 +41,7 @@ RUN apt-get update \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('variancePartition')" \
         -e "BiocManager::install('EnhancedVolcano')" \
-        -e "devtools::install_github('eturkes/EnhancedVolcano')" \
+        -e "devtools::install_github('kevinblighe/EnhancedVolcano')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
