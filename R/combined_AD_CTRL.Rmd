@@ -64,7 +64,6 @@ The data included here are label-free mass spec on exosomes derived from matched
 
 # This section should be checked per document.
 # --------------------------------------------
-options(stringsAsFactors = FALSE)
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2",
   "DT", "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma"

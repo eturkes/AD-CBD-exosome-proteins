@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM rocker/rstudio:3.6.1
+FROM rocker/rstudio:4.0.2
 
 LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 

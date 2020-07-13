@@ -65,7 +65,6 @@ The background for this data is as follows:
 
 # This section should be checked per document.
 # --------------------------------------------
-options(stringsAsFactors = FALSE)
 packages <- c(
 "conflicted", "DT", "data.table", "readxl", "pheatmap", "plyr", "RColorBrewer", "UpSetR", "grid"
 )

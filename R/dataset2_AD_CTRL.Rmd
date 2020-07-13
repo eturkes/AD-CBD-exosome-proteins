@@ -61,7 +61,6 @@ The data here is derived from @dataset2 and will be referenced using the name `d
 
 # This section should be checked per document.
 # --------------------------------------------
-options(stringsAsFactors = FALSE)
 packages <- c(
   "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2",
   "DT", "GSEABase", "GSVA", "limma"
