@@ -62,8 +62,8 @@ The data here is derived from @dataset2 and will be referenced using the name `d
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment", "ggplot2",
-  "DT", "GSEABase", "GSVA", "limma"
+  "conflicted", "RColorBrewer", "dplyr", "DEP", "SummarizedExperiment",
+  "ggplot2", "DT", "GSEABase", "GSVA", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
