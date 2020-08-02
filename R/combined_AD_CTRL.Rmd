@@ -206,9 +206,9 @@ The basic workflow is shown below:
 # Step 1 in flowchart.
 # Remove proteins missing entirely in one condition.
 # --------------------------------------------------
-discard <- which(is.na(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE)))
+discard <- which(is.na(rowMeans(assay(data)[ , 1:9], TRUE)))
 data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE)))
+discard <- which(is.na(rowMeans(assay(data)[ , 10:17], TRUE)))
 data <- data[-discard, ]
 # --------------------------------------------------
 
@@ -227,12 +227,12 @@ plot_detect(data)
 # We choose row means over medians because high expression outliers may be decent indication a
 # protein is not MNAR.
 # --------------------------------------------------------------------------------------------
-AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
+AD_order <- order(rowMeans(assay(data)[ , 1:9], TRUE))
 data <- data[AD_order, ]
 AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TODO: Automate this.
 plot_missval_custom(data, AD_MNAR)
 
-Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
+Control_order <- order(rowMeans(assay(data)[ , 10:17], TRUE))
 data <- data[Control_order, ]
 Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # TODO: Automate this.
 plot_missval_custom(data, Control_MNAR)
@@ -245,7 +245,7 @@ plot_missval_custom(data, Control_MNAR)
 # MNAR imputation however, does not suffer from this limitation, and in fact it is logical that MNAR
 # proteins would have a high number of missing values.
 # --------------------------------------------------------------------------------------------------
-AD_data <- data[ , 1:ceiling(ncol(data) / 2)]
+AD_data <- data[ , 1:9]
 AD_data <- AD_data[rownames(AD_data) %notin% AD_MNAR, ]
 missing_data <- assay(AD_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -253,7 +253,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 AD_data <- AD_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from AD group."))
 
-Control_data <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
+Control_data <- data[ , 10:17]
 Control_data <- Control_data[rownames(Control_data) %notin% Control_MNAR, ]
 missing_data <- assay(Control_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -293,8 +293,8 @@ data <- data[rownames(data) %in% keep, ]
 # Save some orders/subsets for later use.
 # ---------------------------------------
 data <- data[sort(rownames(data)), ]
-AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
-Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
+AD_order <- order(rowMeans(assay(data)[ , 1:9], TRUE))
+Control_order <- order(rowMeans(assay(data)[ , 10:17], TRUE))
 missing_data <- assay(data) %>% data.frame(.)
 missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), ]
 # ---------------------------------------
@@ -400,12 +400,12 @@ plot_imputation(Unimputed_Data, Non_Missing_data)
 
 # The main imputation code.
 # -------------------------
-impute1 <- data[ , 1:ceiling(ncol(data) / 2)]
+impute1 <- data[ , 1:9]
 impute_vector <- rownames(impute1) %in% AD_MNAR_passQC # Logical vector specifying MNAR.
 set.seed(1)
 impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
 
-impute2 <- data[ , (ceiling(ncol(data) / 2) + 1):ncol(data)]
+impute2 <- data[ , 10:17]
 impute_vector <- rownames(impute2) %in% Control_MNAR_passQC # Logical vector specifying MNAR.
 set.seed(1)
 impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
