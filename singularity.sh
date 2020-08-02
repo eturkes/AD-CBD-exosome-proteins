@@ -7,7 +7,7 @@
 # For more details: https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/
 # Be sure to check images and paths
 
-singularity pull tau-vulnerability.simg docker://eturkes/ad-cbd-exosome-proteins:R4.0.2v1
+singularity pull tau-vulnerability.simg docker://eturkes/ad-cbd-exosome-proteins:R4.0.2v2
 
 if [ "$1" = "all" ]; then
     singularity exec \
