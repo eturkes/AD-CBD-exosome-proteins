@@ -65,7 +65,7 @@ datatable_download_exp <- function(dt) {
   )
 }
 
-#' Custom version of plot_missval from DEP to be used as prep for imputation.
+#' Custom version of \code{plot_missval} from DEP to be used as prep for imputation.
 #'
 #' \code{plot_missval_custom} generates a heatmap of proteins
 #' with missing values and highlighting of proteins to be imputed.
@@ -140,7 +140,7 @@ plot_missval_custom <- function(se, proteins_to_impute) {
   draw(ht2)
 }
 
-#' Custom version of test_diff from DEP which accounts for technical replicates.
+#' Custom version of \code{test_diff} from DEP which accounts for technical replicates.
 #'
 #' \code{test_diff_custom} performs a differential enrichment test based on
 #' protein-wise linear models and empirical Bayes
