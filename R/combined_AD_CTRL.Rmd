@@ -230,12 +230,12 @@ plot_detect(data)
 AD_order <- order(rowMeans(assay(data)[ , 1:ceiling(ncol(data) / 2)], TRUE))
 data <- data[AD_order, ]
 AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TODO: Automate this.
-plot_missval_custom(data)
+plot_missval_custom(data, AD_MNAR)
 
 Control_order <- order(rowMeans(assay(data)[ , (ceiling(ncol(data) / 2) + 1):ncol(data)], TRUE))
 data <- data[Control_order, ]
 Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # TODO: Automate this.
-plot_missval_custom(data)
+plot_missval_custom(data, Control_MNAR)
 # --------------------------------------------------------------------------------------------
 
 # Step 4 in flowchart.
