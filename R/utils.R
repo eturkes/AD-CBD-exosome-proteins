@@ -140,9 +140,9 @@ plot_missval_custom <- function(se, proteins_to_impute) {
   draw(ht2)
 }
 
-#' Differential enrichment test
+#' Custom version of test_diff from DEP which accounts for technical replicates.
 #'
-#' \code{test_diff} performs a differential enrichment test based on
+#' \code{test_diff_custom} performs a differential enrichment test based on
 #' protein-wise linear models and empirical Bayes
 #' statistics using \pkg{limma}. False Discovery Rates are estimated
 #' using \pkg{fdrtool}.
@@ -186,12 +186,12 @@ plot_missval_custom <- function(se, proteins_to_impute) {
 #' imputed <- impute(norm, fun = "MinProb", q = 0.01)
 #'
 #' # Test for differentially expressed proteins
-#' diff <- test_diff(imputed, "control", "Ctrl")
-#' diff <- test_diff(imputed, "manual",
+#' diff <- test_diff_custom(imputed, "control", "Ctrl")
+#' diff <- test_diff_custom(imputed, "manual",
 #'     test = c("Ubi4_vs_Ctrl", "Ubi6_vs_Ctrl"))
 #'
 #' # Test for differentially expressed proteins with a custom design formula
-#' diff <- test_diff(imputed, "control", "Ctrl",
+#' diff <- test_diff_custom(imputed, "control", "Ctrl",
 #'     design_formula = formula(~ 0 + condition + replicate))
 #' @export
 test_diff_custom <- function(se, type = c("control", "all", "manual"),
@@ -230,7 +230,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
     assertthat::assert_that(is.character(control),
                             length(control) == 1)
     if(!control %in% unique(col_data$condition)) {
-      stop("run test_diff() with a valid control.\nValid controls are: '",
+      stop("run test_diff_custom() with a valid control.\nValid controls are: '",
            paste0(unique(col_data$condition), collapse = "', '"), "'",
            call. = FALSE)
     }
@@ -284,7 +284,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
   if(type == "control") {
     # Throw error if no control argument is present
     if(is.null(control))
-      stop("run test_diff(type = 'control') with a 'control' argument")
+      stop("run test_diff_custom(type = 'control') with a 'control' argument")
     
     # Make contrasts
     cntrst <- paste(conditions[!conditions %in% control],
@@ -294,12 +294,12 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
   if(type == "manual") {
     # Throw error if no test argument is present
     if(is.null(test)) {
-      stop("run test_diff(type = 'manual') with a 'test' argument")
+      stop("run test_diff_custom(type = 'manual') with a 'test' argument")
     }
     assertthat::assert_that(is.character(test))
     
     if(any(!unlist(strsplit(test, "_vs_")) %in% conditions)) {
-      stop("run test_diff() with valid contrasts in 'test'",
+      stop("run test_diff_custom() with valid contrasts in 'test'",
            ".\nValid contrasts should contain combinations of: '",
            paste0(conditions, collapse = "', '"),
            "', for example '", paste0(conditions[1], "_vs_", conditions[2]),
