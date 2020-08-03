@@ -24,7 +24,6 @@ RUN apt-get update \
         libnetcdf-dev \
         libxml2-dev \
         libproj-dev \
-        libxt-dev \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
