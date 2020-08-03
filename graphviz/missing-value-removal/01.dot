@@ -22,9 +22,9 @@ digraph {
     splines=ortho;
 
     rm_all_missing [label="Remove proteins missing entirely in a single condition"];
-    order [label="Order each condition by row means"];
-    select_MNAR [label="Select MNAR cutoff protein for each condition"];
+    MNAR_cutoff [label="Find MNAR cutoff from inflection point of missing value/complete case proportion"];
+    select_MNAR [label="Select MNAR proteins separately for each condition"];
 
-    rm_all_missing -> order;
-    order -> select_MNAR;
+    rm_all_missing -> MNAR_cutoff;
+    MNAR_cutoff -> select_MNAR;
 }

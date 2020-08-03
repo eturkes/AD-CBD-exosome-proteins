@@ -65,8 +65,8 @@ The data included here are label-free mass spec on exosomes derived from matched
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2",
-  "DT", "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma"
+  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
+  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path(getwd(), "utils.R"))
@@ -219,22 +219,46 @@ plot_numbers(data)
 colnames(data) <- long_names
 plot_frequency(data)
 plot_detect(data)
+
+# Step 2 of flowchart.
+# Find intensity cutoff point at which MNAR becomes MAR by finding the inflection point of intensity
+# where the proportion of proteins with missing values dramatically level off.
+# We do this separately for each condition to reduce the bias of biologically relevant missing
+# values.
+# --------------------------------------------------------------------------------------------------
+plot <- plot_detect_custom(data[ , 1:9])
+plot_data <- ggplot_build(plot)
+MNAR_cutoff <- plot_data$data[[2]]$xintercept
+cat(paste0("For AD condition.\nCutoff at ", MNAR_cutoff))
+plot
+
+plot <- plot_detect_custom(data[ , 10:17])
+plot_data <- ggplot_build(plot)
+MNAR_cutoff <- plot_data$data[[2]]$xintercept
+cat(
+  paste0(
+    "For Control condition.\nCutoff at ", MNAR_cutoff,
+    "\nWe use this cutoff for downstream analysis."
+  )
+)
+plot
+# --------------------------------------------------------------------------------------------------
 ```
 
 ```{r, fig.height = 100}
-# Steps 2 and 3 in flowchart.
+# Step 3 in flowchart.
 # Order each condition by row means and select the last protein to be included as MNAR.
 # We choose row means over medians because high expression outliers may be decent indication a
 # protein is not MNAR.
 # --------------------------------------------------------------------------------------------
 AD_order <- order(rowMeans(assay(data)[ , 1:9], TRUE))
 data <- data[AD_order, ]
-AD_MNAR <- rownames(data)[1:which(rownames(data) == "ATRN")] # TODO: Automate this.
+AD_MNAR <- names(which(rowMeans(assay(data)[ , 1:9], TRUE) < MNAR_cutoff))
 plot_missval_custom(data, AD_MNAR)
 
 Control_order <- order(rowMeans(assay(data)[ , 10:17], TRUE))
 data <- data[Control_order, ]
-Control_MNAR <- rownames(data)[1:which(rownames(data) == "PREP")] # TODO: Automate this.
+Control_MNAR <- names(which(rowMeans(assay(data)[ , 10:17], TRUE) < MNAR_cutoff))
 plot_missval_custom(data, Control_MNAR)
 # --------------------------------------------------------------------------------------------
 
@@ -649,22 +673,24 @@ colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
 heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  column_split = c(rep("AD", 5), rep("Control", 4)),
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    column_split = c(rep("AD", 5), rep("Control", 4)),
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Heatmap with full metadata**
@@ -672,23 +698,25 @@ Heatmap(
 ```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    top_anno = top_anno,
+    column_split = design$condition,
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Volcano plot**
@@ -752,22 +780,24 @@ colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
 heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  column_split = c(rep("AD", 5), rep("Control", 4)),
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    column_split = c(rep("AD", 5), rep("Control", 4)),
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Heatmap with full metadata**
@@ -775,23 +805,25 @@ Heatmap(
 ```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    top_anno = top_anno,
+    column_split = design$condition,
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Volcano plot**
@@ -855,22 +887,24 @@ colnames(heatmap_data) <- design$sample
 heatmap_data <- avearrays(heatmap_data)
 heatmap_data <- heatmap_data[rownames(heatmap_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  column_split = c(rep("AD", 5), rep("Control", 4)),
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    column_split = c(rep("AD", 5), rep("Control", 4)),
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Heatmap with full metadata**
@@ -878,23 +912,25 @@ Heatmap(
 ```{r}
 heatmap_data <- corrected_data[rownames(corrected_data) %in% module$V1, ]
 heatmap_data <- t(scale(t(heatmap_data[rownames(heatmap_data) %in% sig$name, ])))
-color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
-)
-Heatmap(
-  heatmap_data,
-  color2,
-  column_names_side = "top",
-  cluster_columns = FALSE,
-  row_dend_side = "right",
-  top_anno = top_anno,
-  column_split = design$condition,
-  column_gap = unit(2, "mm"),
-  heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
-  row_names_gp = gpar(fontsize = 6),
-  column_names_gp = gpar(fontsize = 16),
-)
+if (dim(heatmap_data)[2] > 1) {
+  color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+  )
+  Heatmap(
+    heatmap_data,
+    color2,
+    column_names_side = "top",
+    cluster_columns = FALSE,
+    row_dend_side = "right",
+    top_anno = top_anno,
+    column_split = design$condition,
+    column_gap = unit(2, "mm"),
+    heatmap_legend_param = list(title = "Scaled log2 Intensity", title_position = "leftcenter-rot"),
+    row_names_gp = gpar(fontsize = 6),
+    column_names_gp = gpar(fontsize = 16),
+  )
+}
 ```
 
 **Volcano plot**
