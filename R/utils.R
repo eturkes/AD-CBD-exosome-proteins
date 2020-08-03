@@ -446,7 +446,7 @@ plot_detect_custom <- function(se) {
   # ----------------------------------------------------------------------------------
   d1 <- diff(y) / diff(x)
   d2 <- diff(d1) / diff(x[-1])
-  idx <- which(abs(d2) > 0.25)
+  idx <- which(abs(d2) > 0.35)
   # ----------------------------------------------------------------------------------
 
   # Recreate the plot, with a cutoff line at the minimum elbow point.
