@@ -19,6 +19,7 @@ LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        pkg-config \
         zlib1g-dev \
         libpng-dev \
         libnetcdf-dev \
