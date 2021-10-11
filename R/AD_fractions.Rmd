@@ -73,6 +73,7 @@ source(file.path("utils.R"))
 conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
 conflict_prefer("which", "BiocGenerics", quiet = TRUE)
 conflict_prefer("select", "dplyr", quiet = TRUE)
+conflict_prefer("filter", "dplyr", quiet = TRUE)
 
 data_name <- "fractions"
 `%notin%` <- Negate(`%in%`)
@@ -87,9 +88,146 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 # ----------------------------------------------------------
 # --------------------------
+```
+
+# Prep
+
+Read in the data and organize into a `SummarizedExperiment` object.
+
+```{r}
+data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+
+data <- filter(data, Reverse != "+", Potential.contaminant != "+")
+data <- make_unique(data, "Gene", "Protein.IDs", ";")
+LFQ_columns <- grep("Intensity.", colnames(data))
+label = gsub("Peptides.", "", colnames(data)[12:19])
+experimental_design <- data.frame(
+  label = label, condition = c(rep("fraction", 8)), replicate = label
+)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
+```
+**Unaltered data, already log2 transformed**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**After removal of log transformation**
+
+```{r}
+datatable_download(2 ^ assay(data))
+```
+
+# QC
+
+We apply quality control to the data.
+
+## Summary Statistics
+
+Basic descriptions of the data such as distributions.
+For now we just have a histogram.
+
+```{r}
+hist(assay(data), n = 100)
+```
+## Missing Value Removal
+
+Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
+We do however, visualise the missingness.
+
+```{r}
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+
+remove <- which(apply(assay(data), 1, function(x) all(is.na(x))))
+cat(length(remove), "proteins with all missing values:", names(remove))
+data <- data[-remove, ]
+data
+
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+```
+
+**Data before normalization but after removal of missing values**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**Complete cases (proteins with no missing values) before normalization but after removal of missing values**
+
+```{r}
+complete_cases <- filter_proteins(data, "complete")
+datatable_download(assay(complete_cases))
+```
+
+## Normalization
+
+Here we perform VSN normalization.
+
+```{r}
+# Normalize using VSN.
+# We also create several extra variables for better plotting labels.
+# ------------------------------------------------------------------
+VSN_Normalized <- normalize_vsn(data)
+Log_Transform_Only <- data
+
+VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
+Log_Transform_Only_Non_Missing_Data <- complete_cases
+# ------------------------------------------------------------------
+
+# Display results of normalization.
+# ---------------------------------
+print("Log_Transform_Only")
+meanSdPlot(Log_Transform_Only)
+print("Log_Transform_Only_Non_Missing_Data")
+meanSdPlot(Log_Transform_Only_Non_Missing_Data)
+print("VSN_Normalized")
+meanSdPlot(VSN_Normalized)
+print("VSN_Normalized_Non_Missing_Data")
+meanSdPlot(VSN_Normalized_Non_Missing_Data)
+
+plot_normalization(Log_Transform_Only, VSN_Normalized)
+plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data)
+# ---------------------------------
+
+# Move normalized data to main objects and clean up.
+# --------------------------------------------------
+data <- VSN_Normalized
+complete_cases <- VSN_Normalized_Non_Missing_Data
+rm(
+  VSN_Normalized, VSN_Normalized_Non_Missing_Data,
+  Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
+)
+# --------------------------------------------------
+```
+**Data after normalization and log2 transformation**
+**This is final form used for differential expression analysis**
+
+No missing value imputation is performed due to the lack of replicates.
+
+```{r}
+datatable_download(assay(data))
+```
+
+### PCA
+
+Principal component analysis using all complete cases in dataset.
+Dataset with missing values not compatible with PCA.
+
+```{r}
+plot_pca(complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
 ```
 
 # References
