@@ -30,3 +30,7 @@ rmarkdown::render(
   file.path("combined_AD_CTRL.Rmd"),
   output_file = file.path("..", "results", "combined-AD-CTRL.html")
 )
+rmarkdown::render(
+  file.path("AD_fractions.Rmd"),
+  output_file = file.path("..", "results", "AD-fractions.html")
+)
