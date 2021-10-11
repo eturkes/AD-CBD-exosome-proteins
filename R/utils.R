@@ -1,12 +1,12 @@
 # Copyright 2019-2021 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
 # University Medical Center
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@
 #' datatable_download(dt = data_table)
 #'
 datatable_download <- function(dt) {
-  
+
   datatable(
     dt,
     list(
@@ -44,7 +44,7 @@ datatable_download <- function(dt) {
 #' datatable_download_exp(dt = data_table)
 #'
 datatable_download_exp <- function(dt) {
-  
+
   datatable(
     dt,
     list(
@@ -197,18 +197,18 @@ plot_missval_custom <- function(se, proteins_to_impute) {
 test_diff_custom <- function(se, type = c("control", "all", "manual"),
                       control = NULL, test = NULL,
                       design_formula = formula(~ 0 + condition)) {
-  
+
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(se, "SummarizedExperiment"),
                           is.character(type),
                           class(design_formula) == "formula")
-  
+
   # Show error if inputs do not contain required columns
   type <- match.arg(type)
-  
+
   col_data <- colData(se)
   raw <- assay(se)
-  
+
   if(any(!c("name", "ID") %in% colnames(rowData(se, use.names = FALSE)))) {
     stop("'name' and/or 'ID' columns are not present in '",
          deparse(substitute(se)),
@@ -224,7 +224,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
   if(any(is.na(raw))) {
     warning("Missing values in '", deparse(substitute(se)), "'")
   }
-  
+
   if(!is.null(control)) {
     # Show error if control input is not valid
     assertthat::assert_that(is.character(control),
@@ -235,13 +235,13 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
            call. = FALSE)
     }
   }
-  
+
   # variables in formula
   variables <- terms.formula(design_formula) %>%
     attr(., "variables") %>%
     as.character() %>%
     .[-1]
-  
+
   # Throw error if variables are not col_data columns
   if(any(!variables %in% colnames(col_data))) {
     stop("run make_diff() with an appropriate 'design_formula'")
@@ -249,17 +249,17 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
   if(variables[1] != "condition") {
     stop("first factor of 'design_formula' should be 'condition'")
   }
-  
+
   # Obtain variable factors
   for(var in variables) {
     temp <- factor(col_data[[var]])
     assign(var, temp)
   }
-  
+
   # Make an appropriate design matrix
   design <- model.matrix(design_formula, data = environment())
   colnames(design) <- gsub("condition", "", colnames(design))
-  
+
   # Generate contrasts to be tested
   # Either make all possible combinations ("all"),
   # only the contrasts versus the control sample ("control") or
@@ -268,7 +268,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
   if(type == "all") {
     # All possible combinations
     cntrst <- apply(utils::combn(conditions, 2), 2, paste, collapse = " - ")
-    
+
     if(!is.null(control)) {
       # Make sure that contrast containing
       # the control sample have the control as denominator
@@ -279,13 +279,13 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
           paste(" - ", control, sep = "")
       }
     }
-    
+
   }
   if(type == "control") {
     # Throw error if no control argument is present
     if(is.null(control))
       stop("run test_diff_custom(type = 'control') with a 'control' argument")
-    
+
     # Make contrasts
     cntrst <- paste(conditions[!conditions %in% control],
                     control,
@@ -297,7 +297,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
       stop("run test_diff_custom(type = 'manual') with a 'test' argument")
     }
     assertthat::assert_that(is.character(test))
-    
+
     if(any(!unlist(strsplit(test, "_vs_")) %in% conditions)) {
       stop("run test_diff_custom() with valid contrasts in 'test'",
            ".\nValid contrasts should contain combinations of: '",
@@ -305,21 +305,21 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
            "', for example '", paste0(conditions[1], "_vs_", conditions[2]),
            "'.", call. = FALSE)
     }
-    
+
     cntrst <- gsub("_vs_", " - ", test)
-    
+
   }
   # Print tested contrasts
   message("Tested contrasts: ",
           paste(gsub(" - ", "_vs_", cntrst), collapse = ", "))
-  
+
   # Test for differential expression by empirical Bayes moderation
   # of a linear model on the predefined contrasts
   corr_fit <- duplicateCorrelation(raw, design, block = col_data$sample)
   fit <- lmFit(raw, design, block = col_data$sample, cor = corr_fit$consensus)
   made_contrasts <- makeContrasts(contrasts = cntrst, levels = design)
   contrast_fit <- contrasts.fit(fit, made_contrasts)
-  
+
   if(any(is.na(raw))) {
     for(i in cntrst) {
       covariates <- strsplit(i, " - ") %>% unlist
@@ -329,9 +329,9 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
       contrast_fit$stdev.unscaled[, i] <- single_contrast_fit$stdev.unscaled[, 1]
     }
   }
-  
+
   eB_fit <- eBayes(contrast_fit)
-  
+
   # function to retrieve the results of
   # the differential expression test using 'fdrtool'
   retrieve_fun <- function(comp, fit = eB_fit){
@@ -345,10 +345,10 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
     res <- tibble::rownames_to_column(res)
     return(res)
   }
-  
+
   # Retrieve the differential expression test results
   limma_res <- purrr::map_df(cntrst, retrieve_fun)
-  
+
   # Select the logFC, CI and qval variables
   table <- limma_res %>%
     select(rowname, logFC, CI.L, CI.R, P.Value, qval, comparison) %>%
@@ -393,26 +393,26 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
 plot_detect_custom <- function(se) {
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(se, "SummarizedExperiment"))
-  
+
   se_assay <- assay(se)
   # Show error if there are no missing values
   if(!any(is.na(se_assay))) {
     stop("No missing values in '", deparse(substitute(se)), "'",
          call. = FALSE)
   }
-  
+
   # Get a long data.frame of the assay data annotated with sample info
   df <- se_assay %>%
     data.frame() %>%
     rownames_to_column() %>%
     tidyr::gather(ID, val, -rowname)
-  
+
   # Get a summarized table with mean protein intensities and
   # indication whether the protein has missing values
   stat <- df %>%
     group_by(rowname) %>%
     summarize(mean = mean(val, na.rm = TRUE), missval = any(is.na(val)))
-  
+
   # Calculate cumulative fraction
   cumsum <- stat %>%
     group_by(missval) %>%
