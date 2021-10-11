@@ -1,5 +1,5 @@
 ---
-title: "Combined AD CTRL"
+title: "AD Fractions"
 author:
   - name: "Emir, Pal, and Steph"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "combined-AD-CTRL.html"
+    "..", "results", "AD-fractions.html"
   ))})
 ---
 
