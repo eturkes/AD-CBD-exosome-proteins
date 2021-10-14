@@ -224,8 +224,37 @@ datatable_download(assay(data))
 Principal component analysis using all complete cases in dataset.
 Dataset with missing values not compatible with PCA.
 
+**PCs 1 and 2**
+
 ```{r}
-plot_pca(complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE) +
+plot_pca(
+  complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 1 only**
+
+Interestingly, PC1 perfectly orders the samples by fraction order.
+Here we plot PC1 on both axes to highlight this.
+
+```{r}
+plot_pca(
+  complete_cases, 1, 1, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 2 only**
+
+We also show PC2 on both axes.
+
+```{r}
+plot_pca(
+  complete_cases, 2, 2, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
   scale_shape_manual(values = seq(0, ncol(complete_cases))) +
   ggtitle("PCA Plot")
 ```
