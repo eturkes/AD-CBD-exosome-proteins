@@ -66,7 +66,8 @@ Each sample in the dataset represents a fraction from this single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble"
+  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
+  "tidyr"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -74,6 +75,8 @@ conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
 conflict_prefer("which", "BiocGenerics", quiet = TRUE)
 conflict_prefer("select", "dplyr", quiet = TRUE)
 conflict_prefer("filter", "dplyr", quiet = TRUE)
+conflict_prefer("desc", "dplyr", quiet = TRUE)
+conflict_prefer("slice", "dplyr", quiet = TRUE)
 
 data_name <- "fractions"
 `%notin%` <- Negate(`%in%`)
@@ -257,6 +260,53 @@ plot_pca(
 ) +
   scale_shape_manual(values = seq(0, ncol(complete_cases))) +
   ggtitle("PCA Plot")
+```
+
+# Analysis
+
+Because there are no replicates, conventional differential expression cannot be performed.
+Instead we use various methods to analyse patterns and trends apparent in the dataset.
+
+## PCA Loadings
+
+PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
+The proteins driving this trend can be extracted from the PCA loadings.
+
+```{r, fig.height = 10}
+pca <- prcomp(t(assay(complete_cases)))
+loadings <- pca$rotation
+loadings <- loadings %>%
+  as_tibble(rownames = "prot")
+
+# Proteins with higher intensity in light fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  select(prot, PC1) %>%
+  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  group_by(PC) %>%
+  arrange(loading) %>%
+  slice(1:50) %>%
+  pull(prot) %>%
+  unique()
+
+datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
+# --------------------------------------------------
+
+# Proteins with higher intensity in heavy fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  select(prot, PC1) %>%
+  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  group_by(PC) %>%
+  arrange(desc(loading)) %>%
+  slice(1:50) %>%
+  pull(prot) %>%
+  unique()
+
+datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
+# --------------------------------------------------
 ```
 
 # References
