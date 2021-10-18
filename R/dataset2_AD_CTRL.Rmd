@@ -92,7 +92,7 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7)
 ## Prep
 
 ```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
 # Reverse order of sample columns to make DE analysis more intuitive later.
 col_start <- grep("AD_5333", colnames(data))
@@ -108,7 +108,7 @@ for (i in 1:length(col_start)) {
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
 LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:21])
+label <- gsub("Peptides.", "", colnames(data)[13:21])
 experimental_design <- data.frame(
   label = label, condition = c(rep("Contr", 4), rep("AD", 5)), replicate = label
 )
@@ -595,7 +595,7 @@ AD Replicate 1 (`AD_5521`) appears to be an outlier, so we remove it and see if 
 ## Prep
 
 ```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
 # Reverse order of sample columns to make DE analysis more intuitive later.
 col_start <- grep("AD_5333", colnames(data))
@@ -613,7 +613,7 @@ data[ , grep("AD_5521", colnames(data))] <- NULL
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene.names", "Protein.IDs", delim = ";")
 LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:20])
+label <- gsub("Peptides.", "", colnames(data)[13:20])
 experimental_design <- data.frame(
   label = label, condition = c(rep("Contr", 4), rep("AD", 4)), replicate = label
 )
@@ -714,7 +714,7 @@ In total, we remove `AD_5398`, `AD_5365`, `Contr_159`.
 ## Prep
 
 ```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
 # Reverse order of sample columns to make DE analysis more intuitive later.
 col_start <- grep("AD_5333", colnames(data))
@@ -734,7 +734,7 @@ data[ , grep("Contr_159", colnames(data))] <- NULL
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene.names", "Protein.IDs", ";")
 LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[13:18])
+label <- gsub("Peptides.", "", colnames(data)[13:18])
 experimental_design <- data.frame(
   label = label, condition = c(rep("Contr", 3), rep("AD", 3)), replicate = label
 )

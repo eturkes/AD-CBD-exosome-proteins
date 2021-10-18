@@ -101,12 +101,12 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 Read in the data and organize into a `SummarizedExperiment` object.
 
 ```{r}
-data <- read.csv(file.path(assets_dir, data_name, "proteinGroups.txt"), sep = "\t")
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
 data <- filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene", "Protein.IDs", ";")
 LFQ_columns <- grep("Intensity.", colnames(data))
-label = gsub("Peptides.", "", colnames(data)[12:19])
+label <- gsub("Peptides.", "", colnames(data)[12:19])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
 )
