@@ -288,10 +288,10 @@ top_PC_prot <- loadings %>%
   slice(1:50) %>%
   pull(prot) %>%
   unique()
+# --------------------------------------------------
 
 datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
 Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
-# --------------------------------------------------
 
 # Proteins with higher intensity in heavy fractions.
 # --------------------------------------------------
@@ -303,10 +303,10 @@ top_PC_prot <- loadings %>%
   slice(1:50) %>%
   pull(prot) %>%
   unique()
+# --------------------------------------------------
 
 datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
 Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
-# --------------------------------------------------
 ```
 
 # References
