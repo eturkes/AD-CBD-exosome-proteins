@@ -1,0 +1,130 @@
+---
+title: "TAU Peptides"
+author:
+  - name: "Emir, Pal, and Steph"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+bibliography: "../AD-CBD-exosome-proteins.bib"
+link-citations: true
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "results", "TAU-peptides.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+.tocify-subheader .tocify-subheader .tocify-item {
+  font-size: 0.95em; padding-left: 35px; text-indent: 0;
+}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
+*Please email for access.*
+
+The data here will be referenced using the name `fractions`.
+It is a label-free mass spec dataset consisting of 1 Alzheimer's Disease (AD) human brain tissue donor where extracellular vesicles (EVs) were isolated and fractionated into 8 fractions.
+Each sample in the dataset represents a fraction from this single donor.
+In this analysis we look at individual peptide sequences, focusing on TAU protein.
+
+```{r}
+# Some standard boilerplate.
+# --------------------------
+# Copyright 2019-2021 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
+# University Medical Center
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This section should be checked per document.
+# --------------------------------------------
+packages <- c(
+  "conflicted", "stringr", "DEP"
+)
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+source(file.path("utils.R"))
+
+data_name <- "fractions"
+`%notin%` <- Negate(`%in%`)
+# --------------------------------------------
+
+# Everything else in this chunk remains generally unchanged.
+# ----------------------------------------------------------
+assets_dir <- file.path("..", "assets") # Backed up data.
+results_dir <- file.path("..", "results")
+
+cache_dir <- file.path("..", "tmp", "cache", data_name)
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+# ----------------------------------------------------------
+# --------------------------
+```
+
+# Prep
+
+Read in the data and organize into a `SummarizedExperiment` object.
+
+```{r}
+data <- read.delim(file.path(assets_dir, data_name, "peptides.txt"))
+
+# Use information from proteinGroups.txt to remove unwanted peptides.
+# -------------------------------------------------------------------
+cat("Number of peptides before removal of contaminants and decoys:", nrow(data))
+protein_groups <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
+protein_groups <- protein_groups[
+  protein_groups$Reverse == "+" | protein_groups$Potential.contaminant == "+",
+]
+remove <- unique(unlist(str_split(protein_groups$Peptide.IDs, ";")))
+data <- data[data$id %notin% remove, ]
+cat("Number of peptides after removal of contaminants and decoys:", nrow(data))
+# -------------------------------------------------------------------
+
+data$name <- paste(data$Gene, data$Sequence, sep = "_")
+data$ID <- data$Proteins
+LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
+experimental_design <- data.frame(
+  label = label, condition = c(rep("fraction", 8)), replicate = label
+)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```

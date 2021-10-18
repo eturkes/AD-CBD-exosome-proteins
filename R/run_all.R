@@ -34,3 +34,7 @@ rmarkdown::render(
   file.path("AD_fractions.Rmd"),
   output_file = file.path("..", "results", "AD-fractions.html")
 )
+rmarkdown::render(
+  file.path("TAU_peptides.Rmd"),
+  output_file = file.path("..", "results", "TAU-peptides.html")
+)
