@@ -114,6 +114,7 @@ experimental_design <- data.frame(
 data <- make_se(data, LFQ_columns, experimental_design)
 data
 ```
+
 **Unaltered data, already log2 transformed**
 
 ```{r}
@@ -138,6 +139,7 @@ For now we just have a histogram.
 ```{r}
 hist(assay(data), n = 100)
 ```
+
 ## Missing Value Removal
 
 Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
@@ -213,6 +215,7 @@ rm(
 )
 # --------------------------------------------------
 ```
+
 **Data after normalization and log2 transformation**
 **This is final form used for differential expression analysis**
 
