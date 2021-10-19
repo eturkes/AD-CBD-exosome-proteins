@@ -66,10 +66,18 @@ In this analysis we look at individual peptide sequences, focusing on TAU protei
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "stringr", "DEP"
+  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
+  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
+  "tidyr", "stringr"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
+conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
+conflict_prefer("which", "BiocGenerics", quiet = TRUE)
+conflict_prefer("select", "dplyr", quiet = TRUE)
+conflict_prefer("filter", "dplyr", quiet = TRUE)
+conflict_prefer("desc", "dplyr", quiet = TRUE)
+conflict_prefer("slice", "dplyr", quiet = TRUE)
 
 data_name <- "fractions"
 `%notin%` <- Negate(`%in%`)
@@ -119,6 +127,212 @@ experimental_design <- data.frame(
 
 data <- make_se(data, LFQ_columns, experimental_design)
 data
+```
+
+**Unaltered data, already log2 transformed**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**After removal of log transformation**
+
+```{r}
+datatable_download(2 ^ assay(data))
+```
+
+# QC
+
+We apply quality control to the data.
+
+## Summary Statistics
+
+Basic descriptions of the data such as distributions.
+For now we just have a histogram.
+
+```{r}
+hist(assay(data), n = 100)
+```
+
+## Missing Value Removal
+
+Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
+We do however, visualise the missingness.
+**NOTE: Due to errors when knitting the R Markdown, visualization is commented out for now. The visualizations still work within R Studio however.**
+
+```{r}
+# plot_numbers(data)
+# plot_frequency(data)
+# plot_detect(data)
+# plot_missval(data)
+
+remove <- which(apply(assay(data), 1, function(x) all(is.na(x))))
+cat(length(remove), "peptides with all missing values:", names(remove))
+data <- data[-remove, ]
+data
+
+# plot_numbers(data)
+# plot_frequency(data)
+# plot_detect(data)
+# plot_missval(data)
+```
+
+**Data before normalization but after removal of missing values**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**Complete cases (proteins with no missing values) before normalization but after removal of missing values**
+
+```{r}
+complete_cases <- filter_proteins(data, "complete")
+datatable_download(assay(complete_cases))
+```
+
+## Normalization
+
+Here we perform VSN normalization.
+
+```{r}
+# Normalize using VSN.
+# We also create several extra variables for better plotting labels.
+# ------------------------------------------------------------------
+VSN_Normalized <- normalize_vsn(data)
+Log_Transform_Only <- data
+
+VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
+Log_Transform_Only_Non_Missing_Data <- complete_cases
+# ------------------------------------------------------------------
+
+# Display results of normalization.
+# ---------------------------------
+print("Log_Transform_Only")
+meanSdPlot(Log_Transform_Only)
+print("Log_Transform_Only_Non_Missing_Data")
+meanSdPlot(Log_Transform_Only_Non_Missing_Data)
+print("VSN_Normalized")
+meanSdPlot(VSN_Normalized)
+print("VSN_Normalized_Non_Missing_Data")
+meanSdPlot(VSN_Normalized_Non_Missing_Data)
+
+plot_normalization(Log_Transform_Only, VSN_Normalized)
+plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data)
+# ---------------------------------
+
+# Move normalized data to main objects and clean up.
+# --------------------------------------------------
+data <- VSN_Normalized
+complete_cases <- VSN_Normalized_Non_Missing_Data
+rm(
+  VSN_Normalized, VSN_Normalized_Non_Missing_Data,
+  Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
+)
+# --------------------------------------------------
+```
+
+**Data after normalization and log2 transformation**
+**This is final form used for differential expression analysis**
+
+No missing value imputation is performed due to the lack of replicates.
+
+```{r}
+datatable_download(assay(data))
+```
+
+### PCA
+
+Principal component analysis using all complete cases in dataset.
+Dataset with missing values not compatible with PCA.
+
+**PCs 1 and 2**
+
+```{r}
+plot_pca(
+  complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 1 only**
+
+Interestingly, PC1 perfectly orders the samples by fraction order.
+Here we plot PC1 on both axes to highlight this.
+
+```{r}
+plot_pca(
+  complete_cases, 1, 1, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 2 only**
+
+We also show PC2 on both axes.
+
+```{r}
+plot_pca(
+  complete_cases, 2, 2, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+# Analysis
+
+Because there are no replicates, conventional differential expression cannot be performed.
+Instead we use various methods to analyse patterns and trends apparent in the dataset.
+
+## PCA Loadings
+
+PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
+The proteins driving this trend can be extracted from the PCA loadings.
+
+```{r, fig.height = 10}
+pca <- prcomp(t(assay(complete_cases)))
+loadings <- pca$rotation
+loadings <- loadings %>%
+  as_tibble(rownames = "prot")
+
+# Proteins with higher intensity in light fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  select(prot, PC1) %>%
+  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  group_by(PC) %>%
+  arrange(loading) %>%
+  slice(1:50) %>%
+  pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+Heatmap(
+  assay(complete_cases[top_PC_prot, ]),
+  cluster_columns = FALSE,
+  row_names_max_width = max_text_width(rownames(complete_cases))
+)
+
+# Proteins with higher intensity in heavy fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  select(prot, PC1) %>%
+  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  group_by(PC) %>%
+  arrange(desc(loading)) %>%
+  slice(1:50) %>%
+  pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+Heatmap(
+  assay(complete_cases[top_PC_prot, ]),
+  cluster_columns = FALSE,
+  row_names_max_width = max_text_width(rownames(complete_cases))
+)
 ```
 
 # References
