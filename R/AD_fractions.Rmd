@@ -102,6 +102,7 @@ data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene", "Protein.IDs", ";")
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
@@ -372,6 +373,7 @@ data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene", "Protein.IDs", ";")
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label

@@ -117,6 +117,7 @@ cat("Number of peptides after removal of contaminants and decoys:", nrow(data))
 data$name <- paste(data$Gene, data$Sequence, sep = "_")
 data$ID <- data$Proteins
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
@@ -593,6 +594,7 @@ cat("Number of peptides after removal of contaminants and decoys:", nrow(data))
 data$name <- paste(data$Gene, data$Sequence, sep = "_")
 data$ID <- data$Proteins
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
