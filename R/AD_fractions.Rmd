@@ -95,7 +95,7 @@ Read in the data and organize into a `SummarizedExperiment` object.
 ```{r}
 data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
-data <- filter(data, Reverse != "+", Potential.contaminant != "+")
+data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
 data <- make_unique(data, "Gene", "Protein.IDs", ";")
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
