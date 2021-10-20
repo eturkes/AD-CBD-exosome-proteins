@@ -65,7 +65,8 @@ Each sample in the dataset represents a fraction from this single donor.
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap"
+  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap",
+  "RColorBrewer"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -315,6 +316,29 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+## Proteins of interest
+
+We probe the expression of TAU and LRP1, two proteins we are particularly interested in.
+
+```{r}
+sub_data <- assay(data[rowData(data)$Gene == "TAU" | rowData(data)$Gene == "LRP1", ])
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal")
   ),
   heatmap_legend_side = "top"
 )
