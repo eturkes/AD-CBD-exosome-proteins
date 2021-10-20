@@ -302,6 +302,7 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
@@ -330,6 +331,7 @@ draw(
     color,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
@@ -352,7 +354,8 @@ draw(
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
-    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal")
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
@@ -566,6 +569,7 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
@@ -594,6 +598,7 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
@@ -616,7 +621,8 @@ draw(
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
-    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal")
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
   ),
   heatmap_legend_side = "top"
 )
