@@ -65,18 +65,11 @@ Each sample in the dataset represents a fraction from this single donor.
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
-  "tidyr"
+  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "dplyr", "tidyr",
+  "ComplexHeatmap"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
-conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
-conflict_prefer("which", "BiocGenerics", quiet = TRUE)
-conflict_prefer("select", "dplyr", quiet = TRUE)
-conflict_prefer("filter", "dplyr", quiet = TRUE)
-conflict_prefer("desc", "dplyr", quiet = TRUE)
-conflict_prefer("slice", "dplyr", quiet = TRUE)
 
 data_name <- "fractions"
 `%notin%` <- Negate(`%in%`)

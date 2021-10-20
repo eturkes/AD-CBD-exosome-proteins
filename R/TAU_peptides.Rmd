@@ -66,18 +66,11 @@ In this analysis we look at individual peptide sequences, focusing on TAU protei
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
-  "tidyr", "stringr"
+  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "dplyr", "tidyr",
+  "ComplexHeatmap"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
-conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
-conflict_prefer("which", "BiocGenerics", quiet = TRUE)
-conflict_prefer("select", "dplyr", quiet = TRUE)
-conflict_prefer("filter", "dplyr", quiet = TRUE)
-conflict_prefer("desc", "dplyr", quiet = TRUE)
-conflict_prefer("slice", "dplyr", quiet = TRUE)
 
 data_name <- "fractions"
 `%notin%` <- Negate(`%in%`)
@@ -86,7 +79,6 @@ data_name <- "fractions"
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
-results_dir <- file.path("..", "results")
 
 cache_dir <- file.path("..", "tmp", "cache", data_name)
 if (!dir.exists(cache_dir)) {
