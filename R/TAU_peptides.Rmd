@@ -359,6 +359,13 @@ Missing values are depicted with gray color in all heatmaps.
 
 ```{r}
 sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
+
+tau_peptide_labels <- read.delim(
+  file.path(assets_dir, data_name, "tau-peptide-labels.tsv"), header = FALSE
+)
+sub_data <- sub_data[match(tau_peptide_labels$V2, gsub(".*_", "", rownames(sub_data))), ]
+rownames(sub_data) <- tau_peptide_labels$V1
+
 cat("Number of peptides:", nrow(sub_data))
 datatable_download(sub_data)
 ```
@@ -426,6 +433,10 @@ We also try the same analysis with fraction 8 removed, as it may skew clustering
 ```{r}
 sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
 sub_data <- sub_data[ , -8]
+
+sub_data <- sub_data[match(tau_peptide_labels$V2, gsub(".*_", "", rownames(sub_data))), ]
+rownames(sub_data) <- tau_peptide_labels$V1
+
 cat("Number of peptides:", nrow(sub_data))
 datatable_download(sub_data)
 ```
