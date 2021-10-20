@@ -286,7 +286,15 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
-Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+  ),
+  heatmap_legend_side = "top"
+)
 
 # Proteins with higher intensity in heavy fractions.
 # --------------------------------------------------
@@ -301,7 +309,15 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
-Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+  ),
+  heatmap_legend_side = "top"
+)
 ```
 
 # References
