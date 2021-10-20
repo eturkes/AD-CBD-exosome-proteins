@@ -88,8 +88,11 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 # ----------------------------------------------------------
 # --------------------------
 ```
+# No Scaling Factor
 
-# Prep
+For the first pass, we perform the analysis without application of a scaling factor that accounts for different loading concentration of each fraction.
+
+## Prep
 
 Read in the data and organize into a `SummarizedExperiment` object.
 
@@ -120,11 +123,11 @@ datatable_download(assay(data))
 datatable_download(2 ^ assay(data))
 ```
 
-# QC
+## QC
 
 We apply quality control to the data.
 
-## Summary Statistics
+### Summary Statistics
 
 Basic descriptions of the data such as distributions.
 For now we just have a histogram.
@@ -133,7 +136,7 @@ For now we just have a histogram.
 hist(assay(data), n = 100)
 ```
 
-## Missing Value Removal
+### Missing Value Removal
 
 Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
 We do however, visualise the missingness.
@@ -168,7 +171,7 @@ complete_cases <- filter_proteins(data, "complete")
 datatable_download(assay(complete_cases))
 ```
 
-## Normalization
+### Normalization
 
 Here we perform VSN normalization.
 
@@ -258,12 +261,12 @@ plot_pca(
   ggtitle("PCA Plot")
 ```
 
-# Analysis
+## Analysis
 
 Because there are no replicates, conventional differential expression cannot be performed.
 Instead we use various methods to analyse patterns and trends apparent in the dataset.
 
-## PCA Loadings
+### PCA Loadings
 
 PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
 The proteins driving this trend can be extracted from the PCA loadings.
@@ -321,7 +324,260 @@ draw(
 )
 ```
 
-## Proteins of interest
+### Proteins of interest
+
+We probe the expression of TAU and LRP1, two proteins we are particularly interested in.
+
+```{r}
+sub_data <- assay(data[rowData(data)$Gene == "TAU" | rowData(data)$Gene == "LRP1", ])
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal")
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+# With Scaling Factor
+
+This time we apply a scaling factor that accounts for different concentration loading of each fraction.
+No additional normalization is applied.
+
+## Prep
+
+Read in the data and organize into a `SummarizedExperiment` object.
+
+```{r}
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
+
+data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
+data <- make_unique(data, "Gene", "Protein.IDs", ";")
+LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
+experimental_design <- data.frame(
+  label = label, condition = c(rep("fraction", 8)), replicate = label
+)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
+```
+
+**Unaltered data, already log2 transformed**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**After removal of log transformation**
+
+```{r}
+datatable_download(2 ^ assay(data))
+```
+
+## QC
+
+We apply quality control to the data.
+
+### Summary Statistics
+
+Basic descriptions of the data such as distributions.
+For now we just have a histogram.
+
+```{r}
+hist(assay(data), n = 100)
+```
+
+### Missing Value Removal
+
+Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
+We do however, visualise the missingness.
+
+```{r}
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+
+remove <- which(apply(assay(data), 1, function(x) all(is.na(x))))
+cat(length(remove), "proteins with all missing values:", names(remove))
+data <- data[-remove, ]
+data
+
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+```
+
+**Data before normalization but after removal of missing values**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**Complete cases (proteins with no missing values) before normalization but after removal of missing values**
+
+```{r}
+complete_cases <- filter_proteins(data, "complete")
+datatable_download(assay(complete_cases))
+```
+
+### Normalization
+
+This time we "undo" different concentration loadings applied to each fraction by applying a scaling factor.
+No additional normalization is applied.
+
+```{r}
+concentrations <- c(0.2, 0.5, 0.5, 0.5, 0.5, 0.2, 0.2, 1)
+multipliers <- min(concentrations, na.rm = TRUE) / concentrations
+
+meanSdPlot(data)
+data_norm <- data
+assay(data_norm) <- 2 ^ assay(data_norm) # Undo log transformation.
+for (i in seq_along(multipliers)) {
+  assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
+}
+assay(data_norm) <- log2(assay(data_norm))
+meanSdPlot(data_norm)
+plot_normalization(data, data_norm)
+data <- data_norm
+
+meanSdPlot(complete_cases)
+data_norm <- complete_cases
+assay(data_norm) <- 2 ^ assay(data_norm) # Undo log transformation.
+for (i in seq_along(multipliers)) {
+  assay(data_norm)[ , i] <- assay(data_norm)[ , i] * multipliers[i]
+}
+assay(data_norm) <- log2(assay(data_norm))
+meanSdPlot(data_norm)
+plot_normalization(complete_cases, data_norm)
+complete_cases <- data_norm
+
+rm(data_norm)
+```
+
+**Data after normalization and log2 transformation**
+**This is final form used for differential expression analysis**
+
+No missing value imputation is performed due to the lack of replicates.
+
+```{r}
+datatable_download(assay(data))
+```
+
+### PCA
+
+Principal component analysis using all complete cases in dataset.
+Dataset with missing values not compatible with PCA.
+
+**PCs 1 and 2**
+
+```{r}
+plot_pca(
+  complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 1 only**
+
+Interestingly, PC1 perfectly orders the samples by fraction order.
+Here we plot PC1 on both axes to highlight this.
+
+```{r}
+plot_pca(
+  complete_cases, 1, 1, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+**PC 2 only**
+
+We also show PC2 on both axes.
+
+```{r}
+plot_pca(
+  complete_cases, 2, 2, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+## Analysis
+
+Because there are no replicates, conventional differential expression cannot be performed.
+Instead we use various methods to analyse patterns and trends apparent in the dataset.
+
+### PCA Loadings
+
+PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
+The proteins driving this trend can be extracted from the PCA loadings.
+
+```{r, fig.height = 10}
+pca <- prcomp(t(assay(complete_cases)))
+loadings <- pca$rotation
+loadings <- loadings %>%
+  tibble::as_tibble(rownames = "prot")
+
+# Proteins with higher intensity in light fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(loading) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+  ),
+  heatmap_legend_side = "top"
+)
+
+# Proteins with higher intensity in heavy fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(desc(loading)) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### Proteins of interest
 
 We probe the expression of TAU and LRP1, two proteins we are particularly interested in.
 
