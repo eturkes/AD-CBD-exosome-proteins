@@ -65,8 +65,7 @@ Each sample in the dataset represents a fraction from this single donor.
 # This section should be checked per document.
 # --------------------------------------------
 packages <- c(
-  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "dplyr", "tidyr",
-  "ComplexHeatmap"
+  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -272,17 +271,17 @@ The proteins driving this trend can be extracted from the PCA loadings.
 pca <- prcomp(t(assay(complete_cases)))
 loadings <- pca$rotation
 loadings <- loadings %>%
-  as_tibble(rownames = "prot")
+  tibble::as_tibble(rownames = "prot")
 
 # Proteins with higher intensity in light fractions.
 # --------------------------------------------------
 top_PC_prot <- loadings %>%
-  select(prot, PC1) %>%
-  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
-  group_by(PC) %>%
-  arrange(loading) %>%
-  slice(1:50) %>%
-  pull(prot) %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(loading) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
   unique()
 # --------------------------------------------------
 
@@ -292,12 +291,12 @@ Heatmap(assay(complete_cases[top_PC_prot, ]), cluster_columns = FALSE)
 # Proteins with higher intensity in heavy fractions.
 # --------------------------------------------------
 top_PC_prot <- loadings %>%
-  select(prot, PC1) %>%
-  pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
-  group_by(PC) %>%
-  arrange(desc(loading)) %>%
-  slice(1:50) %>%
-  pull(prot) %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(desc(loading)) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
   unique()
 # --------------------------------------------------
 
