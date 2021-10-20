@@ -290,9 +290,14 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
+    color,
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
@@ -313,10 +318,15 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
     cluster_columns = FALSE,
+    color,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
   ),
@@ -543,9 +553,14 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
+    color,
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
@@ -566,9 +581,14 @@ top_PC_prot <- loadings %>%
 # --------------------------------------------------
 
 datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
+    color,
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
