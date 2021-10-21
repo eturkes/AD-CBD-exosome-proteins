@@ -106,18 +106,28 @@ data <- read.delim(file.path(assets_dir, data_name, "peptides.txt"))
 # -------------------------------------------------------------------
 cat("Number of peptides before removal of contaminants and decoys:", nrow(data))
 protein_groups <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
-protein_groups <- protein_groups[
+remove <- protein_groups[
   protein_groups$Reverse == "+" | protein_groups$Potential.contaminant == "+",
 ]
-remove <- unique(unlist(str_split(protein_groups$Peptide.IDs, ";")))
+remove <- unique(unlist(str_split(remove$Peptide.IDs, ";")))
 data <- data[data$id %notin% remove, ]
 cat("Number of peptides after removal of contaminants and decoys:", nrow(data))
 # -------------------------------------------------------------------
 
-data$name <- paste(data$Gene, data$Sequence, sep = "_")
+remove <- which(protein_groups$Gene %notin% data$Gene)
+protein_groups <- protein_groups[-remove, ]
+
+data$gene_names <- data$Gene
+for (i in 1:length(data$gene_names)) {
+  idx <- which(protein_groups$Gene == data$gene_names[i])
+  data$gene_names[i] <- getGN(protein_groups$Fasta.headers[idx])
+}
+data$name <- paste(data$gene_names, data$Sequence, sep = "_")
 data$ID <- data$Proteins
+
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
 colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
+
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
@@ -361,7 +371,7 @@ We are particularly interested in Tau peptides, so we perform analyses focusing 
 Missing values are depicted with gray color in all heatmaps.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
+sub_data <- assay(data[rowData(data)$gene_names == "MAPT", ])
 
 tau_peptide_labels <- read.delim(
   file.path(assets_dir, data_name, "tau-peptide-labels.tsv"), header = FALSE
@@ -437,7 +447,7 @@ draw(
 We also try the same analysis with fraction 8 removed, as it may skew clustering.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
+sub_data <- assay(data[rowData(data)$gene_names == "MAPT", ])
 sub_data <- sub_data[ , -8]
 
 sub_data <- sub_data[match(tau_peptide_labels$V2, gsub(".*_", "", rownames(sub_data))), ]
@@ -511,7 +521,7 @@ draw(
 Another protein of interest is LRP1, so we conduct a similar analysis on it.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "LRP1", ])
+sub_data <- assay(data[rowData(data)$gene_names == "LRP1", ])
 cat("Number of peptides:", nrow(sub_data))
 datatable_download(sub_data)
 ```
@@ -594,18 +604,28 @@ data <- read.delim(file.path(assets_dir, data_name, "peptides.txt"))
 # -------------------------------------------------------------------
 cat("Number of peptides before removal of contaminants and decoys:", nrow(data))
 protein_groups <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
-protein_groups <- protein_groups[
+remove <- protein_groups[
   protein_groups$Reverse == "+" | protein_groups$Potential.contaminant == "+",
 ]
-remove <- unique(unlist(str_split(protein_groups$Peptide.IDs, ";")))
+remove <- unique(unlist(str_split(remove$Peptide.IDs, ";")))
 data <- data[data$id %notin% remove, ]
 cat("Number of peptides after removal of contaminants and decoys:", nrow(data))
 # -------------------------------------------------------------------
 
-data$name <- paste(data$Gene, data$Sequence, sep = "_")
+remove <- which(protein_groups$Gene %notin% data$Gene)
+protein_groups <- protein_groups[-remove, ]
+
+data$gene_names <- data$Gene
+for (i in 1:length(data$gene_names)) {
+  idx <- which(protein_groups$Gene == data$gene_names[i])
+  data$gene_names[i] <- getGN(protein_groups$Fasta.headers[idx])
+}
+data$name <- paste(data$gene_names, data$Sequence, sep = "_")
 data$ID <- data$Proteins
+
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
 colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
+
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
@@ -842,7 +862,7 @@ We are particularly interested in Tau peptides, so we perform analyses focusing 
 Missing values are depicted with gray color in all heatmaps.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
+sub_data <- assay(data[rowData(data)$gene_names == "MAPT", ])
 
 tau_peptide_labels <- read.delim(
   file.path(assets_dir, data_name, "tau-peptide-labels.tsv"), header = FALSE
@@ -918,7 +938,7 @@ draw(
 We also try the same analysis with fraction 8 removed, as it may skew clustering.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "TAU", ])
+sub_data <- assay(data[rowData(data)$gene_names == "MAPT", ])
 sub_data <- sub_data[ , -8]
 
 sub_data <- sub_data[match(tau_peptide_labels$V2, gsub(".*_", "", rownames(sub_data))), ]
@@ -992,7 +1012,7 @@ draw(
 Another protein of interest is LRP1, so we conduct a similar analysis on it.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "LRP1", ])
+sub_data <- assay(data[rowData(data)$gene_names == "LRP1", ])
 cat("Number of peptides:", nrow(sub_data))
 datatable_download(sub_data)
 ```

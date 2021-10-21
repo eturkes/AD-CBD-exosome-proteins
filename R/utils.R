@@ -531,3 +531,18 @@ remove_problematic_combs <- function() {
 }
 formals(remove_problematic_combs) <- formals(identify_problematic_combs)
 # ----------------------------------------------------------------------------
+
+# The following section originates from content on Github
+# https://github.com/CambridgeCentreForProteomics/thp-lopit-2021
+# Author: lmsimp https://github.com/lmsimp
+# --------------------------------------------------------------
+getGN <- function(x) {
+  pn2 <- strsplit(x, split = "GN=")
+  ind <- grep(pattern = "PE=", pn2[[1]])
+  if (length(ind) > 0)
+    gn <- strsplit(pn2[[1]][ind], split = " PE=")[[1]][1]
+  else
+    gn <- pn2[[1]][length(pn2[[1]])]
+  return(gn)
+}
+# --------------------------------------------------------------

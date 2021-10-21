@@ -99,10 +99,20 @@ Read in the data and organize into a `SummarizedExperiment` object.
 ```{r}
 data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
+remove <- which(data$Fasta.headers == "")
+data <- data[-remove, ]
+
 data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene", "Protein.IDs", ";")
+
+data$gene_names <- data$Gene
+for (i in 1:length(data$gene_names)) {
+  data$gene_names[i] <- getGN(data$Fasta.headers[i])
+}
+data <- make_unique(data, "gene_names", "Protein.IDs", ";")
+
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
 colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
+
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
@@ -373,10 +383,20 @@ Read in the data and organize into a `SummarizedExperiment` object.
 ```{r}
 data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
 
+remove <- which(data$Fasta.headers == "")
+data <- data[-remove, ]
+
 data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
-data <- make_unique(data, "Gene", "Protein.IDs", ";")
+
+data$gene_names <- data$Gene
+for (i in 1:length(data$gene_names)) {
+  data$gene_names[i] <- getGN(data$Fasta.headers[i])
+}
+data <- make_unique(data, "gene_names", "Protein.IDs", ";")
+
 LFQ_columns <- grep("LFQ.intensity.", colnames(data))
 colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
+
 label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
 experimental_design <- data.frame(
   label = label, condition = c(rep("fraction", 8)), replicate = label
