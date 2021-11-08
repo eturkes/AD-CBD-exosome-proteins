@@ -66,7 +66,7 @@ Each sample in the dataset represents a fraction from this single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap",
-  "RColorBrewer"
+  "RColorBrewer", "stringi"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -371,6 +371,52 @@ draw(
 )
 ```
 
+### EV Proteins vs. Contaminants
+
+```{r}
+MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-tidy.tsv"))
+
+proteins <- as.vector(unlist(MISEV))
+proteins <- proteins[proteins != ""]
+
+sub_data <- assay(data[rowData(data)$Gene %in% proteins, ])
+datatable_download(sub_data)
+
+remove <- unlist(MISEV) %notin% rownames(sub_data)
+proteins <- unlist(MISEV)
+for (i in seq_along(remove)) {
+  if (remove[i] == TRUE) {
+    proteins[[i]] <- ""
+  }
+}
+proteins <- proteins[proteins != ""]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 # With Scaling Factor
 
 This time we apply a scaling factor that accounts for different concentration loading of each fraction.
@@ -643,6 +689,52 @@ draw(
     row_names_max_width = max_text_width(rownames(data)),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
     column_names_rot = 45
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### EV Proteins vs. Contaminants
+
+```{r}
+MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-tidy.tsv"))
+
+proteins <- as.vector(unlist(MISEV))
+proteins <- proteins[proteins != ""]
+
+sub_data <- assay(data[rowData(data)$Gene %in% proteins, ])
+datatable_download(sub_data)
+
+remove <- unlist(MISEV) %notin% rownames(sub_data)
+proteins <- unlist(MISEV)
+for (i in seq_along(remove)) {
+  if (remove[i] == TRUE) {
+    proteins[[i]] <- ""
+  }
+}
+proteins <- proteins[proteins != ""]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL
   ),
   heatmap_legend_side = "top"
 )
