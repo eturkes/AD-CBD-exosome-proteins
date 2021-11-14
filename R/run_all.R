@@ -31,10 +31,18 @@ rmarkdown::render(
   output_file = file.path("..", "results", "combined-AD-CTRL.html")
 )
 rmarkdown::render(
-  file.path("AD_fractions.Rmd"),
-  output_file = file.path("..", "results", "AD-fractions.html")
+  file.path("AD_fractions_no_scaling_factor.Rmd"),
+  output_file = file.path("..", "results", "AD-fractions-no-scaling-factor.html")
 )
 rmarkdown::render(
-  file.path("TAU_peptides.Rmd"),
-  output_file = file.path("..", "results", "TAU-peptides.html")
+  file.path("AD_fractions_with_scaling_factor.Rmd"),
+  output_file = file.path("..", "results", "AD-fractions-with-scaling-factor.html")
+)
+rmarkdown::render(
+  file.path("TAU_peptides_no_scaling_factor.Rmd"),
+  output_file = file.path("..", "results", "TAU-peptides-no-scaling-factor.html")
+)
+rmarkdown::render(
+  file.path("TAU_peptides_with_scaling_factor.Rmd"),
+  output_file = file.path("..", "results", "TAU-peptides-with-scaling-factor.html")
 )

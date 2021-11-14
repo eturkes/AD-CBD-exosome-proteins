@@ -1,0 +1,427 @@
+---
+title: "AD Fractions No Scaling Factor"
+author:
+  - name: "Emir, Pal, and Steph"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+bibliography: "../AD-CBD-exosome-proteins.bib"
+link-citations: true
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "results", "AD-fractions-no-scaling-factor.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+.tocify-subheader .tocify-subheader .tocify-item {
+  font-size: 0.95em; padding-left: 35px; text-indent: 0;
+}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
+*Please email for access.*
+
+The data here will be referenced using the name `fractions`.
+It is a label-free mass spec dataset consisting of 1 Alzheimer's Disease (AD) human brain tissue donor where extracellular vesicles (EVs) were isolated and fractionated into 8 fractions.
+Each sample in the dataset represents a fraction from this single donor.
+
+```{r}
+# Some standard boilerplate.
+# --------------------------
+# Copyright 2019-2021 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
+# University Medical Center
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This section should be checked per document.
+# --------------------------------------------
+packages <- c(
+  "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap",
+  "RColorBrewer", "stringi"
+)
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+source(file.path("utils.R"))
+
+data_name <- "fractions"
+`%notin%` <- Negate(`%in%`)
+# --------------------------------------------
+
+# Everything else in this chunk remains generally unchanged.
+# ----------------------------------------------------------
+assets_dir <- file.path("..", "assets") # Backed up data.
+
+cache_dir <- file.path("..", "tmp", "cache", data_name)
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+# ----------------------------------------------------------
+# --------------------------
+```
+
+For the first pass, we perform the analysis without application of a scaling factor that accounts for different loading concentration of each fraction.
+
+# Prep
+
+Read in the data and organize into a `SummarizedExperiment` object.
+
+```{r}
+data <- read.delim(file.path(assets_dir, data_name, "proteinGroups.txt"))
+
+remove <- which(data$Fasta.headers == "")
+data <- data[-remove, ]
+
+data <- dplyr::filter(data, Reverse != "+", Potential.contaminant != "+")
+
+data$gene_names <- data$Gene
+for (i in 1:length(data$gene_names)) {
+  data$gene_names[i] <- getGN(data$Fasta.headers[i])
+}
+data <- make_unique(data, "gene_names", "Protein.IDs", ";")
+
+LFQ_columns <- grep("LFQ.intensity.", colnames(data))
+colnames(data)[LFQ_columns] <- gsub("_.*", "", colnames(data[ , LFQ_columns]))
+
+label <- gsub("LFQ.intensity.", "", colnames(data)[LFQ_columns])
+experimental_design <- data.frame(
+  label = label, condition = c(rep("fraction", 8)), replicate = label
+)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
+```
+
+**Unaltered data, already log2 transformed**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**After removal of log transformation**
+
+```{r}
+datatable_download(2 ^ assay(data))
+```
+
+# QC
+
+We apply quality control to the data.
+
+## Summary Statistics
+
+Basic descriptions of the data such as distributions.
+For now we just have a histogram.
+
+```{r}
+hist(assay(data), n = 100)
+```
+
+## Missing Value Removal
+
+Because the dataset has no replicates, we do not perform missing value removal aside from proteins not detected in any fraction (done already).
+We do however, visualise the missingness.
+
+```{r}
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+
+remove <- which(apply(assay(data), 1, function(x) all(is.na(x))))
+cat(length(remove), "proteins with all missing values:", names(remove))
+data <- data[-remove, ]
+data
+
+plot_numbers(data)
+plot_frequency(data)
+plot_detect(data)
+plot_missval(data)
+```
+
+**Data before normalization but after removal of missing values**
+
+```{r}
+datatable_download(assay(data))
+```
+
+**Complete cases (proteins with no missing values) before normalization but after removal of missing values**
+
+```{r}
+complete_cases <- filter_proteins(data, "complete")
+datatable_download(assay(complete_cases))
+```
+
+## Normalization
+
+Here we perform VSN normalization.
+
+```{r}
+# Normalize using VSN.
+# We also create several extra variables for better plotting labels.
+# ------------------------------------------------------------------
+VSN_Normalized <- normalize_vsn(data)
+Log_Transform_Only <- data
+
+VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
+Log_Transform_Only_Non_Missing_Data <- complete_cases
+# ------------------------------------------------------------------
+
+# Display results of normalization.
+# ---------------------------------
+print("Log_Transform_Only")
+meanSdPlot(Log_Transform_Only)
+print("Log_Transform_Only_Non_Missing_Data")
+meanSdPlot(Log_Transform_Only_Non_Missing_Data)
+print("VSN_Normalized")
+meanSdPlot(VSN_Normalized)
+print("VSN_Normalized_Non_Missing_Data")
+meanSdPlot(VSN_Normalized_Non_Missing_Data)
+
+plot_normalization(Log_Transform_Only, VSN_Normalized)
+plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data)
+# ---------------------------------
+
+# Move normalized data to main objects and clean up.
+# --------------------------------------------------
+data <- VSN_Normalized
+complete_cases <- VSN_Normalized_Non_Missing_Data
+rm(
+  VSN_Normalized, VSN_Normalized_Non_Missing_Data,
+  Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
+)
+# --------------------------------------------------
+```
+
+**Data after normalization and log2 transformation**
+**This is final form used for differential expression analysis**
+
+No missing value imputation is performed due to the lack of replicates.
+
+```{r}
+datatable_download(assay(data))
+```
+
+## PCA
+
+Principal component analysis using all complete cases in dataset.
+Dataset with missing values not compatible with PCA.
+
+### PCs 1 and 2
+
+```{r}
+plot_pca(
+  complete_cases, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+### PC 1 only
+
+Interestingly, PC1 perfectly orders the samples by fraction order.
+Here we plot PC1 on both axes to highlight this.
+
+```{r}
+plot_pca(
+  complete_cases, 1, 1, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+### PC 2 only
+
+We also show PC2 on both axes.
+
+```{r}
+plot_pca(
+  complete_cases, 2, 2, n = dim(complete_cases)[1], indicate = c("condition", "label"), label = TRUE
+) +
+  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
+  ggtitle("PCA Plot")
+```
+
+# Analysis
+
+Because there are no replicates, conventional differential expression cannot be performed.
+Instead we use various methods to analyse patterns and trends apparent in the dataset.
+
+## PCA Loadings
+
+PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
+The proteins driving this trend can be extracted from the PCA loadings.
+
+```{r, fig.height = 10}
+pca <- prcomp(t(assay(complete_cases)))
+loadings <- pca$rotation
+loadings <- loadings %>%
+  tibble::as_tibble(rownames = "prot")
+
+# Proteins with higher intensity in light fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(loading) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    color,
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
+  ),
+  heatmap_legend_side = "top"
+)
+
+# Proteins with higher intensity in heavy fractions.
+# --------------------------------------------------
+top_PC_prot <- loadings %>%
+  dplyr::select(prot, PC1) %>%
+  tidyr::pivot_longer(matches("PC"), names_to = "PC", values_to = "loading") %>%
+  dplyr::group_by(PC) %>%
+  dplyr::arrange(desc(loading)) %>%
+  dplyr::slice(1:50) %>%
+  dplyr::pull(prot) %>%
+  unique()
+# --------------------------------------------------
+
+datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
+
+color <- colorRampPalette(
+  brewer.pal(9, "YlOrBr")
+)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    assay(complete_cases[top_PC_prot, ]),
+    cluster_columns = FALSE,
+    color,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+## Proteins of interest
+
+### TAU and LRP1
+
+We probe the expression of TAU and LRP1, two proteins we are particularly interested in.
+
+```{r}
+sub_data <- assay(data[rowData(data)$Gene == "TAU" | rowData(data)$Gene == "LRP1", ])
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### EV Proteins vs. Contaminants
+
+```{r}
+MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-tidy.tsv"))
+
+proteins <- as.vector(unlist(MISEV))
+proteins <- proteins[proteins != ""]
+
+sub_data <- assay(data[rowData(data)$Gene %in% proteins, ])
+datatable_download(sub_data)
+
+remove <- unlist(MISEV) %notin% rownames(sub_data)
+proteins <- unlist(MISEV)
+for (i in seq_along(remove)) {
+  if (remove[i] == TRUE) {
+    proteins[[i]] <- ""
+  }
+}
+proteins <- proteins[proteins != ""]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```
