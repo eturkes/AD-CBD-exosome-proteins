@@ -372,16 +372,14 @@ draw(
 )
 ```
 
-### EV Proteins vs. Contaminants
+### MISEV
 
-```{r}
-MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-tidy.tsv"))
+```{r, fig.height = 15}
+MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-curated-tidy.tsv"))
 
 proteins <- as.vector(unlist(MISEV))
 proteins <- proteins[proteins != ""]
-
-sub_data <- assay(data[rowData(data)$Gene %in% proteins, ])
-datatable_download(sub_data)
+sub_data <- assay(data[rownames(data) %in% proteins, ])
 
 remove <- unlist(MISEV) %notin% rownames(sub_data)
 proteins <- unlist(MISEV)
@@ -394,6 +392,9 @@ proteins <- proteins[proteins != ""]
 categories <- names(proteins)
 categories <- stri_extract(categories, regex=".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
+
+sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
+datatable_download(sub_data)
 
 color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
 draw(
@@ -412,7 +413,59 @@ draw(
     column_split = colnames(sub_data),
     column_gap = unit(0, "mm"),
     border = TRUE,
-    column_title = NULL
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+```{r, fig.height = 20}
+proteins <- as.vector(unlist(MISEV))
+proteins <- proteins[proteins != ""]
+
+sub_data <- assay(data[rownames(data) %in% proteins, ])
+
+missing <- proteins[proteins %notin% rownames(sub_data)]
+missing <- matrix(
+  nrow = length(missing), ncol = ncol(sub_data), dimnames = list(missing, colnames(sub_data))
+)
+sub_data <- rbind(sub_data, missing)
+
+remove <- unlist(MISEV) %notin% rownames(sub_data)
+proteins <- unlist(MISEV)
+for (i in seq_along(remove)) {
+  if (remove[i] == TRUE) {
+    proteins[[i]] <- ""
+  }
+}
+proteins <- proteins[proteins != ""]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9)
   ),
   heatmap_legend_side = "top"
 )
