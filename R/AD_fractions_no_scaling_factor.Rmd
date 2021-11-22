@@ -415,7 +415,7 @@ for (i in seq_along(remove)) {
 }
 proteins <- proteins[proteins != ""]
 categories <- names(proteins)
-categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- stri_extract(categories, regex = ".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
 
 sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
@@ -586,7 +586,7 @@ for (i in seq_along(remove)) {
 }
 proteins <- proteins[proteins != ""]
 categories <- names(proteins)
-categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- stri_extract(categories, regex = ".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
 sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
 
@@ -613,7 +613,7 @@ for (i in seq(ncol(MISEV_groups))) {
 
 proteins <- proteins[proteins %in% sub("\\*", "", rownames(sub_data))]
 categories <- names(proteins)
-categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- stri_extract(categories, regex = ".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
 sub_data <- sub_data[match(proteins, sub("\\*", "", rownames(sub_data))), ]
 
@@ -766,7 +766,7 @@ draw(
 sub_data <- sub_data[rowSums(is.na(sub_data)) != ncol(sub_data), ]
 proteins <- proteins[proteins %in% sub("\\*", "", rownames(sub_data))]
 categories <- names(proteins)
-categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- stri_extract(categories, regex = ".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
 
 no_NA_data <- sub_data
