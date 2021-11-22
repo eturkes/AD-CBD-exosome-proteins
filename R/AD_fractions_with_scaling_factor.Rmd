@@ -66,7 +66,7 @@ Each sample in the dataset represents a fraction from this single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap",
-  "RColorBrewer", "stringi"
+  "RColorBrewer", "stringi", "circlize"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -270,6 +270,17 @@ plot_pca(
 Because there are no replicates, conventional differential expression cannot be performed.
 Instead we use various methods to analyse patterns and trends apparent in the dataset.
 
+```{r}
+color <- colorRamp2(
+  c(
+    min(assay(data), na.rm = TRUE),
+    (max(assay(data), na.rm = TRUE) + min(assay(data), na.rm = TRUE)) / 2,
+    max(assay(data), na.rm = TRUE)
+  ),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+```
+
 ## PCA Loadings
 
 PC1 appears to capture a linear relationship between proteins expressed and fraction from which it comes from.
@@ -295,9 +306,6 @@ top_PC_prot <- loadings %>%
 
 datatable_download(data.frame(highest_in_light_frac = top_PC_prot))
 
-color <- colorRampPalette(
-  brewer.pal(9, "YlOrBr")
-)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
@@ -324,9 +332,6 @@ top_PC_prot <- loadings %>%
 
 datatable_download(data.frame(highest_in_heavy_frac = top_PC_prot))
 
-color <- colorRampPalette(
-  brewer.pal(9, "YlOrBr")
-)((round(max(assay(complete_cases[top_PC_prot, ]), na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     assay(complete_cases[top_PC_prot, ]),
@@ -350,7 +355,6 @@ We probe the expression of TAU and LRP1, two proteins we are particularly intere
 sub_data <- assay(data[rowData(data)$Gene == "TAU" | rowData(data)$Gene == "LRP1", ])
 datatable_download(sub_data)
 
-color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     sub_data,
@@ -427,11 +431,11 @@ sub_data <- sub_data[rev(rownames(sub_data)), ]
 
 datatable_download(sub_data)
 
-color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     sub_data,
     color,
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -464,6 +468,27 @@ datatable_download(tiered_data)
 draw(
   Heatmap(
     tiered_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+draw(
+  Heatmap(
+    tiered_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     column_names_rot = 45,
@@ -494,6 +519,27 @@ datatable_download(combined_data)
 draw(
   Heatmap(
     combined_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
+)
+draw(
+  Heatmap(
+    combined_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -583,11 +629,11 @@ sub_data <- sub_data[rev(rownames(sub_data)), ]
 
 datatable_download(sub_data)
 
-color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     sub_data,
     color,
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -620,6 +666,27 @@ datatable_download(tiered_data)
 draw(
   Heatmap(
     tiered_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+draw(
+  Heatmap(
+    tiered_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     column_names_rot = 45,
@@ -650,6 +717,27 @@ datatable_download(combined_data)
 draw(
   Heatmap(
     combined_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
+)
+draw(
+  Heatmap(
+    combined_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -698,6 +786,7 @@ draw(
   Heatmap(
     sub_data,
     color,
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -730,6 +819,27 @@ datatable_download(tiered_data)
 draw(
   Heatmap(
     tiered_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+draw(
+  Heatmap(
+    tiered_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     column_names_rot = 45,
@@ -760,6 +870,27 @@ datatable_download(combined_data)
 draw(
   Heatmap(
     combined_data,
+    brewer.pal(11, "RdYlBu")[c(9, 3)],
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
+)
+draw(
+  Heatmap(
+    combined_data,
+    brewer.pal(11, "RdYlBu")[c(10, 2)],
+    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
