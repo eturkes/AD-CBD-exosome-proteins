@@ -366,56 +366,24 @@ draw(
 )
 ```
 
-### MISEV
+## MISEV
 
-```{r, fig.height = 15}
+```{r}
 MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-curated-tidy.tsv"))
+MISEV_groups <- read.delim(file.path(assets_dir, data_name, "MISEV-groups.tsv"), header = FALSE)
 
-proteins <- as.vector(unlist(MISEV))
-proteins <- proteins[proteins != ""]
-proteins <- trimws(proteins)
-sub_data <- assay(data[rownames(data) %in% proteins, ])
-
-remove <- trimws(unlist(MISEV)) %notin% rownames(sub_data)
-proteins <- trimws(unlist(MISEV))
-for (i in seq_along(remove)) {
-  if (remove[i] == TRUE) {
-    proteins[[i]] <- ""
-  }
-}
-proteins <- proteins[proteins != ""]
-categories <- names(proteins)
-categories <- stri_extract(categories, regex=".*[a-z]")
-categories <- sub("^.*\\.", "", categories)
-
-sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
-datatable_download(sub_data)
-
-color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
-draw(
-  Heatmap(
-    sub_data,
-    color,
-    na_col = "#DDDDDD",
-    cluster_columns = FALSE,
-    cluster_rows = FALSE,
-    row_names_max_width = max_text_width(rownames(data)),
-    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
-    column_names_rot = 45,
-    row_split = categories,
-    row_title_rot = 0,
-    row_gap = unit(2, "mm"),
-    column_split = colnames(sub_data),
-    column_gap = unit(0, "mm"),
-    border = TRUE,
-    column_title = NULL,
-    row_names_gp = gpar(fontsize = 9)
-  ),
-  heatmap_legend_side = "top"
+tiers <- c(
+  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[2],
+  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[5]
 )
+tier_cutoff <-
+  ((max(assay(data), na.rm = TRUE) - min(assay(data), na.rm = TRUE)) / 2) +
+  min(assay(data), na.rm = TRUE)
 ```
 
-```{r, fig.height = 20}
+### Unaggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
+
+```{r, fig.height = 30}
 proteins <- as.vector(unlist(MISEV))
 proteins <- proteins[proteins != ""]
 proteins <- trimws(proteins)
@@ -448,7 +416,6 @@ draw(
   Heatmap(
     sub_data,
     color,
-    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
@@ -464,6 +431,276 @@ draw(
     row_names_gp = gpar(fontsize = 9)
   ),
   heatmap_legend_side = "top"
+)
+```
+
+### Unaggregated, Including Proteins with All Missing, All Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 30}
+cat("Tier cutoff intensity:", tier_cutoff)
+
+tiered_data <- sub_data
+tiered_data[tiered_data <= tier_cutoff] <- 0
+tiered_data[tiered_data > tier_cutoff] <- 1
+
+datatable_download(tiered_data)
+
+draw(
+  Heatmap(
+    tiered_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+```
+
+### Unaggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 30, fig.width = 2}
+combined_data <- as.matrix(rowMeans(sub_data))
+colnames(combined_data) <- "combined_fractions"
+
+combined_data[combined_data <= tier_cutoff] <- 0
+combined_data[combined_data > tier_cutoff] <- 1
+
+datatable_download(combined_data)
+
+draw(
+  Heatmap(
+    combined_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
+)
+```
+
+### Aggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
+
+```{r, fig.height = 15}
+group_proteins <- as.vector(unlist(MISEV_groups))
+group_proteins <- group_proteins[group_proteins != ""]
+group_proteins <- trimws(group_proteins)
+
+for (i in seq(ncol(MISEV_groups))) {
+  idx_start <- which(rownames(sub_data) == trimws(MISEV_groups[1, i]))
+  if (MISEV_groups[nrow(MISEV_groups), i] == "") {
+    last_char <- min(which(MISEV_groups[ , i] == "")) - 1
+    idx_end <- which(rownames(sub_data) == trimws(MISEV_groups[last_char, i]))
+  } else {
+    idx_end <- which(rownames(sub_data) == trimws(MISEV_groups[nrow(MISEV_groups), i]))
+  }
+  new_row <- matrix(ncol = ncol(sub_data))
+  rownames(new_row) <- paste0(trimws(MISEV_groups[1, i]), "*")
+  for (j in seq(ncol(sub_data))) {
+    new_row[j] <- mean(sub_data[idx_start:idx_end, j], na.rm = TRUE)
+  }
+  sub_data <- sub_data[-(idx_start:idx_end), ]
+  sub_data <- rbind(sub_data, new_row)
+}
+
+proteins <- proteins[proteins %in% sub("\\*", "", rownames(sub_data))]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+sub_data <- sub_data[match(proteins, sub("\\*", "", rownames(sub_data))), ]
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### Aggregated, Including Proteins with All Missing, All Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 15}
+cat("Tier cutoff intensity:", tier_cutoff)
+
+tiered_data <- sub_data
+tiered_data[tiered_data <= tier_cutoff] <- 0
+tiered_data[tiered_data > tier_cutoff] <- 1
+
+datatable_download(tiered_data)
+
+draw(
+  Heatmap(
+    tiered_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+```
+
+### Aggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 15, fig.width = 2}
+combined_data <- as.matrix(rowMeans(sub_data))
+colnames(combined_data) <- "combined_fractions"
+
+combined_data[combined_data <= tier_cutoff] <- 0
+combined_data[combined_data > tier_cutoff] <- 1
+
+datatable_download(combined_data)
+
+draw(
+  Heatmap(
+    combined_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
+)
+```
+
+### Aggregated, Excluding Proteins with All Missing, All Fractions, Full Intensity Heatmap
+
+```{r, fig.height = 15}
+sub_data <- sub_data[rowSums(is.na(sub_data)) != ncol(sub_data), ]
+proteins <- proteins[proteins %in% sub("\\*", "", rownames(sub_data))]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex=".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+sub_data <- sub_data[match(proteins, sub("\\*", "", rownames(sub_data))), ]
+datatable_download(sub_data)
+
+color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
+draw(
+  Heatmap(
+    sub_data,
+    color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### Aggregated, Excluding Proteins with All Missing, All Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 15}
+cat("Tier cutoff intensity:", tier_cutoff)
+
+tiered_data <- sub_data
+tiered_data[tiered_data <= tier_cutoff] <- 0
+tiered_data[tiered_data > tier_cutoff] <- 1
+
+datatable_download(tiered_data)
+
+draw(
+  Heatmap(
+    tiered_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(tiered_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE
+  )
+)
+```
+
+### Aggregated, Excluded Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
+
+```{r, fig.height = 15, fig.width = 2}
+combined_data <- as.matrix(rowMeans(sub_data))
+colnames(combined_data) <- "combined_fractions"
+
+combined_data[combined_data <= tier_cutoff] <- 0
+combined_data[combined_data > tier_cutoff] <- 1
+
+datatable_download(combined_data)
+
+draw(
+  Heatmap(
+    combined_data,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    show_heatmap_legend = FALSE,
+    show_column_names = FALSE
+  )
 )
 ```
 
