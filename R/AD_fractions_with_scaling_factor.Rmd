@@ -313,7 +313,8 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
-    column_names_rot = 45
+    column_names_rot = 45,
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -339,7 +340,8 @@ draw(
     cluster_columns = FALSE,
     row_names_gp = gpar(fontsize = 10),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
-    column_names_rot = 45
+    column_names_rot = 45,
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -364,7 +366,8 @@ draw(
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(data)),
     heatmap_legend_param = list(title = "log2 Intensity", direction = "horizontal"),
-    column_names_rot = 45
+    column_names_rot = 45,
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -449,7 +452,8 @@ draw(
     column_gap = unit(0, "mm"),
     border = TRUE,
     column_title = NULL,
-    row_names_gp = gpar(fontsize = 9)
+    row_names_gp = gpar(fontsize = 9),
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -482,7 +486,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -501,7 +506,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
@@ -537,7 +543,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -556,7 +563,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
@@ -651,7 +659,8 @@ draw(
     column_gap = unit(0, "mm"),
     border = TRUE,
     column_title = NULL,
-    row_names_gp = gpar(fontsize = 9)
+    row_names_gp = gpar(fontsize = 9),
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -684,7 +693,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -703,7 +713,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
@@ -739,7 +750,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -758,7 +770,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
@@ -807,7 +820,8 @@ draw(
     column_gap = unit(0, "mm"),
     border = TRUE,
     column_title = NULL,
-    row_names_gp = gpar(fontsize = 9)
+    row_names_gp = gpar(fontsize = 9),
+    rect_gp = gpar(col = "black")
   ),
   heatmap_legend_side = "top"
 )
@@ -840,7 +854,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -859,7 +874,8 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    show_heatmap_legend = FALSE
+    show_heatmap_legend = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
@@ -895,7 +911,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 draw(
@@ -914,7 +931,8 @@ draw(
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
     show_heatmap_legend = FALSE,
-    show_column_names = FALSE
+    show_column_names = FALSE,
+    rect_gp = gpar(col = "black")
   )
 )
 ```
