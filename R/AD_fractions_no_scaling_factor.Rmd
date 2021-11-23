@@ -422,8 +422,7 @@ categories <- sub("^.*\\.", "", categories)
 
 sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
 no_NA_data <- sub_data
-no_NA_data[is.na(no_NA_data)] <-
-  min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
+no_NA_data[is.na(no_NA_data)] <- min_10_perc
 prot_per_cat <- as.vector(table(categories))
 row_counter <- 0
 for (i in seq_along(unique(categories))) {
@@ -624,8 +623,7 @@ categories <- sub("^.*\\.", "", categories)
 sub_data <- sub_data[match(proteins, sub("\\*", "", rownames(sub_data))), ]
 
 no_NA_data <- sub_data
-no_NA_data[is.na(no_NA_data)] <-
-  min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
+no_NA_data[is.na(no_NA_data)] <- min_10_perc
 prot_per_cat <- as.vector(table(categories))
 row_counter <- 0
 for (i in seq_along(unique(categories))) {
@@ -780,8 +778,7 @@ categories <- stri_extract(categories, regex = ".*[a-z]")
 categories <- sub("^.*\\.", "", categories)
 
 no_NA_data <- sub_data
-no_NA_data[is.na(no_NA_data)] <-
-  min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
+no_NA_data[is.na(no_NA_data)] <- min_10_perc
 prot_per_cat <- as.vector(table(categories))
 row_counter <- 0
 for (i in seq_along(unique(categories))) {
