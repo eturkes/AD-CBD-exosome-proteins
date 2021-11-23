@@ -808,7 +808,6 @@ sub_data <- sub_data[rev(rownames(sub_data)), ]
 
 datatable_download(sub_data)
 
-color <- colorRampPalette(brewer.pal(9, "YlOrBr"))((round(max(sub_data, na.rm = TRUE))) * 10)
 draw(
   Heatmap(
     sub_data,
