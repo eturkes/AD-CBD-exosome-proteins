@@ -383,6 +383,8 @@ tiers <- c(
 tier_cutoff <-
   ((max(assay(data), na.rm = TRUE) - min(assay(data), na.rm = TRUE)) / 2) +
   min(assay(data), na.rm = TRUE)
+
+min_10_perc <- min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
 ```
 
 ### Unaggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
@@ -508,8 +510,12 @@ draw(
 ### Unaggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
 ```{r, fig.height = 30, fig.width = 2}
-combined_data <- as.matrix(rowMeans(sub_data))
+combined_data <- sub_data
+combined_data[is.na(combined_data)] <- min_10_perc
+combined_data <- as.matrix(rowSums(combined_data))
 colnames(combined_data) <- "combined_fractions"
+combined_data[combined_data == min_10_perc * ncol(sub_data)] <- NA
+combined_data <- combined_data / ncol(sub_data)
 
 combined_data[combined_data <= tier_cutoff] <- 0
 combined_data[combined_data > tier_cutoff] <- 1
@@ -706,8 +712,12 @@ draw(
 ### Aggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
 ```{r, fig.height = 15, fig.width = 2}
-combined_data <- as.matrix(rowMeans(sub_data))
+combined_data <- sub_data
+combined_data[is.na(combined_data)] <- min_10_perc
+combined_data <- as.matrix(rowSums(combined_data))
 colnames(combined_data) <- "combined_fractions"
+combined_data[combined_data == min_10_perc * ncol(sub_data)] <- NA
+combined_data <- combined_data / ncol(sub_data)
 
 combined_data[combined_data <= tier_cutoff] <- 0
 combined_data[combined_data > tier_cutoff] <- 1
@@ -859,8 +869,12 @@ draw(
 ### Aggregated, Excluded Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
 ```{r, fig.height = 15, fig.width = 2}
-combined_data <- as.matrix(rowMeans(sub_data))
+combined_data <- sub_data
+combined_data[is.na(combined_data)] <- min_10_perc
+combined_data <- as.matrix(rowSums(combined_data))
 colnames(combined_data) <- "combined_fractions"
+combined_data[combined_data == min_10_perc * ncol(sub_data)] <- NA
+combined_data <- combined_data / ncol(sub_data)
 
 combined_data[combined_data <= tier_cutoff] <- 0
 combined_data[combined_data > tier_cutoff] <- 1
