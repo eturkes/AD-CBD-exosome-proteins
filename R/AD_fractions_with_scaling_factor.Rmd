@@ -374,7 +374,7 @@ draw(
 
 ```{r}
 MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-curated-tidy.tsv"))
-MISEV_groups <- read.delim(file.path(assets_dir, data_name, "MISEV-groups.tsv"), header = FALSE)
+MISEV_groups <- read.delim(file.path(assets_dir, data_name, "MISEV-groups.tsv"))
 
 tiers <- c(
   as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[2],
@@ -602,7 +602,8 @@ for (i in seq(ncol(MISEV_groups))) {
     idx_end <- which(rownames(sub_data) == trimws(MISEV_groups[nrow(MISEV_groups), i]))
   }
   new_row <- matrix(ncol = ncol(sub_data))
-  rownames(new_row) <- paste0(trimws(MISEV_groups[1, i]), "*")
+  rownames(new_row) <- paste0(trimws(colnames(MISEV_groups)[i]), "*")
+  proteins[proteins == trimws((MISEV_groups)[1, i])] <- trimws(colnames(MISEV_groups)[i])
   for (j in seq(ncol(sub_data))) {
     new_row[j] <- mean(sub_data[idx_start:idx_end, j], na.rm = TRUE)
   }
