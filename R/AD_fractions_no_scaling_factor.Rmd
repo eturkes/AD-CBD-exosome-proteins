@@ -66,9 +66,10 @@ Each sample in the dataset represents a fraction from this single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "stringr", "DT", "DEP", "SummarizedExperiment", "ggplot2", "ComplexHeatmap",
-  "RColorBrewer", "stringi", "circlize"
+  "RColorBrewer", "stringi", "circlize", "pRolocdata", "GSEABase", "GSVA", "limma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+conflict_prefer("trimws", "base", quiet = TRUE)
 source(file.path("utils.R"))
 
 data_name <- "fractions"
@@ -939,6 +940,40 @@ draw(
     show_column_names = FALSE,
     rect_gp = gpar(col = "black")
   )
+)
+```
+
+## LOPIT
+
+```{r}
+data(thpLOPIT_unstimulated_mulvey2021)
+mulvey2021 <- thpLOPIT_unstimulated_mulvey2021
+rm(thpLOPIT_unstimulated_mulvey2021)
+
+markers <- data.frame(gene = fData(mulvey2021)$GN, organelle = fData(mulvey2021)$markers)
+markers <- markers[-which(is.na(markers)), ]
+markers <- markers[order(markers$organelle), ]
+datatable_download(markers)
+
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "LOPIT-markers.gmt"))
+gsva <- gsva(assay(data), gene_sets, method = "zscore", verbose = FALSE)
+datatable_download(gsva)
+
+gsva_color <- colorRamp2(
+  c(min(gsva), (max(gsva) + min(gsva)) / 2, max(gsva)),
+  c(brewer.pal(3, "RdYlBu")[3], brewer.pal(3, "RdYlBu")[2], brewer.pal(3, "RdYlBu")[1])
+)
+draw(
+  Heatmap(
+    gsva,
+    gsva_color,
+    cluster_columns = FALSE,
+    row_names_gp = gpar(fontsize = 10),
+    heatmap_legend_param = list(title = "Z-score enrichment", direction = "horizontal"),
+    column_names_rot = 45,
+    rect_gp = gpar(col = "black")
+  ),
+  heatmap_legend_side = "top"
 )
 ```
 

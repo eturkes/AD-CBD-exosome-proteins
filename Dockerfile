@@ -41,6 +41,7 @@ RUN apt-get update \
         -e "BiocManager::install('DEP')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('variancePartition')" \
+        -e "devtools::install_github('lgatto/pRolocdata')" \
         -e "devtools::install_github('kevinblighe/EnhancedVolcano')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
