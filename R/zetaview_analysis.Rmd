@@ -65,7 +65,7 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- "conflicted"
+packages <- c("conflicted", "DT")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -85,6 +85,35 @@ if (!dir.exists(cache_dir)) {
 knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 # ----------------------------------------------------------
 # --------------------------
+```
+
+# Prep
+
+The data is spread out across many files, so we first aggregate them to obtain a single data object with counts per particle size.
+
+```{r}
+file_list <- list.files(file.path(assets_dir, data_name))
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)))
+
+for (i in seq_along(file_list)) {
+  file <- read.delim(
+    file.path(assets_dir, data_name, file_list[i]), skip = 70
+  )
+  data[ , i] <- file[1:1200, 2]
+  if (i == 1) {
+    rownames(data) <- file[1:1200, 1]
+  }
+}
+
+colnames(data) <- paste(
+  sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+  sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+  sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+  sep = "_"
+)
+
+datatable_download(data)
 ```
 
 # References
