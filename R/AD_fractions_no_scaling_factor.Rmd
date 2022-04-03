@@ -384,7 +384,22 @@ draw(
 
 ```{r}
 MISEV <- read.delim(file.path(assets_dir, data_name, "MISEV-curated-tidy.tsv"))
-MISEV_groups <- read.delim(file.path(assets_dir, data_name, "MISEV-groups.tsv"))
+MISEV_groups <- read.delim(file.path(assets_dir, data_name, "MISEV-groups-trimmed.tsv"))
+
+rownames(data)[which(rownames(data) == "PDCD6IP")] <- "ALIX"
+
+keep <- c(
+  "CD81", "CD63", "LAMP2", "CD9", "APP", "THY1",
+  "ANXA1", "ANXA2", "ANXA6", "ANXA5", "ANXA4", "ANXA3", "ANXA7", "ANXA11",
+  "MAPT", "FLOT", "ALIX",
+  "ACTN4", "ACTN1", "ACTN2", "ACTR1B", "ACTB", "ACTR3", "ACTR2", "ACTR1A", "ACTG1", "ACTC1",
+  "APOOL", "APOL2", "APOO", "APOB", "APOH", "APOE", "APOD",
+  "LMNA", "LMNB2",
+  "VDAC1", "VDAC2", "VDAC3",
+  "GOLM1", "GOLM2",
+  "EMC1", "EMC2", "EMC3", "EMC7", "EMC8",
+  "ATG9A", "FGF1", "FGF2", "MFGE8"
+)
 
 tiers <- c(
   as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[2],
@@ -399,10 +414,11 @@ min_10_perc <- min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) 
 
 ### Unaggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
 
-```{r, fig.height = 30}
+```{r, fig.height = 8, fig.width = 7}
 proteins <- as.vector(unlist(MISEV))
 proteins <- proteins[proteins != ""]
 proteins <- trimws(proteins)
+proteins <- proteins[proteins %in% keep]
 
 sub_data <- assay(data[rownames(data) %in% proteins, ])
 
@@ -468,7 +484,7 @@ draw(
 
 ### Unaggregated, Including Proteins with All Missing, All Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 30}
+```{r, fig.height = 8, fig.width = 7}
 cat("Tier cutoff intensity:", tier_cutoff)
 
 tiered_data <- sub_data
@@ -521,7 +537,7 @@ draw(
 
 ### Unaggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 30, fig.width = 2}
+```{r, fig.height = 8, fig.width = 2}
 combined_data <- sub_data
 combined_data[is.na(combined_data)] <- min_10_perc
 combined_data <- as.matrix(rowSums(combined_data))
@@ -578,10 +594,11 @@ draw(
 
 ### Aggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
 
-```{r, fig.height = 15}
+```{r, fig.height = 5, fig.width = 5}
 proteins <- as.vector(unlist(MISEV))
 proteins <- proteins[proteins != ""]
 proteins <- trimws(proteins)
+proteins <- proteins[proteins %in% keep]
 
 sub_data <- assay(data[rownames(data) %in% proteins, ])
 
@@ -675,7 +692,7 @@ draw(
 
 ### Aggregated, Including Proteins with All Missing, All Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 15}
+```{r, fig.height = 5, fig.width = 5}
 cat("Tier cutoff intensity:", tier_cutoff)
 
 tiered_data <- sub_data
@@ -728,7 +745,7 @@ draw(
 
 ### Aggregated, Including Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 15, fig.width = 2}
+```{r, fig.height = 5, fig.width = 2}
 combined_data <- sub_data
 combined_data[is.na(combined_data)] <- min_10_perc
 combined_data <- as.matrix(rowSums(combined_data))
@@ -785,7 +802,7 @@ draw(
 
 ### Aggregated, Excluding Proteins with All Missing, All Fractions, Full Intensity Heatmap
 
-```{r, fig.height = 15}
+```{r, fig.height = 5, fig.width = 5}
 sub_data <- sub_data[rowSums(is.na(sub_data)) != ncol(sub_data), ]
 proteins <- proteins[proteins %in% sub("\\*", "", rownames(sub_data))]
 categories <- names(proteins)
@@ -835,7 +852,7 @@ draw(
 
 ### Aggregated, Excluding Proteins with All Missing, All Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 15}
+```{r, fig.height = 5, fig.width = 5}
 cat("Tier cutoff intensity:", tier_cutoff)
 
 tiered_data <- sub_data
@@ -888,7 +905,7 @@ draw(
 
 ### Aggregated, Excluded Proteins with All Missing, Combined Fractions, 3 Tier Heatmap
 
-```{r, fig.height = 15, fig.width = 2}
+```{r, fig.height = 5, fig.width = 2}
 combined_data <- sub_data
 combined_data[is.na(combined_data)] <- min_10_perc
 combined_data <- as.matrix(rowSums(combined_data))
