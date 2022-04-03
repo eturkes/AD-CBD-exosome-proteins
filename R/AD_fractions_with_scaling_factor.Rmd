@@ -352,10 +352,10 @@ draw(
 
 ### TAU and LRP1
 
-We probe the expression of TAU and LRP1, two proteins we are particularly interested in.
+We probe the expression of TAU (MAPT) and LRP1, two proteins we are particularly interested in.
 
 ```{r}
-sub_data <- assay(data[rowData(data)$Gene == "TAU" | rowData(data)$Gene == "LRP1", ])
+sub_data <- assay(data[rowData(data)$gene_names == "MAPT" | rowData(data)$gene_names == "LRP1", ])
 datatable_download(sub_data)
 
 draw(
