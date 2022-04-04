@@ -65,7 +65,7 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c("conflicted", "DT")
+packages <- c("conflicted", "DT", "ggplot2", "reshape2")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -94,26 +94,60 @@ The data is spread out across many files, so we first aggregate them to obtain a
 ```{r}
 file_list <- list.files(file.path(assets_dir, data_name))
 
-data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)))
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 
 for (i in seq_along(file_list)) {
   file <- read.delim(
     file.path(assets_dir, data_name, file_list[i]), skip = 70
   )
-  data[ , i] <- file[1:1200, 2]
   if (i == 1) {
-    rownames(data) <- file[1:1200, 1]
+    data[ , i] <- file[1:1200, 1]
   }
+  data[ , i + 1] <- file[1:1200, 2]
 }
 
-colnames(data) <- paste(
-  sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
-  sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
-  sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
-  sep = "_"
+colnames(data) <- c(
+  "size",
+    paste(
+      sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sep = "_"
+  )
 )
 
 datatable_download(data)
+```
+
+The data is then transformed from a wide to long format suitable for downstream analysis.
+
+```{r}
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+
+molten_data <- melt(data[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("sample", "frequency")
+molten_data$size <- rep(data$size, ncol(data) - 1)
+```
+
+# Distribution Plots
+
+## Smoothed
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_smooth(span = 0.1) +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+## Without Smoothing
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_line() +
+  theme_light() +
+  theme(legend.position = "none")
 ```
 
 # References
