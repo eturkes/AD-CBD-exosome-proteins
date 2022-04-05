@@ -90,6 +90,7 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 # Prep
 
 The data is spread out across many files, so we first aggregate them to obtain a single data object with counts per particle size.
+We then output this object for download along with variations that are aggregated by the mean of values by donor and fraction.
 
 ```{r}
 file_list <- list.files(file.path(assets_dir, data_name))
@@ -116,34 +117,56 @@ colnames(data) <- c(
   )
 )
 
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+
 datatable_download(data)
+
+names <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data) <- c("size", names)
+
+datatable_download(donor_fraction_data)
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+donor_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  donor_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_data) <- c("size", names)
+
+datatable_download(donor_data)
+
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1])))
+fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data) <- c("size", names)
+
+datatable_download(fraction_data)
 ```
 
 # Distribution Plots
 
-```{r}
-non_zero <- which(rowSums(data[ , -1]) > 0)
-data <- data[min(non_zero):max(non_zero), ]
+## All Data
 
+```{r}
 molten_data <- melt(data[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data$size, ncol(data) - 1)
-
-donor_fraction <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
-aggregated_data <- data.frame(matrix(nrow = nrow(data), ncol = length(donor_fraction) + 1))
-aggregated_data$X1 <- data$size
-for (i in seq_along(donor_fraction)) {
-  data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% donor_fraction[i])]
-  aggregated_data[ , i + 1] <- rowMeans(data_sub)
-}
-colnames(aggregated_data) <- c("size", donor_fraction)
-
-aggregated_molten_data <- melt(aggregated_data[ , -1], id.vars = NULL)
-colnames(aggregated_molten_data) <- c("sample", "frequency")
-aggregated_molten_data$size <- rep(aggregated_data$size, ncol(aggregated_data) - 1)
 ```
 
-## Smoothed
+### Smoothed
 
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
@@ -152,7 +175,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme(legend.position = "none")
 ```
 
-## Without Smoothing
+### Without Smoothing
 
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
@@ -161,18 +184,74 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme(legend.position = "none")
 ```
 
-## Aggregated Smoothed
+## Donor by Fraction
 
 ```{r}
-ggplot(aggregated_molten_data, aes(size, frequency, color = sample)) +
+molten_data <- melt(donor_fraction_data[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("sample", "frequency")
+molten_data$size <- rep(donor_fraction_data$size, ncol(donor_fraction_data) - 1)
+```
+
+### Smoothed
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth(span = 0.1) +
   theme_light()
 ```
 
-## Aggregated Without Smoothing
+### Without Smoothing
 
 ```{r}
-ggplot(aggregated_molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_line() +
+  theme_light()
+```
+
+## By Donor
+
+```{r}
+molten_data <- melt(donor_data[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("sample", "frequency")
+molten_data$size <- rep(donor_data$size, ncol(donor_data) - 1)
+```
+
+### Smoothed
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_smooth(span = 0.1) +
+  theme_light()
+```
+
+### Without Smoothing
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_line() +
+  theme_light()
+```
+
+## By Fraction
+
+```{r}
+molten_data <- melt(fraction_data[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("sample", "frequency")
+molten_data$size <- rep(fraction_data$size, ncol(fraction_data) - 1)
+```
+
+### Smoothed
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
+  geom_smooth(span = 0.1) +
+  theme_light()
+```
+
+### Without Smoothing
+
+```{r}
+ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
 ```
