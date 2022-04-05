@@ -119,7 +119,7 @@ colnames(data) <- c(
 datatable_download(data)
 ```
 
-The data is then transformed from a wide to long format suitable for downstream analysis.
+# Distribution Plots
 
 ```{r}
 non_zero <- which(rowSums(data[ , -1]) > 0)
@@ -128,9 +128,20 @@ data <- data[min(non_zero):max(non_zero), ]
 molten_data <- melt(data[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data$size, ncol(data) - 1)
-```
 
-# Distribution Plots
+donor_fraction <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
+aggregated_data <- data.frame(matrix(nrow = nrow(data), ncol = length(donor_fraction) + 1))
+aggregated_data$X1 <- data$size
+for (i in seq_along(donor_fraction)) {
+  data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% donor_fraction[i])]
+  aggregated_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(aggregated_data) <- c("size", donor_fraction)
+
+aggregated_molten_data <- melt(aggregated_data[ , -1], id.vars = NULL)
+colnames(aggregated_molten_data) <- c("sample", "frequency")
+aggregated_molten_data$size <- rep(aggregated_data$size, ncol(aggregated_data) - 1)
+```
 
 ## Smoothed
 
@@ -148,6 +159,22 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light() +
   theme(legend.position = "none")
+```
+
+## Aggregated Smoothed
+
+```{r}
+ggplot(aggregated_molten_data, aes(size, frequency, color = sample)) +
+  geom_smooth(span = 0.1) +
+  theme_light()
+```
+
+## Aggregated Without Smoothing
+
+```{r}
+ggplot(aggregated_molten_data, aes(size, frequency, color = sample)) +
+  geom_line() +
+  theme_light()
 ```
 
 # References
