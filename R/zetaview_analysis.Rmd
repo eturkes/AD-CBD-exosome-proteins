@@ -94,6 +94,7 @@ We then output this object for download along with variations that are aggregate
 
 ```{r}
 file_list <- list.files(file.path(assets_dir, data_name))
+file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 
