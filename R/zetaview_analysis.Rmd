@@ -65,7 +65,7 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c("conflicted", "DT", "ggplot2", "reshape2")
+packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -654,6 +654,236 @@ ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
 
 ```{r}
 datatable_download(fraction_data_norm)
+```
+
+# Summary Stats
+
+Here we calculate the mean, median, mode and percentiles of each distribution.
+We only focus on the "By Fraction" data as it is most relevant.
+
+## By Fraction
+
+### Unnormalised
+
+```{r}
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1])))
+fraction_sums <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+fraction_sums$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  fraction_sums[ , i + 1] <- rowSums(data_sub)
+}
+colnames(fraction_sums) <- c("size", names)
+
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums)- 1))
+colnames(stats) <- colnames(fraction_sums[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_size <- vector("list", ncol(fraction_sums)- 1)
+for (i in seq_along(counts_per_size)) {
+  counts_per_size[[i]] <- rep(fraction_sums[ , 1], fraction_sums[ , i + 1])
+  stats[1, i] <- mean(counts_per_size[[i]])
+  stats[2, i] <- median(counts_per_size[[i]])
+  stats[3, i] <- names(table(counts_per_size[[i]]))[
+    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
+  ]
+  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+}
+
+datatable_download(stats)
+
+for (i in seq(ncol(stats))) {
+  data_sub1 <- fraction_data[1:which(fraction_data$size == stats[4, i]), ]
+  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub2 <- fraction_data[
+    which(fraction_data$size == stats[4, i]):which(fraction_data$size == stats[5, i]),
+  ]
+  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub3 <- fraction_data[
+    which(fraction_data$size == stats[5, i]):which(fraction_data$size == stats[6, i]),
+  ]
+  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub4 <- fraction_data[
+    which(fraction_data$size == stats[6, i]):which(fraction_data_norm$size == 297.5),
+  ]
+  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
+
+  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
+  colnames(molten_data) <- c("sample", "frequency")
+  molten_data$size <- data_sub$size
+  molten_data$percentiles <- factor(
+    findInterval(molten_data$size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
+  )
+
+  plot(
+    ggplot(molten_data, aes(size, frequency, color = sample)) +
+      geom_area(aes(fill = percentiles), outline.type = "full") +
+      scale_x_continuous(
+        sec.axis = dup_axis(
+          name = "percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+        )
+      ) +
+      scale_fill_brewer(guide = "none") +
+      scale_color_manual(values = hue_pal()(8)[i]) +
+      theme_light() +
+      ylim(0, max(molten_data$frequency)) +
+      geom_vline(xintercept = as.numeric(stats[4, i])) +
+      geom_vline(xintercept = as.numeric(stats[5, i])) +
+      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      guides(color = guide_legend(override.aes = list(fill = NA)))
+  )
+}
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled[ , -1])))
+fraction_sums_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
+fraction_sums_scaled$X1 <- data_scaled$size
+for (i in seq_along(names)) {
+  data_sub <- data_scaled[
+    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled)) %in% names[i])
+  ]
+  fraction_sums_scaled[ , i + 1] <- rowSums(data_sub)
+}
+colnames(fraction_sums_scaled) <- c("size", names)
+
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_scaled)- 1))
+colnames(stats) <- colnames(fraction_sums_scaled[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_size <- vector("list", ncol(fraction_sums_scaled)- 1)
+for (i in seq_along(counts_per_size)) {
+  counts_per_size[[i]] <- rep(fraction_sums_scaled[ , 1], fraction_sums_scaled[ , i + 1])
+  stats[1, i] <- mean(counts_per_size[[i]])
+  stats[2, i] <- median(counts_per_size[[i]])
+  stats[3, i] <- names(table(counts_per_size[[i]]))[
+    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
+  ]
+  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+}
+
+datatable_download(stats)
+
+for (i in seq(ncol(stats))) {
+  data_sub1 <- fraction_data_scaled[1:which(fraction_data_scaled$size == stats[4, i]), ]
+  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub2 <- fraction_data_scaled[
+    which(fraction_data_scaled$size == stats[4, i]):which(fraction_data_scaled$size == stats[5, i]),
+  ]
+  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub3 <- fraction_data_scaled[
+    which(fraction_data_scaled$size == stats[5, i]):which(fraction_data_scaled$size == stats[6, i]),
+  ]
+  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub4 <- fraction_data_scaled[
+    which(fraction_data_scaled$size == stats[6, i]):which(fraction_data_scaled$size == 297.5),
+  ]
+  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
+
+  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
+  colnames(molten_data) <- c("sample", "frequency")
+  molten_data$size <- data_sub$size
+  molten_data$percentiles <- factor(
+    findInterval(molten_data$size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
+  )
+
+  plot(
+    ggplot(molten_data, aes(size, frequency, color = sample)) +
+      geom_area(aes(fill = percentiles), outline.type = "full") +
+      scale_x_continuous(
+        sec.axis = dup_axis(
+          name = "percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+        )
+      ) +
+      scale_fill_brewer(guide = "none") +
+      scale_color_manual(values = hue_pal()(8)[i]) +
+      theme_light() +
+      ylim(0, max(molten_data$frequency)) +
+      geom_vline(xintercept = as.numeric(stats[4, i])) +
+      geom_vline(xintercept = as.numeric(stats[5, i])) +
+      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      guides(color = guide_legend(override.aes = list(fill = NA)))
+  )
+}
+```
+
+### Normalised By Total Counts
+
+```{r}
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm[ , -1])))
+fraction_sums_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
+fraction_sums_norm$X1 <- data_norm$size
+for (i in seq_along(names)) {
+  data_sub <- data_norm[
+    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm)) %in% names[i])
+  ]
+  fraction_sums_norm[ , i + 1] <- rowSums(data_sub)
+}
+colnames(fraction_sums_norm) <- c("size", names)
+
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_norm)- 1))
+colnames(stats) <- colnames(fraction_sums_norm[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_size <- vector("list", ncol(fraction_sums_norm)- 1)
+for (i in seq_along(counts_per_size)) {
+  counts_per_size[[i]] <- rep(fraction_sums_norm[ , 1], fraction_sums_norm[ , i + 1])
+  stats[1, i] <- mean(counts_per_size[[i]])
+  stats[2, i] <- median(counts_per_size[[i]])
+  stats[3, i] <- names(table(counts_per_size[[i]]))[
+    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
+  ]
+  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+}
+
+datatable_download(stats)
+
+for (i in seq(ncol(stats))) {
+  data_sub1 <- fraction_data_norm[1:which(fraction_data_norm$size == stats[4, i]), ]
+  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub2 <- fraction_data_norm[
+    which(fraction_data_norm$size == stats[4, i]):which(fraction_data_norm$size == stats[5, i]),
+  ]
+  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub3 <- fraction_data_norm[
+    which(fraction_data_norm$size == stats[5, i]):which(fraction_data_norm$size == stats[6, i]),
+  ]
+  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub4 <- fraction_data_norm[
+    which(fraction_data_norm$size == stats[6, i]):which(fraction_data_norm$size == 297.5),
+  ]
+  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
+
+  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
+  colnames(molten_data) <- c("sample", "frequency")
+  molten_data$size <- data_sub$size
+  molten_data$percentiles <- factor(
+    findInterval(molten_data$size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
+  )
+
+  plot(
+    ggplot(molten_data, aes(size, frequency, color = sample)) +
+      geom_area(aes(fill = percentiles), outline.type = "full") +
+      scale_x_continuous(
+        sec.axis = dup_axis(
+          name = "percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+        )
+      ) +
+      scale_fill_brewer(guide = "none") +
+      scale_color_manual(values = hue_pal()(8)[i]) +
+      theme_light() +
+      ylim(0, max(molten_data$frequency)) +
+      geom_vline(xintercept = as.numeric(stats[4, i])) +
+      geom_vline(xintercept = as.numeric(stats[5, i])) +
+      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      guides(color = guide_legend(override.aes = list(fill = NA)))
+  )
+}
 ```
 
 # References
