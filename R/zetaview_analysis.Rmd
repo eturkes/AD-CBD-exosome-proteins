@@ -250,8 +250,6 @@ data_sub <- data[1:which(data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(data)
 ```
 
 **Smoothed**
@@ -272,15 +270,19 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme(legend.position = "none")
 ```
 
-### Normalised By Tissue Amount
+**Data Table**
+
+```{r}
+datatable_download(data)
+```
+
+### Normalised By Tissue Amt.
 
 ```{r}
 data_sub <- data_scaled[1:which(data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(data_scaled)
 ```
 
 **Smoothed**
@@ -299,6 +301,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light() +
   theme(legend.position = "none")
+```
+
+**Data Table**
+
+```{r}
+datatable_download(data_scaled)
 ```
 
 ### Normalised By Total Counts
@@ -308,8 +316,6 @@ data_sub <- data_norm[1:which(data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(data_norm)
 ```
 
 **Smoothed**
@@ -328,6 +334,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light() +
   theme(legend.position = "none")
+```
+
+**Data Table**
+
+```{r}
+datatable_download(data_norm)
 ```
 
 ## Donor by Fraction
@@ -339,8 +351,6 @@ data_sub <- donor_fraction_data[1:which(donor_fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_fraction_data)
 ```
 
 **Smoothed**
@@ -359,15 +369,19 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme_light()
 ```
 
-### Normalised By Tissue Amount
+**Data Table**
+
+```{r}
+datatable_download(donor_fraction_data)
+```
+
+### Normalised By Tissue Amt.
 
 ```{r}
 data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_fraction_data_scaled)
 ```
 
 **Smoothed**
@@ -384,6 +398,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(donor_fraction_data_scaled)
 ```
 
 ### Normalised By Total Counts
@@ -393,8 +413,6 @@ data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_norm$size == 
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_fraction_data_norm)
 ```
 
 **Smoothed**
@@ -411,6 +429,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(donor_fraction_data_norm)
 ```
 
 ## By Donor
@@ -422,8 +446,6 @@ data_sub <- donor_data[1:which(donor_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_data)
 ```
 
 **Smoothed**
@@ -442,15 +464,19 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme_light()
 ```
 
-### Normalised By Tissue Amount
+**Data Table**
+
+```{r}
+datatable_download(donor_data)
+```
+
+### Normalised By Tissue Amt.
 
 ```{r}
 data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_data_scaled)
 ```
 
 **Smoothed**
@@ -467,6 +493,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(donor_data_scaled)
 ```
 
 ### Normalised By Total Counts
@@ -476,8 +508,6 @@ data_sub <- donor_data_norm[1:which(donor_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(donor_data_norm)
 ```
 
 **Smoothed**
@@ -494,6 +524,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(donor_data_norm)
 ```
 
 ## By Fraction
@@ -505,8 +541,6 @@ data_sub <- fraction_data[1:which(fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(fraction_data)
 ```
 
 **Smoothed**
@@ -525,15 +559,19 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
   theme_light()
 ```
 
-### Normalised By Tissue Amount
+**Data Table**
+
+```{r}
+datatable_download(fraction_data)
+```
+
+### Normalised By Tissue Amt.
 
 ```{r}
 data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(fraction_data_scaled)
 ```
 
 **Smoothed**
@@ -550,6 +588,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(fraction_data_scaled)
 ```
 
 ### Normalised By Total Counts
@@ -559,8 +603,6 @@ data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
-
-datatable_download(fraction_data_norm)
 ```
 
 **Smoothed**
@@ -577,6 +619,12 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light()
+```
+
+**Data Table**
+
+```{r}
+datatable_download(fraction_data_norm)
 ```
 
 # References
