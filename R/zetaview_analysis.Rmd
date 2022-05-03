@@ -150,6 +150,11 @@ for (i in seq_along(rownames(scaling_factor))) {
   }
 }
 
+# Min-max normalisation.
+# ----------------------
+data_norm[ , -1] <- (data_norm[ , -1] / max(data_norm[ , -1])) * 100
+# ----------------------
+
 names <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
 donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
 donor_fraction_data$X1 <- data$size
@@ -314,14 +319,14 @@ datatable_download(data_scaled)
 ```{r}
 data_sub <- data_norm[1:which(data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("sample", "frequency")
+colnames(molten_data) <- c("sample", "relative_proportion")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```
 
 **Smoothed**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
   theme_light() +
   theme(legend.position = "none")
@@ -330,7 +335,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 **Without Smoothing**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
   theme_light() +
   theme(legend.position = "none")
@@ -411,14 +416,14 @@ datatable_download(donor_fraction_data_scaled)
 ```{r}
 data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("sample", "frequency")
+colnames(molten_data) <- c("sample", "relative_proportion")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```
 
 **Smoothed**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
   theme_light()
 ```
@@ -426,7 +431,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 **Without Smoothing**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
   theme_light()
 ```
@@ -506,14 +511,14 @@ datatable_download(donor_data_scaled)
 ```{r}
 data_sub <- donor_data_norm[1:which(donor_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("sample", "frequency")
+colnames(molten_data) <- c("sample", "relative_proportion")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```
 
 **Smoothed**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
   theme_light()
 ```
@@ -521,7 +526,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 **Without Smoothing**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
   theme_light()
 ```
@@ -601,14 +606,14 @@ datatable_download(fraction_data_scaled)
 ```{r}
 data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("sample", "frequency")
+colnames(molten_data) <- c("sample", "relative_proportion")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```
 
 **Smoothed**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth(span = 0.1) +
   theme_light()
 ```
@@ -616,7 +621,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 **Without Smoothing**
 
 ```{r}
-ggplot(molten_data, aes(size, frequency, color = sample)) +
+ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
   theme_light()
 ```
