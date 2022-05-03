@@ -409,7 +409,7 @@ datatable_download(donor_fraction_data_scaled)
 ### Normalised By Total Counts
 
 ```{r}
-data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_norm$size == 297.5), ]
+data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("sample", "frequency")
 molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
