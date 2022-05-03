@@ -263,6 +263,7 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
   theme_light() +
+  ylim(0, max(molten_data$frequency)) +
   theme(legend.position = "none")
 ```
 
@@ -272,6 +273,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light() +
+  ylim(0, max(molten_data$frequency)) +
   theme(legend.position = "none")
 ```
 
@@ -296,6 +298,7 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
   theme_light() +
+  ylim(0, max(molten_data$frequency)) +
   theme(legend.position = "none")
 ```
 
@@ -305,6 +308,7 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
   theme_light() +
+  ylim(0, max(molten_data$frequency)) +
   theme(legend.position = "none")
 ```
 
@@ -329,6 +333,7 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
   theme_light() +
+  ylim(0, max(molten_data$relative_proportion)) +
   theme(legend.position = "none")
 ```
 
@@ -338,6 +343,7 @@ ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
   theme_light() +
+  ylim(0, max(molten_data$relative_proportion)) +
   theme(legend.position = "none")
 ```
 
@@ -363,7 +369,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -371,7 +378,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -394,7 +402,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -402,7 +411,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -425,7 +435,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Without Smoothing**
@@ -433,7 +444,8 @@ ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Data Table**
@@ -458,7 +470,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -466,7 +479,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -489,7 +503,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -497,7 +512,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -520,7 +536,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Without Smoothing**
@@ -528,7 +545,8 @@ ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Data Table**
@@ -553,7 +571,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth(span = 0.1) +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -561,7 +580,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -584,7 +604,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_smooth(span = 0.1) +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Without Smoothing**
@@ -592,7 +613,8 @@ ggplot(molten_data, aes(size, frequency, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, frequency, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$frequency))
 ```
 
 **Data Table**
@@ -615,7 +637,8 @@ molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_smooth(span = 0.1) +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Without Smoothing**
@@ -623,7 +646,8 @@ ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
 ```{r}
 ggplot(molten_data, aes(size, relative_proportion, color = sample)) +
   geom_line() +
-  theme_light()
+  theme_light() +
+  ylim(0, max(molten_data$relative_proportion))
 ```
 
 **Data Table**
