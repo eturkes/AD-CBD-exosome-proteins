@@ -136,19 +136,7 @@ for (i in seq_along(rownames(scaling_factor))) {
   }
 }
 
-# Scaling factor derived from data to ensure each sample has the same number of total counts.
-# -------------------------------------------------------------------------------------------
-scaling_factor <- data.frame(factor = max(colSums(data[ ,-1])) / colSums(data[ ,-1]))
-rownames(scaling_factor) <- colnames(data[ , -1])
-# -------------------------------------------------------------------------------------------
-
 data_norm <- data
-for (i in seq_along(rownames(scaling_factor))) {
-  for (j in seq_along(colnames(data_norm))) {
-    if (colnames(data)[j] == rownames(scaling_factor)[i])
-      data_norm[j] <- data_norm[j] * scaling_factor[i, ]
-  }
-}
 for (i in seq_along(colnames(data_norm))) {
   if (i != 1) {
     data_norm[i] <- (data_norm[i] / sum(data_norm[i])) * 100
@@ -334,7 +322,7 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 datatable_download(data_scaled)
 ```
 
-### Normalised By Total Counts
+### Proportion of Total Counts
 
 ```{r}
 data_sub <- data_norm[1:which(data_norm$size == 297.5), ]
@@ -465,7 +453,7 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 datatable_download(donor_fraction_data_scaled)
 ```
 
-### Normalised By Total Counts
+### Proportion of Total Counts
 
 ```{r}
 data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 297.5), ]
@@ -594,7 +582,7 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 datatable_download(donor_data_scaled)
 ```
 
-### Normalised By Total Counts
+### Proportion of Total Counts
 
 ```{r}
 data_sub <- donor_data_norm[1:which(donor_data_norm$size == 297.5), ]
@@ -723,7 +711,7 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 datatable_download(fraction_data_scaled)
 ```
 
-### Normalised By Total Counts
+### Proportion of Total Counts
 
 ```{r}
 data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 297.5), ]
@@ -798,7 +786,7 @@ for (i in seq_along(counts_per_size)) {
   stats[2, i] <- median(counts_per_size[[i]])
   stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ])
+  ])[1]
   stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
@@ -905,7 +893,7 @@ for (i in seq_along(counts_per_size)) {
   stats[2, i] <- median(counts_per_size[[i]])
   stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ])
+  ])[1]
   stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
@@ -987,7 +975,7 @@ for (i in seq(ncol(stats))) {
 }
 ```
 
-### Normalised By Total Counts
+### Proportion of Total Counts
 
 ```{r}
 names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm[ , -1])))
@@ -1012,7 +1000,7 @@ for (i in seq_along(counts_per_size)) {
   stats[2, i] <- median(counts_per_size[[i]])
   stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ])
+  ])[1]
   stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
