@@ -263,9 +263,12 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
   theme(legend.position = "none") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -274,9 +277,12 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
   theme(legend.position = "none") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -300,9 +306,12 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
   theme(legend.position = "none") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -311,9 +320,12 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
   theme(legend.position = "none") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -337,10 +349,14 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   theme(legend.position = "none") +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Without Smoothing**
@@ -349,10 +365,14 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   theme(legend.position = "none") +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Data Table**
@@ -378,8 +398,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -388,8 +411,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -413,8 +439,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -423,8 +452,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -448,9 +480,13 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Without Smoothing**
@@ -459,9 +495,13 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Data Table**
@@ -487,8 +527,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -497,8 +540,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -522,8 +568,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -532,8 +581,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -557,9 +609,13 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Without Smoothing**
@@ -568,9 +624,13 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Data Table**
@@ -596,8 +656,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth(span = 0.1) +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -606,8 +669,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -631,8 +697,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_smooth(span = 0.1) +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Without Smoothing**
@@ -641,8 +710,11 @@ ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
 ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$Frequency)) +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+  )
 ```
 
 **Data Table**
@@ -666,9 +738,13 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth(span = 0.1) +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Without Smoothing**
@@ -677,9 +753,13 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylim(0, max(molten_data$relative_proportion)) +
   ylab("Relative Proportion") +
-  xlab("Diameter (nm)")
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
 ```
 
 **Data Table**
@@ -787,12 +867,15 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      ylim(0, max(molten_data$Frequency)) +
       geom_vline(xintercept = as.numeric(stats[4, i])) +
       geom_vline(xintercept = as.numeric(stats[5, i])) +
       geom_vline(xintercept = as.numeric(stats[6, i])) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)")
+      xlab("Diameter (nm)") +
+      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+      scale_y_continuous(
+        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+      )
   )
 }
 ```
@@ -891,12 +974,15 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      ylim(0, max(molten_data$Frequency)) +
       geom_vline(xintercept = as.numeric(stats[4, i])) +
       geom_vline(xintercept = as.numeric(stats[5, i])) +
       geom_vline(xintercept = as.numeric(stats[6, i])) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)")
+      xlab("Diameter (nm)") +
+      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+      scale_y_continuous(
+        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+      )
   )
 }
 ```
@@ -995,12 +1081,15 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      ylim(0, max(molten_data$Frequency)) +
       geom_vline(xintercept = as.numeric(stats[4, i])) +
       geom_vline(xintercept = as.numeric(stats[5, i])) +
       geom_vline(xintercept = as.numeric(stats[6, i])) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)")
+      xlab("Diameter (nm)") +
+      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+      scale_y_continuous(
+        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
+      )
   )
 }
 ```
