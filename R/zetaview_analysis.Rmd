@@ -834,15 +834,15 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
 
 for (i in seq(ncol(stats))) {
   data_sub1 <- fraction_data[1:which(fraction_data$size == stats[4, i]), ]
-  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
   data_sub2 <- fraction_data[
     which(fraction_data$size == stats[4, i]):which(fraction_data$size == stats[5, i]),
   ]
-  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
   data_sub3 <- fraction_data[
     which(fraction_data$size == stats[5, i]):which(fraction_data$size == stats[6, i]),
   ]
-  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
   data_sub4 <- fraction_data[
     which(fraction_data$size == stats[6, i]):which(fraction_data_norm$size == 297.5),
   ]
@@ -867,9 +867,9 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      geom_vline(xintercept = as.numeric(stats[4, i])) +
-      geom_vline(xintercept = as.numeric(stats[5, i])) +
-      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      geom_vline(xintercept = stats[4, i]) +
+      geom_vline(xintercept = stats[5, i]) +
+      geom_vline(xintercept = stats[6, i]) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
       xlab("Diameter (nm)") +
       scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
@@ -941,15 +941,15 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
 
 for (i in seq(ncol(stats))) {
   data_sub1 <- fraction_data_scaled[1:which(fraction_data_scaled$size == stats[4, i]), ]
-  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
   data_sub2 <- fraction_data_scaled[
     which(fraction_data_scaled$size == stats[4, i]):which(fraction_data_scaled$size == stats[5, i]),
   ]
-  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
   data_sub3 <- fraction_data_scaled[
     which(fraction_data_scaled$size == stats[5, i]):which(fraction_data_scaled$size == stats[6, i]),
   ]
-  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
   data_sub4 <- fraction_data_scaled[
     which(fraction_data_scaled$size == stats[6, i]):which(fraction_data_scaled$size == 297.5),
   ]
@@ -974,9 +974,9 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      geom_vline(xintercept = as.numeric(stats[4, i])) +
-      geom_vline(xintercept = as.numeric(stats[5, i])) +
-      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      geom_vline(xintercept = stats[4, i]) +
+      geom_vline(xintercept = stats[5, i]) +
+      geom_vline(xintercept = stats[6, i]) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
       xlab("Diameter (nm)") +
       scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
@@ -1048,15 +1048,15 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
 
 for (i in seq(ncol(stats))) {
   data_sub1 <- fraction_data_norm[1:which(fraction_data_norm$size == stats[4, i]), ]
-  data_sub1[nrow(data_sub1) , 1] <- as.numeric(stats[4, i]) - 10e-6
+  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
   data_sub2 <- fraction_data_norm[
     which(fraction_data_norm$size == stats[4, i]):which(fraction_data_norm$size == stats[5, i]),
   ]
-  data_sub2[nrow(data_sub2) , 1] <- as.numeric(stats[5, i]) - 10e-6
+  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
   data_sub3 <- fraction_data_norm[
     which(fraction_data_norm$size == stats[5, i]):which(fraction_data_norm$size == stats[6, i]),
   ]
-  data_sub3[nrow(data_sub3) , 1] <- as.numeric(stats[6, i]) - 10e-6
+  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
   data_sub4 <- fraction_data_norm[
     which(fraction_data_norm$size == stats[6, i]):which(fraction_data_norm$size == 297.5),
   ]
@@ -1081,9 +1081,9 @@ for (i in seq(ncol(stats))) {
       scale_fill_brewer(guide = "none") +
       scale_color_manual(values = hue_pal()(8)[i]) +
       theme_light() +
-      geom_vline(xintercept = as.numeric(stats[4, i])) +
-      geom_vline(xintercept = as.numeric(stats[5, i])) +
-      geom_vline(xintercept = as.numeric(stats[6, i])) +
+      geom_vline(xintercept = stats[4, i]) +
+      geom_vline(xintercept = stats[5, i]) +
+      geom_vline(xintercept = stats[6, i]) +
       guides(color = guide_legend(override.aes = list(fill = NA))) +
       xlab("Diameter (nm)") +
       scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
