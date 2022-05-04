@@ -684,10 +684,10 @@ for (i in seq_along(counts_per_size)) {
   counts_per_size[[i]] <- rep(fraction_sums[ , 1], fraction_sums[ , i + 1])
   stats[1, i] <- mean(counts_per_size[[i]])
   stats[2, i] <- median(counts_per_size[[i]])
-  stats[3, i] <- names(table(counts_per_size[[i]]))[
+  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ]
-  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+  ])
+  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
 datatable_download(stats)
@@ -754,15 +754,15 @@ stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_scaled)- 1))
 colnames(stats) <- colnames(fraction_sums_scaled[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
-counts_per_size <- vector("list", ncol(fraction_sums_scaled)- 1)
+counts_per_size <- vector("list", ncol(fraction_sums)- 1)
 for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(fraction_sums_scaled[ , 1], fraction_sums_scaled[ , i + 1])
+  counts_per_size[[i]] <- rep(fraction_sums[ , 1], fraction_sums[ , i + 1])
   stats[1, i] <- mean(counts_per_size[[i]])
   stats[2, i] <- median(counts_per_size[[i]])
-  stats[3, i] <- names(table(counts_per_size[[i]]))[
+  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ]
-  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+  ])
+  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
 datatable_download(stats)
@@ -829,15 +829,15 @@ stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_norm)- 1))
 colnames(stats) <- colnames(fraction_sums_norm[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
-counts_per_size <- vector("list", ncol(fraction_sums_norm)- 1)
+counts_per_size <- vector("list", ncol(fraction_sums)- 1)
 for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(fraction_sums_norm[ , 1], fraction_sums_norm[ , i + 1])
+  counts_per_size[[i]] <- rep(fraction_sums[ , 1], fraction_sums[ , i + 1])
   stats[1, i] <- mean(counts_per_size[[i]])
   stats[2, i] <- median(counts_per_size[[i]])
-  stats[3, i] <- names(table(counts_per_size[[i]]))[
+  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
     table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ]
-  stats[4:6, i] <- quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
+  ])
+  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
 }
 
 datatable_download(stats)
