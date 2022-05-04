@@ -149,11 +149,11 @@ for (i in seq_along(rownames(scaling_factor))) {
       data_norm[j] <- data_norm[j] * scaling_factor[i, ]
   }
 }
-
-# Min-max normalisation.
-# ----------------------
-data_norm[ , -1] <- (data_norm[ , -1] / max(data_norm[ , -1])) * 100
-# ----------------------
+for (i in seq_along(colnames(data_norm))) {
+  if (i != 1) {
+    data_norm[i] <- (data_norm[i] / sum(data_norm[i])) * 100
+  }
+}
 
 names <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
 donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
@@ -350,11 +350,11 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
   theme(legend.position = "none") +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -366,11 +366,11 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
   theme(legend.position = "none") +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -480,11 +480,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -495,11 +495,11 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -609,11 +609,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth() +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -624,11 +624,11 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -738,11 +738,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_smooth(span = 0.1) +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -753,11 +753,11 @@ ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
 ggplot(molten_data, aes(Size, relative_proportion, color = Sample)) +
   geom_line() +
   theme_light() +
-  ylab("Relative Proportion") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 5),
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   )
 ```
@@ -1088,8 +1088,9 @@ for (i in seq(ncol(stats))) {
       xlab("Diameter (nm)") +
       scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
       scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
-      )
+        breaks = seq(0, max(molten_data$Frequency), 0.5), limits = c(0, max(molten_data$Frequency))
+      ) +
+      ylab("Relative Proportion of Total Counts Per Sample (%)")
   )
 }
 ```
