@@ -774,7 +774,7 @@ for (i in seq_along(names)) {
 }
 colnames(donor_sums) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums) - 1))
 colnames(stats) <- colnames(donor_sums[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
@@ -881,7 +881,7 @@ for (i in seq_along(names)) {
 }
 colnames(donor_sums_scaled) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums_scaled)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums_scaled) - 1))
 colnames(stats) <- colnames(donor_sums_scaled[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
@@ -988,7 +988,7 @@ for (i in seq_along(names)) {
 }
 colnames(donor_sums_norm) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums_norm)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_sums_norm) - 1))
 colnames(stats) <- colnames(donor_sums_norm[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
@@ -1096,7 +1096,7 @@ for (i in seq_along(names)) {
 }
 colnames(fraction_sums) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums) - 1))
 colnames(stats) <- colnames(fraction_sums[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
@@ -1203,7 +1203,7 @@ for (i in seq_along(names)) {
 }
 colnames(fraction_sums_scaled) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_scaled)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_scaled) - 1))
 colnames(stats) <- colnames(fraction_sums_scaled[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
@@ -1310,7 +1310,7 @@ for (i in seq_along(names)) {
 }
 colnames(fraction_sums_norm) <- c("size", names)
 
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_norm)- 1))
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(fraction_sums_norm) - 1))
 colnames(stats) <- colnames(fraction_sums_norm[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
