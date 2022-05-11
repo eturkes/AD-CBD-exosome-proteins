@@ -1790,7 +1790,7 @@ for (i in seq(ncol(stats))) {
 }
 ```
 
-### Normalisation by Mode
+### Normalised by Mode
 
 ```{r}
 names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_mode[ , -1])))
