@@ -546,3 +546,19 @@ getGN <- function(x) {
   return(gn)
 }
 # --------------------------------------------------------------
+
+# The following section originates from content on STHDA
+# http://www.sthda.com/english/wiki/ggplot2-error-bars-quick-start-guide-r-software-and-data-visualization
+# --------------------------------------------------------------------------------------------------------
+data_summary <- function(data, varname, groupnames){
+  require(plyr)
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, groupnames, .fun=summary_func,
+                  varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+  return(data_sum)
+}
+# --------------------------------------------------------------------------------------------------------
