@@ -284,10 +284,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   theme(legend.position = "none") +
@@ -312,10 +312,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   theme(legend.position = "none") +
@@ -340,13 +340,13 @@ stats <- data_summary(molten_data, "relative_proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
     aes(
       ymin = relative_proportion - SD, ymax = relative_proportion + SD
     ),
-    width = 0.2,
+    size = 0.2,
     position = position_dodge(0.05)
   ) +
   theme_light() +
@@ -374,10 +374,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   theme(legend.position = "none") +
@@ -406,10 +406,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -433,10 +433,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -460,13 +460,13 @@ stats <- data_summary(molten_data, "relative_proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
     aes(
       ymin = relative_proportion - SD, ymax = relative_proportion + SD
     ),
-    width = 0.2,
+    size = 0.2,
     position = position_dodge(0.05)
   ) +
   theme_light() +
@@ -493,10 +493,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   ylab("Normalised Relative Frequency") +
@@ -524,10 +524,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -551,10 +551,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -578,13 +578,13 @@ stats <- data_summary(molten_data, "relative_proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
     aes(
       ymin = relative_proportion - SD, ymax = relative_proportion + SD
     ),
-    width = 0.2,
+    size = 0.2,
     position = position_dodge(0.05)
   ) +
   theme_light() +
@@ -611,10 +611,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   ylab("Normalised Relative Frequency") +
@@ -642,10 +642,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -669,10 +669,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
@@ -696,13 +696,13 @@ stats <- data_summary(molten_data, "relative_proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
     aes(
       ymin = relative_proportion - SD, ymax = relative_proportion + SD
     ),
-    width = 0.2,
+    size = 0.2,
     position = position_dodge(0.05)
   ) +
   theme_light() +
@@ -729,10 +729,10 @@ stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
 ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.5) +
   geom_errorbar(
-    aes(ymin = Frequency - SD, ymax = Frequency + SD), width = 0.2, position = position_dodge(0.05)
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2, position = position_dodge(0.05)
   ) +
   theme_light() +
   ylab("Normalised Relative Frequency") +
