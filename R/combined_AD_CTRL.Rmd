@@ -1270,7 +1270,6 @@ We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
-gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 # --------------------------------------------------------
 
@@ -1459,7 +1458,6 @@ We use cell-type markers from the PanglaoDB database [https://panglaodb.se/marke
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
-gene_sets <- filterGeneSets(gene_sets, 5, 500)
 gene_sets
 # --------------------------------------------------------
 
