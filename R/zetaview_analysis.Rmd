@@ -824,53 +824,6 @@ ggplot(molten_data, aes(Donor, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- donor_data[1:which.min(abs(donor_data$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- donor_data[
-    which.min(abs(donor_data$size - stats[4, i])):which.min(abs(donor_data$size - stats[5, i])),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- donor_data[
-    which.min(abs(donor_data$size - stats[5, i])):which.min(abs(donor_data$size - stats[6, i])),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- donor_data[
-    which.min(abs(donor_data$size - stats[6, i])):which.min(abs(donor_data$size - 297.5)),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
-      )
-  )
-}
 ```
 
 ### Normalised By Tissue Amt.
@@ -931,65 +884,6 @@ ggplot(molten_data, aes(Donor, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- donor_data_scaled[1:which.min(abs(donor_data_scaled$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- donor_data_scaled[
-    which.min(
-      abs(donor_data_scaled$size - stats[4, i])
-    ):which.min(
-      abs(donor_data_scaled$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- donor_data_scaled[
-    which.min(
-      abs(donor_data_scaled$size - stats[5, i])
-    ):which.min(
-      abs(donor_data_scaled$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- donor_data_scaled[
-    which.min(
-      abs(donor_data_scaled$size - stats[6, i])
-    ):which.min(
-      abs(donor_data_scaled$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
-      )
-  )
-}
 ```
 
 ### Proportion of Total Counts
@@ -1050,66 +944,6 @@ ggplot(molten_data, aes(Donor, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- donor_data_norm[1:which.min(abs(donor_data_norm$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- donor_data_norm[
-    which.min(
-      abs(donor_data_norm$size - stats[4, i])
-    ):which.min(
-      abs(donor_data_norm$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- donor_data_norm[
-    which.min(
-      abs(donor_data_norm$size - stats[5, i])
-    ):which.min(
-      abs(donor_data_norm$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- donor_data_norm[
-    which.min(
-      abs(donor_data_norm$size - stats[6, i])
-    ):which.min(
-      abs(donor_data_norm$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 0.5), limits = c(0, max(molten_data$Frequency))
-      ) +
-      ylab("Relative Proportion of Total Counts Per Sample (%)")
-  )
-}
 ```
 
 ### Normalised by Mode
@@ -1170,66 +1004,6 @@ ggplot(molten_data, aes(Donor, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- donor_data_mode[1:which.min(abs(donor_data_mode$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- donor_data_mode[
-    which.min(
-      abs(donor_data_mode$size - stats[4, i])
-    ):which.min(
-      abs(donor_data_mode$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- donor_data_mode[
-    which.min(
-      abs(donor_data_mode$size - stats[5, i])
-    ):which.min(
-      abs(donor_data_mode$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- donor_data_mode[
-    which.min(
-      abs(donor_data_mode$size - stats[6, i])
-    ):which.min(
-      abs(donor_data_mode$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 0.1), limits = c(0, max(molten_data$Frequency))
-      ) +
-      ylab("Normalised Relative Frequency")
-  )
-}
 ```
 
 ## By Fraction
@@ -1290,53 +1064,6 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- fraction_data[1:which.min(abs(fraction_data$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- fraction_data[
-    which.min(abs(fraction_data$size - stats[4, i])):which.min(abs(fraction_data$size - stats[5, i])),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- fraction_data[
-    which.min(abs(fraction_data$size - stats[5, i])):which.min(abs(fraction_data$size - stats[6, i])),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- fraction_data[
-    which.min(abs(fraction_data$size - stats[6, i])):which.min(abs(fraction_data$size - 297.5)),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
-      )
-  )
-}
 ```
 
 ### Normalised By Tissue Amt.
@@ -1397,65 +1124,6 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- fraction_data_scaled[1:which.min(abs(fraction_data_scaled$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- fraction_data_scaled[
-    which.min(
-      abs(fraction_data_scaled$size - stats[4, i])
-    ):which.min(
-      abs(fraction_data_scaled$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- fraction_data_scaled[
-    which.min(
-      abs(fraction_data_scaled$size - stats[5, i])
-    ):which.min(
-      abs(fraction_data_scaled$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- fraction_data_scaled[
-    which.min(
-      abs(fraction_data_scaled$size - stats[6, i])
-    ):which.min(
-      abs(fraction_data_scaled$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
-      )
-  )
-}
 ```
 
 ### Proportion of Total Counts
@@ -1516,66 +1184,6 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- fraction_data_norm[1:which.min(abs(fraction_data_norm$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- fraction_data_norm[
-    which.min(
-      abs(fraction_data_norm$size - stats[4, i])
-    ):which.min(
-      abs(fraction_data_norm$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- fraction_data_norm[
-    which.min(
-      abs(fraction_data_norm$size - stats[5, i])
-    ):which.min(
-      abs(fraction_data_norm$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- fraction_data_norm[
-    which.min(
-      abs(fraction_data_norm$size - stats[6, i])
-    ):which.min(
-      abs(fraction_data_norm$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 0.5), limits = c(0, max(molten_data$Frequency))
-      ) +
-      ylab("Relative Proportion of Total Counts Per Sample (%)")
-  )
-}
 ```
 
 ### Normalised by Mode
@@ -1636,66 +1244,6 @@ ggplot(molten_data, aes(Fraction, Diameter, fill = Statistic)) +
   ylab("Relative Difference in Diameter") +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data$Diameter), 0.05))
-
-for (i in seq(ncol(stats))) {
-  data_sub1 <- fraction_data_mode[1:which.min(abs(fraction_data_mode$size - stats[4, i])), ]
-  data_sub1[nrow(data_sub1) , 1] <- stats[4, i] - 10e-6
-  data_sub2 <- fraction_data_mode[
-    which.min(
-      abs(fraction_data_mode$size - stats[4, i])
-    ):which.min(
-      abs(fraction_data_mode$size - stats[5, i])
-    ),
-  ]
-  data_sub2[nrow(data_sub2) , 1] <- stats[5, i] - 10e-6
-  data_sub3 <- fraction_data_mode[
-    which.min(
-      abs(fraction_data_mode$size - stats[5, i])
-    ):which.min(
-      abs(fraction_data_mode$size - stats[6, i])
-    ),
-  ]
-  data_sub3[nrow(data_sub3) , 1] <- stats[6, i] - 10e-6
-  data_sub4 <- fraction_data_mode[
-    which.min(
-      abs(fraction_data_mode$size - stats[6, i])
-    ):which.min(
-      abs(fraction_data_mode$size - 297.5)
-    ),
-  ]
-  data_sub <- do.call("rbind", list(data_sub1, data_sub2, data_sub3, data_sub4))
-
-  molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-  molten_data <- molten_data[molten_data$variable == colnames(stats)[i], ]
-  colnames(molten_data) <- c("Sample", "Frequency")
-  molten_data$Size <- data_sub$size
-  molten_data$percentiles <- factor(
-    findInterval(molten_data$Size, quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-  )
-
-  plot(
-    ggplot(molten_data, aes(Size, Frequency, color = Sample)) +
-      geom_area(aes(fill = percentiles), outline.type = "full") +
-      scale_x_continuous(
-        sec.axis = dup_axis(
-          name = "Percentile", breaks = quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9))
-        )
-      ) +
-      scale_fill_brewer(guide = "none") +
-      scale_color_manual(values = hue_pal()(8)[i]) +
-      theme_light() +
-      geom_vline(xintercept = stats[4, i]) +
-      geom_vline(xintercept = stats[5, i]) +
-      geom_vline(xintercept = stats[6, i]) +
-      guides(color = guide_legend(override.aes = list(fill = NA))) +
-      xlab("Diameter (nm)") +
-      scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
-      scale_y_continuous(
-        breaks = seq(0, max(molten_data$Frequency), 0.1), limits = c(0, max(molten_data$Frequency))
-      ) +
-      ylab("Relative Proportion of Total Counts Per Sample (%)")
-  )
-}
 ```
 
 # References
