@@ -65,7 +65,7 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm")
+packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -768,6 +768,11 @@ Here we calculate the mean, median, mode and percentiles of each distribution.
 
 ## Donor by Fraction
 
+```{r}
+colour <- colour("vibrant")(length(unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))))
+names(colour) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+```
+
 ### Unnormalised
 
 ```{r}
@@ -805,19 +810,28 @@ molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 
 for (i in seq_along(unique(molten_data$Statistic))) {
+  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
-    ggplot(
-      molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ],
-      aes(Fraction, Diameter)
-    ) +
+    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
       stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "lightgrey", outlier.shape = NA) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
+      stat_summary(
+        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
+        width = 0.75, linetype = "dashed", size = 1
+      ) +
       geom_beeswarm(aes(fill = Donor), size = 3, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
       ) +
       theme_light() +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme(plot.title = element_text(hjust = 0.5)) +
+      scale_fill_manual(values = colour) +
+      scale_y_continuous(
+        breaks = seq(
+          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
+        ),
+        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
+      )
   )
 }
 ```
@@ -859,19 +873,28 @@ molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 
 for (i in seq_along(unique(molten_data$Statistic))) {
+  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
-    ggplot(
-      molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ],
-      aes(Fraction, Diameter)
-    ) +
+    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
       stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "lightgrey", outlier.shape = NA) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
+      stat_summary(
+        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
+        width = 0.75, linetype = "dashed", size = 1
+      ) +
       geom_beeswarm(aes(fill = Donor), size = 3, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
       ) +
       theme_light() +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme(plot.title = element_text(hjust = 0.5)) +
+      scale_fill_manual(values = colour) +
+      scale_y_continuous(
+        breaks = seq(
+          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
+        ),
+        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
+      )
   )
 }
 ```
@@ -913,19 +936,28 @@ molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 
 for (i in seq_along(unique(molten_data$Statistic))) {
+  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
-    ggplot(
-      molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ],
-      aes(Fraction, Diameter)
-    ) +
+    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
       stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "lightgrey", outlier.shape = NA) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
+      stat_summary(
+        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
+        width = 0.75, linetype = "dashed", size = 1
+      ) +
       geom_beeswarm(aes(fill = Donor), size = 3, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
       ) +
       theme_light() +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme(plot.title = element_text(hjust = 0.5)) +
+      scale_fill_manual(values = colour) +
+      scale_y_continuous(
+        breaks = seq(
+          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
+        ),
+        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
+      )
   )
 }
 ```
@@ -967,19 +999,28 @@ molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
 
 for (i in seq_along(unique(molten_data$Statistic))) {
+  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
-    ggplot(
-      molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ],
-      aes(Fraction, Diameter)
-    ) +
+    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
       stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "lightgrey", outlier.shape = NA) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
+      stat_summary(
+        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
+        width = 0.75, linetype = "dashed", size = 1
+      ) +
       geom_beeswarm(aes(fill = Donor), size = 3, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
       ) +
       theme_light() +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme(plot.title = element_text(hjust = 0.5)) +
+      scale_fill_manual(values = colour) +
+      scale_y_continuous(
+        breaks = seq(
+          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
+        ),
+        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
+      )
   )
 }
 ```
