@@ -1,7 +1,7 @@
 ---
 title: "Dataset 2 AD CTRL"
 author:
-  - name: "Emir Turkes [emir.turkes@eturkes.com]"
+  - name: "Emir Turkes and Stephanie Fowler"
   - name: "UK Dementia Research Institute at UCL"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
 bibliography: "../AD-CBD-exosome-proteins.bib"
@@ -44,8 +44,8 @@ div.main-container {max-width: none; width: 100%;}
 The data here is derived from @dataset2 and will be referenced using the name `dataset2`.
 
 ```{r}
-# Copyright 2019-2022 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
-# University Medical Center
+# Copyright 2019-2022 Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia University Medical
+# Center
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

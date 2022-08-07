@@ -1,7 +1,7 @@
 ---
 title: "TAU Peptides No Scaling Factor"
 author:
-  - name: "Emir, Pal, and Steph"
+  - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
 bibliography: "../AD-CBD-exosome-proteins.bib"
 link-citations: true
@@ -49,8 +49,8 @@ Note that due to the size of the dataset, many tables hold just a subset.
 ```{r}
 # Some standard boilerplate.
 # --------------------------
-# Copyright 2019-2022 Emir Turkes, Guar Pallavi, Stephanie Fowler, UK DRI at UCL, Columbia
-# University Medical Center
+# Copyright 2019-2022 Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia University Medical
+# Center
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
