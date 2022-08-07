@@ -39,6 +39,7 @@ RUN apt-get update \
         -e "install.packages('dplyr')" \
         -e "install.packages('hexbin')" \
         -e "install.packages('openxlsx')" \
+        -e "install.packages('ggbeeswarm')" \
         -e "install.packages('BiocManager')" \
         -e "install.packages('devtools')" \
         -e "BiocManager::install('DEP')" \
