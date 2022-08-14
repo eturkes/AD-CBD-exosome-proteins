@@ -390,7 +390,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
 #' # Plot intensities of proteins with missing values
 #' plot_detect_custom(filt)
 #' @export
-plot_detect_custom <- function(se) {
+plot_detect_custom <- function(se, threshold = 0.35) {
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(se, "SummarizedExperiment"))
 
@@ -446,7 +446,7 @@ plot_detect_custom <- function(se) {
   # ----------------------------------------------------------------------------------
   d1 <- diff(y) / diff(x)
   d2 <- diff(d1) / diff(x[-1])
-  idx <- which(abs(d2) > 0.35)
+  idx <- which(abs(d2) > threshold)
   # ----------------------------------------------------------------------------------
 
   # Recreate the plot, with a cutoff line at the minimum elbow point.
