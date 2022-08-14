@@ -84,7 +84,7 @@ data_name <- "oxford-ms-data-april-2022"
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name)
+cache_dir <- file.path("..", "tmp", "cache", data_name, "fractions")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
@@ -149,12 +149,6 @@ data
 datatable_download(assay(data))
 ```
 
-**After removal of log transformation**
-
-```{r}
-datatable_download(2 ^ assay(data))
-```
-
 # QC
 
 We apply quality control to the data.
@@ -178,23 +172,57 @@ The basic workflow is shown below:
 ```{r}
 # Step 1 in flowchart.
 # Remove proteins missing entirely in one condition.
-# --------------------------------------------------
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE)))
-data <- data[-discard, ]
-discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE)))
-data <- data[-discard, ]
+# # --------------------------------------------------
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE)))
+# data <- data[-discard, ]
+# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE)))
+# data <- data[-discard, ]
+
+rds <- file.path(cache_dir, "data_NA_replaced.rds")
+if (file.exists(rds)) {
+  data <- readRDS(rds)
+} else {
+
+  min <- min(assay(data), na.rm = TRUE)
+
+  for (fraction in unique(data$condition)) {
+    replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
+    set.seed(1)
+    col <- sample(which(data$condition == fraction), length(replace), TRUE)
+    for (i in seq_along(replace)) {
+      assay(data)[replace[i], col[i]] <- min
+    }
+  }
+  saveRDS(data, rds)
+}
+
+# rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
+# if (file.exists(rds)) {
+#   data <- readRDS(rds)
+# } else {
+#   for (fraction in unique(data$condition)) {
+#     min <- min(assay(data)[ , which(data$condition == fraction)], na.rm = TRUE)
+#     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
+#     set.seed(1)
+#     col <- sample(which(data$condition == fraction), length(replace), TRUE)
+#     for (i in seq_along(replace)) {
+#       assay(data)[replace[i], col[i]] <- min
+#     }
+#   }
+#   saveRDS(data, rds)
+# }
 # --------------------------------------------------
 
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
@@ -211,54 +239,59 @@ plot_detect(data)
 # --------------------------------------------------------------------------------------------------
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.1")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 1.\nCutoff at ", MNAR_cutoff))
-plot
+F1_MNAR_cutoff <- 13.3
+F1_MNAR_cutoff <- 14.9
+cat(paste0("For Fraction 1.\nCutoff at ", F1_MNAR_cutoff))
+plot + geom_vline(xintercept = F1_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.2")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 2.\nCutoff at ", MNAR_cutoff))
-plot
+F2_MNAR_cutoff <- 13.6
+F2_MNAR_cutoff <- 14.7
+cat(paste0("For Fraction 2.\nCutoff at ", F2_MNAR_cutoff))
+plot + geom_vline(xintercept = F2_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.3")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 3.\nCutoff at ", MNAR_cutoff))
-plot
+F3_MNAR_cutoff <- 13.6
+F3_MNAR_cutoff <- 14.9
+cat(paste0("For Fraction 3.\nCutoff at ", F3_MNAR_cutoff))
+plot + geom_vline(xintercept = F3_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.4")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 4.\nCutoff at ", MNAR_cutoff))
-plot
+F4_MNAR_cutoff <- 13.3
+F4_MNAR_cutoff <- 14.3
+cat(paste0("For Fraction 4.\nCutoff at ", F4_MNAR_cutoff))
+plot + geom_vline(xintercept = F4_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.5")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 5.\nCutoff at ", MNAR_cutoff))
-plot
+F5_MNAR_cutoff <- 12.7
+F5_MNAR_cutoff <- 14.6
+cat(paste0("For Fraction 5.\nCutoff at ", F5_MNAR_cutoff))
+plot + geom_vline(xintercept = F5_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.6")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 6.\nCutoff at ", MNAR_cutoff))
-plot
+F6_MNAR_cutoff <- 12.9
+F6_MNAR_cutoff <- 14.5
+cat(paste0("For Fraction 6.\nCutoff at ", F6_MNAR_cutoff))
+plot + geom_vline(xintercept = F6_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.7")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 7.\nCutoff at ", MNAR_cutoff))
-plot
+F7_MNAR_cutoff <- 13.3
+F7_MNAR_cutoff <- 15.3
+cat(paste0("For Fraction 7.\nCutoff at ", F7_MNAR_cutoff))
+plot + geom_vline(xintercept = F7_MNAR_cutoff)
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
 plot_data <- ggplot_build(plot)
-MNAR_cutoff <- plot_data$data[[2]]$xintercept
-cat(paste0("For Fraction 7.\nCutoff at ", MNAR_cutoff))
-plot
-
-MNAR_cutoff <- 12
-cat(paste0("We set the cutoff at ", MNAR_cutoff))
+F8_MNAR_cutoff <- 15.6
+F8_MNAR_cutoff <- 17.9
+cat(paste0("For Fraction 8.\nCutoff at ", F8_MNAR_cutoff))
+plot + geom_vline(xintercept = F8_MNAR_cutoff)
 # --------------------------------------------------------------------------------------------------
 ```
 
@@ -271,56 +304,56 @@ cat(paste0("We set the cutoff at ", MNAR_cutoff))
 F1_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE))
 data <- data[F1_order, ]
 F1_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE) < F1_MNAR_cutoff)
 )
 # plot_missval_custom(data, F1_MNAR)
 
 F2_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE))
 data <- data[F2_order, ]
 F2_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE) < F2_MNAR_cutoff)
 )
 # plot_missval_custom(data, F2_MNAR)
 
 F3_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE))
 data <- data[F3_order, ]
 F3_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE) < F3_MNAR_cutoff)
 )
 # plot_missval_custom(data, F3_MNAR)
 
 F4_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE))
 data <- data[F4_order, ]
 F4_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE) < F4_MNAR_cutoff)
 )
 # plot_missval_custom(data, F4_MNAR)
 
 F5_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE))
 data <- data[F5_order, ]
 F5_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE) < F5_MNAR_cutoff)
 )
 # plot_missval_custom(data, F5_MNAR)
 
 F6_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE))
 data <- data[F6_order, ]
 F6_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE) < F6_MNAR_cutoff)
 )
 # plot_missval_custom(data, F6_MNAR)
 
 F7_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE))
 data <- data[F7_order, ]
 F7_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE) < F7_MNAR_cutoff)
 )
 # plot_missval_custom(data, F7_MNAR)
 
 F8_order <- order(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE))
 data <- data[F8_order, ]
 F8_MNAR <- names(
-  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE) < MNAR_cutoff)
+  which(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE) < F8_MNAR_cutoff)
 )
 # plot_missval_custom(data, F8_MNAR)
 # --------------------------------------------------------------------------------------------
@@ -340,7 +373,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F1_data <- F1_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 1 group."))
 
-F2_data <- data[ , which(data$condition == "Fraction.1")]
+F2_data <- data[ , which(data$condition == "Fraction.2")]
 F2_data <- F2_data[rownames(F2_data) %notin% F2_MNAR, ]
 missing_data <- assay(F2_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -348,7 +381,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F2_data <- F2_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 2 group."))
 
-F3_data <- data[ , which(data$condition == "Fraction.1")]
+F3_data <- data[ , which(data$condition == "Fraction.3")]
 F3_data <- F3_data[rownames(F3_data) %notin% F3_MNAR, ]
 missing_data <- assay(F3_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -356,7 +389,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F3_data <- F3_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 3 group."))
 
-F4_data <- data[ , which(data$condition == "Fraction.1")]
+F4_data <- data[ , which(data$condition == "Fraction.4")]
 F4_data <- F4_data[rownames(F4_data) %notin% F4_MNAR, ]
 missing_data <- assay(F4_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -364,7 +397,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F4_data <- F4_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 4 group."))
 
-F5_data <- data[ , which(data$condition == "Fraction.1")]
+F5_data <- data[ , which(data$condition == "Fraction.5")]
 F5_data <- F5_data[rownames(F5_data) %notin% F5_MNAR, ]
 missing_data <- assay(F5_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -372,7 +405,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F5_data <- F5_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 5 group."))
 
-F6_data <- data[ , which(data$condition == "Fraction.1")]
+F6_data <- data[ , which(data$condition == "Fraction.6")]
 F6_data <- F6_data[rownames(F6_data) %notin% F6_MNAR, ]
 missing_data <- assay(F6_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -380,7 +413,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F6_data <- F6_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 6 group."))
 
-F7_data <- data[ , which(data$condition == "Fraction.1")]
+F7_data <- data[ , which(data$condition == "Fraction.7")]
 F7_data <- F7_data[rownames(F7_data) %notin% F7_MNAR, ]
 missing_data <- assay(F7_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -388,7 +421,7 @@ discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F7_data <- F7_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 7 group."))
 
-F8_data <- data[ , which(data$condition == "Fraction.1")]
+F8_data <- data[ , which(data$condition == "Fraction.8")]
 F8_data <- F8_data[rownames(F8_data) %notin% F8_MNAR, ]
 missing_data <- assay(F8_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
@@ -927,18 +960,6 @@ plot_frequency(data)
 plot_detect(data)
 ```
 
-**Data before normalization but after removal of missing values**
-
-```{r}
-datatable_download(assay(data))
-```
-
-**Complete cases before normalization but after removal of missing values**
-
-```{r}
-datatable_download(assay(complete_cases))
-```
-
 ## Normalization
 
 Here we perform VSN normalization.
@@ -979,12 +1000,6 @@ rm(
   Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
 )
 # --------------------------------------------------
-```
-
-**Data after normalization and log2 transformation**
-
-```{r}
-datatable_download(assay(data))
 ```
 
 ## Missing Value Imputation

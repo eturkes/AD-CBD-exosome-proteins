@@ -390,7 +390,7 @@ test_diff_custom <- function(se, type = c("control", "all", "manual"),
 #' # Plot intensities of proteins with missing values
 #' plot_detect_custom(filt)
 #' @export
-plot_detect_custom <- function(se, threshold = 0.35) {
+plot_detect_custom <- function(se, elbow = FALSE, threshold = 0.35) {
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(se, "SummarizedExperiment"))
 
@@ -425,42 +425,38 @@ plot_detect_custom <- function(se, threshold = 0.35) {
   p <- ggplot(stat, aes(mean, ..count.., fill = missval, color = missval)) +
     geom_density(position = "fill") +
     scale_x_continuous(expression(log[2]~"Intensity"), expand = c(0, 0), n.breaks = 10) +
-    scale_y_continuous("Relative proportion", labels = percent, expand = c(0, 0)) +
+    scale_y_continuous("Relative proportion", labels = percent, expand = c(0, 0), n.breaks = 10) +
     theme_DEP1() +
     scale_color_manual("Missing values", values = color) +
     scale_fill_manual("Missing values", values = color)
   # ---------------------------------------------------------------------
 
-  # Extract X and Y values of the curve.
-  # ------------------------------------
-  p <- ggplot_build(p)
-  x <- p$data[[1]]$x
-  y <- p$data[[1]]$y
-  # ------------------------------------
+  if (elbow == TRUE) {
 
-  # Find "elbow" points of the curve.
-  # The method is adapted from content on Stack Overflow.
-  # https://stackoverflow.com/questions/41518870/finding-the-elbow-knee-in-a-curve/
-  # Question asked by: dan https://stackoverflow.com/users/5548896/dan
-  # Answer given by: Sandipan Dey https://stackoverflow.com/users/4706171/sandipan-dey
-  # ----------------------------------------------------------------------------------
-  d1 <- diff(y) / diff(x)
-  d2 <- diff(d1) / diff(x[-1])
-  idx <- which(abs(d2) > threshold)
-  # ----------------------------------------------------------------------------------
+    # Extract X and Y values of the curve.
+    # ------------------------------------
+    p_build <- ggplot_build(p)
+    x <- p_build$data[[1]]$x
+    y <- p_build$data[[1]]$y
+    # ------------------------------------
 
-  # Recreate the plot, with a cutoff line at the minimum elbow point.
-  # -----------------------------------------------------------------
-  p <- ggplot(stat, aes(mean, ..count.., fill = missval, color = missval)) +
-    geom_density(position = "fill") +
-    scale_x_continuous(expression(log[2]~"Intensity"), expand = c(0, 0), n.breaks = 10) +
-    scale_y_continuous("Relative proportion", labels = percent, expand = c(0, 0)) +
-    theme_DEP1() +
-    scale_color_manual("Missing values", values = color) +
-    scale_fill_manual("Missing values", values = color) +
-    geom_vline(xintercept = min(x[idx]))
+    # Find "elbow" points of the curve.
+    # The method is adapted from content on Stack Overflow.
+    # https://stackoverflow.com/questions/41518870/finding-the-elbow-knee-in-a-curve/
+    # Question asked by: dan https://stackoverflow.com/users/5548896/dan
+    # Answer given by: Sandipan Dey https://stackoverflow.com/users/4706171/sandipan-dey
+    # ----------------------------------------------------------------------------------
+    d1 <- diff(y) / diff(x)
+    d2 <- diff(d1) / diff(x[-1])
+    idx <- which(abs(d2) > threshold)
+    # ----------------------------------------------------------------------------------
+
+    # Add cutoff line at the minimum elbow point to the plot.
+    # -------------------------------------------------------
+    p <- p + geom_vline(xintercept = min(x[idx]))
+    # -------------------------------------------------------
+  }
   p
-  # -----------------------------------------------------------------
 }
 
 # The following section originates from content on Github
