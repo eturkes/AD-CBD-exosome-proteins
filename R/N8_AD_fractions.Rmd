@@ -67,7 +67,7 @@ Each sample in the dataset represents a fraction from a single donor.
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
   "ComplexHeatmap", "EnhancedVolcano", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
-  "readxl"
+  "readxl", "khroma"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -141,6 +141,11 @@ experimental_design <- data.frame(
 
 data <- make_se(data, LFQ_columns, experimental_design)
 data
+
+colour <- colour("vibrant")(7)
+colour <- append("#DDAA33", colour)
+colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
+names(colour) <- unique(sub("\\.", " ", data$condition))
 ```
 
 **Unaltered data, already log2 transformed**
@@ -190,30 +195,14 @@ The basic workflow is shown below:
 # discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE)))
 # data <- data[-discard, ]
 
-rds <- file.path(cache_dir, "data_NA_replaced.rds")
-if (file.exists(rds)) {
-  data <- readRDS(rds)
-} else {
-
-  min <- min(assay(data), na.rm = TRUE)
-
-  for (fraction in unique(data$condition)) {
-    replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
-    set.seed(1)
-    col <- sample(which(data$condition == fraction), length(replace), TRUE)
-    for (i in seq_along(replace)) {
-      assay(data)[replace[i], col[i]] <- min
-    }
-  }
-  saveRDS(data, rds)
-}
-
-# rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
+# rds <- file.path(cache_dir, "data_NA_replaced.rds")
 # if (file.exists(rds)) {
 #   data <- readRDS(rds)
 # } else {
+# 
+#   min <- min(assay(data), na.rm = TRUE)
+# 
 #   for (fraction in unique(data$condition)) {
-#     min <- min(assay(data)[ , which(data$condition == fraction)], na.rm = TRUE)
 #     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
 #     set.seed(1)
 #     col <- sample(which(data$condition == fraction), length(replace), TRUE)
@@ -223,6 +212,22 @@ if (file.exists(rds)) {
 #   }
 #   saveRDS(data, rds)
 # }
+
+rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
+if (file.exists(rds)) {
+  data <- readRDS(rds)
+} else {
+  for (fraction in unique(data$condition)) {
+    min <- min(assay(data)[ , which(data$condition == fraction)], na.rm = TRUE)
+    replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
+    set.seed(1)
+    col <- sample(which(data$condition == fraction), length(replace), TRUE)
+    for (i in seq_along(replace)) {
+      assay(data)[replace[i], col[i]] <- min
+    }
+  }
+  saveRDS(data, rds)
+}
 # --------------------------------------------------
 
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
@@ -1098,20 +1103,48 @@ datatable_download(assay(data))
 
 **Using all proteins.**
 
-```{r}
-plot_pca(data, n = dim(data)[1], indicate = "condition", label = TRUE) +
-  scale_shape_manual(values = seq(0, ncol(data))) +
-  ggtitle("PCA Plot")
+```{r, dev = "svg"}
+pca <- prcomp(t(assay(data)))
+df <- as.data.frame(predict(pca)[ , 1:2])
+df$Fraction <- sub("\\.", " ", data$condition)
+df$Donor <- data$donor
+summary <- summary(pca)$importance
+
+ggplot(df, aes(PC1, PC2, color = Fraction)) +
+  geom_point(aes(shape = Donor), size = 2, stroke = 2) +
+  theme_bw() +
+  geom_polygon(stat = "ellipse", aes(fill = Fraction), alpha = 0.05) +
+  labs(
+    x = paste0("PC1: ", round(summary[2, 1] * 100, 1), "% of Variance Explained"),
+    y = paste0("PC2: ", round(summary[2, 2] * 100, 1), "% of Variance Explained")
+  ) +
+  scale_shape_manual(values = seq_along(df$Donor)) +
+  scale_fill_manual(values = colour) +
+  scale_colour_manual(values = colour) +
+  theme(axis.title = element_text(size = 16))
 ```
 
 **Using complete cases only.**
 
 ```{r}
-plot_pca(
-  complete_cases, n = dim(complete_cases)[1], indicate = "condition", label = TRUE
-) +
-  scale_shape_manual(values = seq(0, ncol(complete_cases))) +
-  ggtitle("PCA Plot")
+pca <- prcomp(t(assay(complete_cases)))
+df <- as.data.frame(predict(pca)[ , 1:2])
+df$Fraction <- sub("\\.", " ", complete_cases$condition)
+df$Donor <- complete_cases$donor
+summary <- summary(pca)$importance
+
+ggplot(df, aes(PC1, PC2, color = Fraction)) +
+  geom_point(aes(shape = Donor), size = 2, stroke = 2) +
+  theme_bw() +
+  geom_polygon(stat = "ellipse", aes(fill = Fraction), alpha = 0.05) +
+  labs(
+    x = paste0("PC1: ", round(summary[2, 1] * 100, 1), "% of Variance Explained"),
+    y = paste0("PC2: ", round(summary[2, 2] * 100, 1), "% of Variance Explained")
+  ) +
+  scale_shape_manual(values = seq_along(df$Donor)) +
+  scale_fill_manual(values = colour) +
+  scale_colour_manual(values = colour) +
+  theme(axis.title = element_text(size = 16))
 ```
 
 # Differential Expression
