@@ -41,6 +41,7 @@ RUN apt-get update \
         -e "install.packages('openxlsx')" \
         -e "install.packages('ggbeeswarm')" \
         -e "install.packages('khroma')" \
+        -e "install.packages('svglite')" \
         -e "install.packages('BiocManager')" \
         -e "install.packages('devtools')" \
         -e "BiocManager::install('DEP')" \

@@ -1103,7 +1103,7 @@ datatable_download(assay(data))
 
 **Using all proteins.**
 
-```{r, dev = "svg"}
+```{r, dev = "svglite"}
 pca <- prcomp(t(assay(data)))
 df <- as.data.frame(predict(pca)[ , 1:2])
 df$Fraction <- sub("\\.", " ", data$condition)
