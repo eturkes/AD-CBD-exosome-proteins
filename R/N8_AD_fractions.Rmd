@@ -151,7 +151,10 @@ names(colour) <- unique(sub("\\.", " ", data$condition))
 **Unaltered data, already log2 transformed**
 
 ```{r}
-datatable_download(assay(data))
+datatable <- assay(data)
+colnames(datatable) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+
+datatable_download(datatable)
 ```
 
 # QC
@@ -1096,7 +1099,10 @@ rm(Imputed_Data, Unimputed_Data)
 **This is final form used for differential expression analysis**
 
 ```{r}
-datatable_download(assay(data))
+datatable <- assay(data)
+colnames(datatable) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+
+datatable_download(datatable)
 ```
 
 ## PCA
