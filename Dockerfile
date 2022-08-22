@@ -42,11 +42,13 @@ RUN apt-get update \
         -e "install.packages('ggbeeswarm')" \
         -e "install.packages('khroma')" \
         -e "install.packages('svglite')" \
+        -e "install.packages('fastmatch')" \
         -e "install.packages('BiocManager')" \
         -e "install.packages('devtools')" \
         -e "BiocManager::install('DEP')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('variancePartition')" \
+        -e "BiocManager::install('biomaRt')" \
         -e "devtools::install_github('lgatto/pRolocdata')" \
         -e "devtools::install_github('kevinblighe/EnhancedVolcano')" \
     && apt-get clean \
