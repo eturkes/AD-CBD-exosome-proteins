@@ -12,3 +12,7 @@ NOTICE
 README.md
 results
 singularity.sh
+.Rproj.user
+tmp
+.env
+nohup.out
