@@ -1415,7 +1415,7 @@ results <- results[ , -1]
 
 ## F1-3
 
-```{r, fig.height = 10, fig.width = 14}
+```{r, fig.height = 10, fig.width = 15}
 tests_up <- tests[tests[ , 1] == 1 & tests[ , 2] == 1, ]
 
 up <- results[rownames(results) %in% rownames(tests_up), ]
@@ -1449,7 +1449,7 @@ draw(
 
 ## F4-6
 
-```{r, fig.width = 14}
+```{r, fig.width = 15}
 tests_up <- tests[tests[ , 1] == -1 & tests[ , 3] == 1, ]
 
 up <- results[rownames(results) %in% rownames(tests_up), ]
@@ -1483,7 +1483,7 @@ draw(
 
 ## F7-8
 
-```{r, fig.height = 10, fig.width = 14}
+```{r, fig.height = 10, fig.width = 15}
 tests_up <- tests[tests[ , 2] == -1 & tests[ , 3] == -1, ]
 
 up <- results[rownames(results) %in% rownames(tests_up), ]
@@ -1517,7 +1517,7 @@ draw(
 
 ## Combined
 
-```{r, fig.height = 14, fig.width = 14}
+```{r, fig.height = 16, fig.width = 15}
 order <- c(rownames(F1_3_combined), rownames(F4_6_combined), rownames(F7_8_combined))
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
