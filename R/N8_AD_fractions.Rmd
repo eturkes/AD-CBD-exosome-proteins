@@ -1190,6 +1190,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
@@ -1218,6 +1219,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
@@ -1246,6 +1248,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
@@ -1431,6 +1434,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
@@ -1464,6 +1468,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
@@ -1497,6 +1502,7 @@ draw(
   Heatmap(
     heatmap_data,
     cluster_columns = FALSE,
+    cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
