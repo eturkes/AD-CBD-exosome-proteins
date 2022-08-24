@@ -78,6 +78,8 @@ conflict_prefer("intersect", "base", quiet = TRUE)
 
 data_name <- "oxford-ms-data-april-2022"
 `%notin%` <- Negate(`%in%`)
+
+heatmap_color <- colorRamp2(c(-1, 0, 1), c("#0077BB", "#FFFFFF", "#CC3311"))
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -1186,15 +1188,18 @@ datatable_download_exp(up)
 heatmap_data <- assay(data)[rownames(data) %in% rownames(up)[1:25], ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
-    )
+    ),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1215,15 +1220,18 @@ datatable_download_exp(up)
 heatmap_data <- assay(data)[rownames(data) %in% rownames(up)[1:25], ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
-    )
+    ),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1244,15 +1252,18 @@ datatable_download_exp(up)
 heatmap_data <- assay(data)[rownames(data) %in% rownames(up)[1:25], ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     heatmap_legend_param = list(
       title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
-    )
+    ),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1411,11 +1422,35 @@ write.fit(
 results <- read.delim(file.path(cache_dir, "results.tsv"))
 rownames(results) <- results$X
 results <- results[ , -1]
+
+sub_ontology <- getGmt(
+  file.path(assets_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:BP.ENSG.gmt")
+)
+GO_BP <- c()
+for (i in seq(length(sub_ontology@.Data))) {
+  GO_BP <- append(GO_BP, sub_ontology[[i]]@shortDescription)
+}
+
+sub_ontology <- getGmt(
+  file.path(assets_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:MF.ENSG.gmt")
+)
+GO_MF <- c()
+for (i in seq(length(sub_ontology@.Data))) {
+  GO_MF <- append(GO_MF, sub_ontology[[i]]@shortDescription)
+}
+
+sub_ontology <- getGmt(
+  file.path(assets_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:CC.ENSG.gmt")
+)
+GO_CC <- c()
+for (i in seq(length(sub_ontology@.Data))) {
+  GO_CC <- append(GO_CC, sub_ontology[[i]]@shortDescription)
+}
 ```
 
 ## F1-3
 
-```{r, fig.height = 10, fig.width = 15}
+```{r, fig.height = 12, fig.width = 15}
 tests_up <- tests[tests[ , 1] == 1 & tests[ , 2] == 1, ]
 
 up <- results[rownames(results) %in% rownames(tests_up), ]
@@ -1430,9 +1465,11 @@ F1_3_combined <- up
 heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -1441,7 +1478,80 @@ draw(
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10)
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### BP
+
+```{r, fig.height = 10, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### MF
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### CC
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1464,9 +1574,11 @@ F4_6_combined <- up
 heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -1475,7 +1587,80 @@ draw(
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10)
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### BP
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### MF
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### CC
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1498,9 +1683,11 @@ F7_8_combined <- up
 heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -1509,7 +1696,80 @@ draw(
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10)
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### BP
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### MF
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### CC
+
+```{r, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
@@ -1517,15 +1777,138 @@ draw(
 
 ## Combined
 
-```{r, fig.height = 16, fig.width = 15}
+```{r, fig.height = 25, fig.width = 15, dev = "svglite"}
 order <- c(rownames(F1_3_combined), rownames(F4_6_combined), rownames(F7_8_combined))
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
 colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
 draw(
   Heatmap(
     heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 8),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### BP
+
+```{r, fig.height = 15, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### MF
+
+```{r, fig.height = 10, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### CC
+
+```{r, fig.height = 10, fig.width = 15}
+heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
+
+draw(
+  Heatmap(
+    heatmap_data_sub,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data_sub)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+## Curated
+
+### Two Per Ontology
+
+```{r, fig.height = 5, fig.width = 15, dev = "svglite"}
+order <- c(
+  "stimulatory C-type lectin receptor signaling pathway",
+  "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
+  "G protein activity",
+  "proteoglycan binding",
+  "platelet alpha granule membrane",
+  "anchored component of external side of plasma membrane",
+  "vesicle targeting",
+  "vesicle-mediated transport between endosomal compartments",
+  "protein-membrane adaptor activity",
+  "tau protein binding",
+  "early phagosome",
+  "postsynaptic specialization, intracellular component",
+  "mitochondrial genome maintenance",
+  "mitochondrial fission",
+  "fatty-acyl-CoA binding",
+  "NADH dehydrogenase activity",
+  "intrinsic component of mitochondrial outer membrane",
+  "cytochrome complex"
+)
+heatmap_data <- gsva[rownames(gsva) %in% order, ]
+heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
+colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -1534,7 +1917,46 @@ draw(
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10)
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+### One Per Ontology
+
+```{r, fig.height = 3, fig.width = 15, dev = "svglite"}
+order <- c(
+  "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
+  "proteoglycan binding",
+  "anchored component of external side of plasma membrane",
+  "vesicle-mediated transport between endosomal compartments",
+  "tau protein binding",
+  "early phagosome",
+  "mitochondrial fission",
+  "NADH dehydrogenase activity",
+  "cytochrome complex"
+)
+heatmap_data <- gsva[rownames(gsva) %in% order, ]
+heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
+colnames(heatmap_data) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
