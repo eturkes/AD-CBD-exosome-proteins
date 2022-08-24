@@ -1281,7 +1281,7 @@ if (file.exists(rds)) {
   gene_sets <- getGmt(
     file.path(assets_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO.all.ENSG.gmt")
   )
-  keep <- filterGeneSets(gene_sets, 10, 50)
+  keep <- filterGeneSets(gene_sets, 5, 50)
   gene_sets <- gene_sets[names(gene_sets) %in% names(keep)]
   for (i in seq(length(gene_sets@.Data))) {
     go_id <- gene_sets[[i]]@setName
@@ -1343,7 +1343,7 @@ if (file.exists(rds)) {
   tmp <- lapply(
     geneIds(gene_sets), function(x, y) na.omit(fastmatch::fmatch(x, y)), gene_anno$ensembl_gene_id
   )
-  tmp <- filterGeneSets(tmp, 10, 50)
+  tmp <- filterGeneSets(tmp, 5, 50)
   gene_sets <- gene_sets[names(gene_sets) %in% names(tmp)]
 
   overlap <- computeGeneSetsOverlapMax(gene_sets, unique(unlist(geneIds(gene_sets))))
