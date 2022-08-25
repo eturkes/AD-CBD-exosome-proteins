@@ -27,6 +27,7 @@ RUN apt-get update \
         libproj-dev \
         libcairo2-dev \
         libxt-dev \
+        libgsl23 \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
@@ -51,6 +52,7 @@ RUN apt-get update \
         -e "BiocManager::install('biomaRt')" \
         -e "devtools::install_github('lgatto/pRolocdata')" \
         -e "devtools::install_github('kevinblighe/EnhancedVolcano')" \
+        -e "devtools::install_github('KatrionaGoldmann/volcano3D')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
