@@ -1242,7 +1242,7 @@ F7_8_plus_F1_3 <- rownames(up)[1]
 datatable_download_exp(up)
 ```
 
-## Radial Plot
+## Radial and 3D Volcano Plots
 
 ```{r, dev = "svglite"}
 DEPs_main <- c(F1_3, F4_6, F7_8)
