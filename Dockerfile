@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM rocker/rstudio:4.1.2
+FROM rocker/rstudio:4.2.1
 
 LABEL maintainer="Emir Turkes emir.turkes@eturkes.com"
 
@@ -44,15 +44,15 @@ RUN apt-get update \
         -e "install.packages('khroma')" \
         -e "install.packages('svglite')" \
         -e "install.packages('fastmatch')" \
+        -e "install.packages('volcano3D')" \
         -e "install.packages('BiocManager')" \
-        -e "install.packages('devtools')" \
+        -e "install.packages('remotes')" \
         -e "BiocManager::install('DEP')" \
         -e "BiocManager::install('GSVA')" \
         -e "BiocManager::install('variancePartition')" \
         -e "BiocManager::install('biomaRt')" \
-        -e "devtools::install_github('lgatto/pRolocdata')" \
-        -e "devtools::install_github('kevinblighe/EnhancedVolcano')" \
-        -e "devtools::install_github('KatrionaGoldmann/volcano3D')" \
+        -e "BiocManager::install('EnhancedVolcano')" \
+        -e "remotes::install_github('lgatto/pRolocdata')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
         /tmp/downloaded_packages/ \
