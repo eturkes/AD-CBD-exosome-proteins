@@ -1,5 +1,5 @@
 ---
-title: "Zetaview Analysis"
+title: "Zetaview Analysis Number"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "zetaview-analysis.html"
+    "..", "results", "zetaview-analysis-number.html"
   ))})
 ---
 
@@ -109,7 +109,7 @@ for (i in seq_along(file_list)) {
   if (i == 1) {
     data[ , i] <- file[1:1200, 1]
   }
-  data[ , i + 1] <- file[1:1200, 3]
+  data[ , i + 1] <- file[1:1200, 2]
 }
 
 colnames(data) <- c(
@@ -281,28 +281,25 @@ Data objects without any limit on size are also provided for browsing and downlo
 ```{r}
 data_sub <- data[1:which(data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   theme(legend.position = "none") +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(data)
@@ -313,28 +310,25 @@ datatable_download(data)
 ```{r}
 data_sub <- data_scaled[1:which(data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   theme(legend.position = "none") +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(data_scaled)
@@ -380,27 +374,27 @@ datatable_download(data_norm)
 ```{r}
 data_sub <- data_mode[1:which(data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   theme(legend.position = "none") +
-  ylab("Normalised Relative Concentration") +
+  ylab("Normalised Relative Frequency") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 0.1),
-    limits = c(0, max(molten_data$Concentration))
+    breaks = seq(0, max(molten_data$Frequency), 0.1),
+    limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(data_mode)
@@ -413,27 +407,24 @@ datatable_download(data_mode)
 ```{r}
 data_sub <- donor_fraction_data[1:which(donor_fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_fraction_data)
@@ -444,27 +435,24 @@ datatable_download(donor_fraction_data)
 ```{r}
 data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_fraction_data_scaled)
@@ -509,26 +497,26 @@ datatable_download(donor_fraction_data_norm)
 ```{r}
 data_sub <- donor_fraction_data_mode[1:which(donor_fraction_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Normalised Relative Concentration") +
+  ylab("Normalised Relative Frequency") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 0.1),
-    limits = c(0, max(molten_data$Concentration))
+    breaks = seq(0, max(molten_data$Frequency), 0.1),
+    limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_fraction_data_mode)
@@ -541,27 +529,24 @@ datatable_download(donor_fraction_data_mode)
 ```{r}
 data_sub <- donor_data[1:which(donor_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_data)
@@ -572,27 +557,24 @@ datatable_download(donor_data)
 ```{r}
 data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_data_scaled)
@@ -637,26 +619,26 @@ datatable_download(donor_data_norm)
 ```{r}
 data_sub <- donor_data_mode[1:which(donor_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Normalised Relative Concentration") +
+  ylab("Normalised Relative Frequency") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 0.1),
-    limits = c(0, max(molten_data$Concentration))
+    breaks = seq(0, max(molten_data$Frequency), 0.1),
+    limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(donor_data_mode)
@@ -669,27 +651,24 @@ datatable_download(donor_data_mode)
 ```{r}
 data_sub <- fraction_data[1:which(fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(fraction_data)
@@ -700,27 +679,24 @@ datatable_download(fraction_data)
 ```{r}
 data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   xlab("Diameter (nm)") +
-  ylab(bquote("Concentration ("*cm^-3*")")) +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 250000),
-    limits = c(0, max(molten_data$Concentration)),
-    labels = function(x) format(x, scientific = TRUE)
+    breaks = seq(0, max(molten_data$Frequency), 5), limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(fraction_data_scaled)
@@ -765,26 +741,26 @@ datatable_download(fraction_data_norm)
 ```{r}
 data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Concentration")
+colnames(molten_data) <- c("Sample", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "Concentration", "Size")
+stats <- data_summary(molten_data, "Frequency", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    aes(ymin = Frequency - SD, ymax = Frequency + SD), size = 0.2,
     position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Normalised Relative Concentration") +
+  ylab("Normalised Relative Frequency") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$Concentration), 0.1),
-    limits = c(0, max(molten_data$Concentration))
+    breaks = seq(0, max(molten_data$Frequency), 0.1),
+    limits = c(0, max(molten_data$Frequency))
   )
 
 datatable_download(fraction_data_mode)

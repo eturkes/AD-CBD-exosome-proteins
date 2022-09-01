@@ -1,0 +1,803 @@
+---
+title: "Zetaview Analysis Concentration"
+author:
+  - name: "Emir Turkes and Stephanie Fowler"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+bibliography: "../AD-CBD-exosome-proteins.bib"
+link-citations: true
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
+    "..", "results", "zetaview-analysis-concentration.html"
+  ))})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+h3 {font-size: 20px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+.tocify-subheader .tocify-subheader .tocify-item {
+  font-size: 0.95em; padding-left: 35px; text-indent: 0;
+}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
+*Please email for access.*
+
+The data here will be referenced using the name `zetaview`.
+It is particle count data from ZetaView of exosomes derived from post-mortem brains of 7 donors with Alzheimer's Disease (AD).
+Exosomes were fractionated into 8 fractions (plus 10k pellet, which are excluded from downstream analysis) for each donor.
+Three technical replicates per fraction was run through the Zetaview.
+
+```{r}
+# Some standard boilerplate.
+# --------------------------
+#    This file is part of AD-CBD-exosome-proteins.
+#    Copyright (C) 2022  Emir Turkes, Diana Acosta, Stephanie Fowler, UK DRI at
+#    UCL, Columbia University Medical Center
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+# This section should be checked per document.
+# --------------------------------------------
+packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma")
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+source(file.path("utils.R"))
+
+data_name <- "zetaview"
+`%notin%` <- Negate(`%in%`)
+# --------------------------------------------
+
+# Everything else in this chunk remains generally unchanged.
+# ----------------------------------------------------------
+assets_dir <- file.path("..", "assets") # Backed up data.
+
+cache_dir <- file.path("..", "tmp", "cache", data_name)
+if (!dir.exists(cache_dir)) {
+  dir.create(cache_dir, recursive = TRUE)
+}
+
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+# ----------------------------------------------------------
+# --------------------------
+```
+
+# Prep
+
+The data is spread out across many files, so we first aggregate them to obtain a single data object with counts per particle size.
+We also create variations of this object that are aggregated by the mean of values by donor and fraction as well as various normalisation schemes found in following sections.
+
+```{r}
+file_list <- list.files(file.path(assets_dir, data_name, "raw-data"))
+file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+
+for (i in seq_along(file_list)) {
+  file <- read.delim(
+    file.path(assets_dir, data_name, "raw-data", file_list[i]), skip = 70
+  )
+  dilution <- read.delim(
+    file.path(assets_dir, data_name, "raw-data", file_list[i]), FALSE, nrows = 1, skip = 24
+  )
+  dilution <- dilution$V7
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1]
+  }
+  data[ , i + 1] <- file[1:1200, 3] * dilution
+}
+
+colnames(data) <- c(
+  "size",
+    paste(
+      sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sep = "_"
+  )
+)
+
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+
+# Scaling factor based on tissue amount used.
+# -------------------------------------------
+scaling_factor <- data.frame(amount = c(1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
+scaling_factor <- min(scaling_factor, na.rm = TRUE) / scaling_factor
+rownames(scaling_factor) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+# -------------------------------------------
+
+data_scaled <- data
+for (i in seq_along(rownames(scaling_factor))) {
+  for (j in seq_along(colnames(data_scaled))) {
+    if (sub("^([^_]*).*", "\\1", colnames(data))[j] == rownames(scaling_factor)[i])
+      data_scaled[j] <- data_scaled[j] * scaling_factor[i, ]
+  }
+}
+
+data_norm <- data
+for (i in seq_along(colnames(data_norm))) {
+  if (i != 1) {
+    data_norm[i] <- (data_norm[i] / sum(data_norm[i])) * 100
+  }
+}
+
+data_mode <- data
+for (i in seq_along(colnames(data_mode))) {
+  if (i != 1) {
+    data_mode[i] <- (data_mode[i] / max(data_mode[i]))
+  }
+}
+
+names <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data) <- c("size", names)
+
+names <- unique(sub("_[^_]+$", "", colnames(data_scaled[ , -1])))
+donor_fraction_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
+donor_fraction_data_scaled$X1 <- data_scaled$size
+for (i in seq_along(names)) {
+  data_sub <- data_scaled[ , which(sub("_[^_]+$", "", colnames(data_scaled)) %in% names[i])]
+  donor_fraction_data_scaled[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data_scaled) <- c("size", names)
+
+names <- unique(sub("_[^_]+$", "", colnames(data_norm[ , -1])))
+donor_fraction_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
+donor_fraction_data_norm$X1 <- data_norm$size
+for (i in seq_along(names)) {
+  data_sub <- data_norm[ , which(sub("_[^_]+$", "", colnames(data_norm)) %in% names[i])]
+  donor_fraction_data_norm[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data_norm) <- c("size", names)
+
+names <- unique(sub("_[^_]+$", "", colnames(data_mode[ , -1])))
+donor_fraction_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
+donor_fraction_data_mode$X1 <- data_mode$size
+for (i in seq_along(names)) {
+  data_sub <- data_mode[ , which(sub("_[^_]+$", "", colnames(data_mode)) %in% names[i])]
+  donor_fraction_data_mode[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_fraction_data_mode) <- c("size", names)
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+donor_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  donor_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_data) <- c("size", names)
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data_scaled[ , -1])))
+donor_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
+donor_data_scaled$X1 <- data_scaled$size
+for (i in seq_along(names)) {
+  data_sub <- data_scaled[ , which(sub("^([^_]*).*", "\\1", colnames(data_scaled)) %in% names[i])]
+  donor_data_scaled[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_data_scaled) <- c("size", names)
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data_norm[ , -1])))
+donor_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
+donor_data_norm$X1 <- data_norm$size
+for (i in seq_along(names)) {
+  data_sub <- data_norm[ , which(sub("^([^_]*).*", "\\1", colnames(data_norm)) %in% names[i])]
+  donor_data_norm[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_data_norm) <- c("size", names)
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data_mode[ , -1])))
+donor_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
+donor_data_mode$X1 <- data_mode$size
+for (i in seq_along(names)) {
+  data_sub <- data_mode[ , which(sub("^([^_]*).*", "\\1", colnames(data_mode)) %in% names[i])]
+  donor_data_mode[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(donor_data_mode) <- c("size", names)
+
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1])))
+fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  fraction_data[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data) <- c("size", names)
+
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled[ , -1])))
+fraction_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
+fraction_data_scaled$X1 <- data_scaled$size
+for (i in seq_along(names)) {
+  data_sub <- data_scaled[
+    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled)) %in% names[i])
+  ]
+  fraction_data_scaled[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data_scaled) <- c("size", names)
+
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm[ , -1])))
+fraction_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
+fraction_data_norm$X1 <- data_norm$size
+for (i in seq_along(names)) {
+  data_sub <- data_norm[
+    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm)) %in% names[i])
+  ]
+  fraction_data_norm[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data_norm) <- c("size", names)
+
+names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_mode[ , -1])))
+fraction_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
+fraction_data_mode$X1 <- data_mode$size
+for (i in seq_along(names)) {
+  data_sub <- data_mode[
+    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_mode)) %in% names[i])
+  ]
+  fraction_data_mode[ , i + 1] <- rowMeans(data_sub)
+}
+colnames(fraction_data_mode) <- c("size", names)
+```
+
+# Distribution Plots
+
+We only plot sizes up to 300nm as counts quickly approach zero from there.
+Data objects without any limit on size are also provided for browsing and download.
+
+## All Data
+
+### Unnormalised
+
+```{r}
+data_sub <- data[1:which(data$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(data)
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- data_scaled[1:which(data_scaled$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(data_scaled)
+```
+
+### Proportion of Total Counts
+
+```{r}
+data_sub <- data_norm[1:which(data_norm$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "relative_proportion")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "relative_proportion", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(
+      ymin = relative_proportion - SD, ymax = relative_proportion + SD
+    ),
+    size = 0.2,
+    position = position_dodge(0.05),
+    color = "darkgrey"
+  ) +
+  theme_light() +
+  theme(legend.position = "none") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
+
+datatable_download(data_norm)
+```
+
+### Normalised by Mode
+
+```{r}
+data_sub <- data_mode[1:which(data_mode$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  theme(legend.position = "none") +
+  ylab("Normalised Relative Concentration") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 0.1),
+    limits = c(0, max(molten_data$Concentration))
+  )
+
+datatable_download(data_mode)
+```
+
+## Donor by Fraction
+
+### Unnormalised
+
+```{r}
+data_sub <- donor_fraction_data[1:which(donor_fraction_data$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(donor_fraction_data)
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_scaled$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(donor_fraction_data_scaled)
+```
+
+### Proportion of Total Counts
+
+```{r}
+data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "relative_proportion")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "relative_proportion", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(
+      ymin = relative_proportion - SD, ymax = relative_proportion + SD
+    ),
+    size = 0.2,
+    position = position_dodge(0.05),
+    color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
+
+datatable_download(donor_fraction_data_norm)
+```
+
+### Normalised by Mode
+
+```{r}
+data_sub <- donor_fraction_data_mode[1:which(donor_fraction_data_mode$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Normalised Relative Concentration") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 0.1),
+    limits = c(0, max(molten_data$Concentration))
+  )
+
+datatable_download(donor_fraction_data_mode)
+```
+
+## By Donor
+
+### Unnormalised
+
+```{r}
+data_sub <- donor_data[1:which(donor_data$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(donor_data)
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(donor_data_scaled)
+```
+
+### Proportion of Total Counts
+
+```{r}
+data_sub <- donor_data_norm[1:which(donor_data_norm$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "relative_proportion")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "relative_proportion", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(
+      ymin = relative_proportion - SD, ymax = relative_proportion + SD
+    ),
+    size = 0.2,
+    position = position_dodge(0.05),
+    color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
+
+datatable_download(donor_data_norm)
+```
+
+### Normalised by Mode
+
+```{r}
+data_sub <- donor_data_mode[1:which(donor_data_mode$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Normalised Relative Concentration") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 0.1),
+    limits = c(0, max(molten_data$Concentration))
+  )
+
+datatable_download(donor_data_mode)
+```
+
+## By Fraction
+
+### Unnormalised
+
+```{r}
+data_sub <- fraction_data[1:which(fraction_data$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(fraction_data)
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  xlab("Diameter (nm)") +
+  ylab(bquote("Concentration ("*cm^-3*")")) +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 50000000000),
+    limits = c(0, max(molten_data$Concentration)),
+    labels = function(x) format(x, scientific = TRUE)
+  )
+
+datatable_download(fraction_data_scaled)
+```
+
+### Proportion of Total Counts
+
+```{r}
+data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "relative_proportion")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "relative_proportion", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(
+      ymin = relative_proportion - SD, ymax = relative_proportion + SD
+    ),
+    size = 0.2,
+    position = position_dodge(0.05),
+    color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
+    limits = c(0, max(molten_data$relative_proportion))
+  )
+
+datatable_download(fraction_data_norm)
+```
+
+### Normalised by Mode
+
+```{r}
+data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 297.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Sample", "Concentration")
+molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+
+stats <- data_summary(molten_data, "Concentration", "Size")
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+
+ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Concentration - SD, ymax = Concentration + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Normalised Relative Concentration") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data$Concentration), 0.1),
+    limits = c(0, max(molten_data$Concentration))
+  )
+
+datatable_download(fraction_data_mode)
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```
