@@ -1,5 +1,5 @@
 <!---
-    This file is part of AD-CBD-exosome-proteins.
+    This file is part of AD-exosome-characterisation.
     Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
     University Medical Center
 
@@ -19,10 +19,10 @@
     Emir Turkes can be contacted at emir.turkes@eturkes.com
 -->
 
-# AD CBD Exosome Proteins
+# AD Exosome Characterisation
 #### *This analysis is a work-in-progress*
 
-Analysis of exosome proteins in Alzheimer's Disease and Corticobasal Degeneration.  
+Analysis of exosomes in Alzheimer's Disease.  
 Other than the raw data, this repo contains everything needed to reproduce the analysis.
 
 To obtain the raw data and pre-computed results, please download this Google Drive folder:  

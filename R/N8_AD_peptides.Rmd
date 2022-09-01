@@ -3,7 +3,7 @@ title: "N8 AD Peptides"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
-bibliography: "../AD-CBD-exosome-proteins.bib"
+bibliography: "../AD-exosome-characterisation.bib"
 link-citations: true
 output:
   html_document:
@@ -37,7 +37,7 @@ div.tocify {width: 100%;}
 div.main-container {max-width: none; width: 100%;}
 </style>
 
-*This file is a part of [AD-CBD-exosome-proteins](https://github.com/eturkes/AD-CBD-exosome-proteins).*
+*This file is a part of [AD-exosome-characterisation](https://github.com/eturkes/AD-exosome-characterisation).*
 *Please email for access.*
 
 The data here will be referenced using the name `fractions`.
@@ -47,7 +47,7 @@ Each sample in the dataset represents a fraction from a single donor.
 ```{r}
 # Some standard boilerplate.
 # --------------------------
-#    This file is part of AD-CBD-exosome-proteins.
+#    This file is part of AD-exosome-characterisation.
 #    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
 #    University Medical Center
 #

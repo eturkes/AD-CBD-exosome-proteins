@@ -1,4 +1,4 @@
-#    This file is part of AD-CBD-exosome-proteins.
+#    This file is part of AD-exosome-characterisation.
 #    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
 #    University Medical Center
 #

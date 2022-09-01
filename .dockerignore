@@ -3,8 +3,8 @@ gdrive
 graphviz
 R
 assets
-AD-CBD-exosome-proteins.bib
-AD-CBD-exosome-proteins.Rproj
+AD-exosome-characterisation.bib
+AD-exosome-characterisation.Rproj
 docker-compose.yml
 .gitignore
 LICENSE

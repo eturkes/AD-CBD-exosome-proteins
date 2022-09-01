@@ -1,4 +1,4 @@
-#    This file is part of AD-CBD-exosome-proteins.
+#    This file is part of AD-exosome-characterisation.
 #    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
 #    University Medical Center
 #
@@ -21,15 +21,15 @@ version: "3"
 
 services:
   all:
-    image: eturkes/ad-cbd-exosome-proteins:R4.1.2v5
+    image: eturkes/ad-exosome-characterisation:R4.1.2v1
     volumes:
-      - ".:/home/rstudio/AD-CBD-exosome-proteins:rw"
-    command: Rscript -e "source('/home/rstudio/AD-CBD-exosome-proteins/R/run_all.R')"
+      - ".:/home/rstudio/AD-exosome-characterisation:rw"
+    command: Rscript -e "source('/home/rstudio/AD-exosome-characterisation/R/run_all.R')"
 
   rstudio:
-    image: eturkes/ad-cbd-exosome-proteins:R4.1.2v5
+    image: eturkes/ad-exosome-characterisation:R4.1.2v1
     volumes:
-      - ".:/home/rstudio/AD-CBD-exosome-proteins:rw"
+      - ".:/home/rstudio/AD-exosome-characterisation:rw"
     ports:
       - "127.0.0.1:${PORT}:8787"
     environment:
