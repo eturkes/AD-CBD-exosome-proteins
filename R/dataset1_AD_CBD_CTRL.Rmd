@@ -49,8 +49,8 @@ The background for this data is as follows:
 
 ```{r}
 #    This file is part of AD-CBD-exosome-proteins.
-#    Copyright (C) 2022  Emir Turkes, Diana Acosta, Stephanie Fowler, UK DRI at
-#    UCL, Columbia University Medical Center
+#    Copyright (C) 2022  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
+#    University Medical Center
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
