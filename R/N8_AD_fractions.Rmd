@@ -145,13 +145,18 @@ experimental_design <- data.frame(
   donor = sub(" .*", "", colnames(data)[6:69])
 )
 
-data <- make_se(data, LFQ_columns, experimental_design)
-data
-
 colour <- colour("vibrant")(7)
 colour <- append("#DDAA33", colour)
 colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
-names(colour) <- unique(sub("\\.", " ", data$condition))
+names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
+
+experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
+limma_design <- model.matrix(~ 0 + experimental_design$groups)
+colnames(limma_design) <- unique(experimental_design$groups)
+contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
+
+data <- make_se(data, LFQ_columns, experimental_design)
+data
 ```
 
 **Unaltered data, already log2 transformed**
@@ -1162,11 +1167,7 @@ ggplot(df, aes(PC1, PC2, color = Fraction)) +
 # Differential Expression
 
 ```{r}
-experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
-limma_design <- model.matrix(~ 0 + experimental_design$groups)
-colnames(limma_design) <- unique(experimental_design$groups)
 fit <- lmFit(assay(data), limma_design)
-contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global")
 write.fit(
@@ -1460,11 +1461,7 @@ rm(new_mat)
 gsva <- gsva(data_ENSG, gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
 datatable_download(gsva)
 
-experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
-limma_design <- model.matrix(~ 0 + experimental_design$groups)
-colnames(limma_design) <- unique(experimental_design$groups)
 fit <- lmFit(gsva, limma_design)
-contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global", p.value = 5e-4)
 write.fit(
