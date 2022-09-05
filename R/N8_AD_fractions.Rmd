@@ -1184,7 +1184,11 @@ datatable_download_exp(results)
 ## F1_3
 
 ```{r}
-tests_up <- tests[tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0, ]
+tests_up <- tests[
+  tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0 |
+    tests[ , 1] == 1 & tests[ , 2] == 0 & tests[ , 3] == 0 |
+    tests[ , 1] == 0 & tests[ , 2] == 1 & tests[ , 3] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F1_3 <- rownames(up)[1]
 datatable_download_exp(up)
@@ -1206,7 +1210,11 @@ datatable_download_exp(up)
 ## F4_6
 
 ```{r}
-tests_up <- tests[tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0, ]
+tests_up <- tests[
+  tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0 |
+    tests[ , 1] == -1 & tests[ , 3] == 0 & tests[ , 2] == 0 |
+    tests[ , 1] == 0 & tests[ , 3] == 1 & tests[ , 2] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F4_6 <- rownames(up)[1]
 datatable_download_exp(up)
@@ -1228,7 +1236,11 @@ datatable_download_exp(up)
 ## F7_8
 
 ```{r}
-tests_up <- tests[tests[ , 2] == -1 & tests[ , 3] == -1 & tests[ , 1] == 0, ]
+tests_up <- tests[
+  tests[ , 2] == -1 & tests[ , 3] == -1 & tests[ , 1] == 0 |
+    tests[ , 2] == -1 & tests[ , 3] == 0 & tests[ , 1] == 0 |
+    tests[ , 2] == 0 & tests[ , 3] == -1 & tests[ , 1] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F7_8 <- rownames(up)[1]
 datatable_download_exp(up)
@@ -1502,7 +1514,11 @@ for (i in seq(length(sub_ontology@.Data))) {
 ## F1_3
 
 ```{r, fig.height = 12, fig.width = 15}
-tests_up <- tests[tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0, ]
+tests_up <- tests[
+  tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0 |
+    tests[ , 1] == 1 & tests[ , 2] == 0 & tests[ , 3] == 0 |
+    tests[ , 1] == 0 & tests[ , 2] == 1 & tests[ , 3] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 datatable_download_exp(up)
 
@@ -1712,7 +1728,11 @@ draw(
 ## F4_6
 
 ```{r, fig.width = 15}
-tests_up <- tests[tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0, ]
+tests_up <- tests[
+  tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0 |
+    tests[ , 1] == -1 & tests[ , 3] == 0 & tests[ , 2] == 0 |
+    tests[ , 1] == 0 & tests[ , 3] == 1 & tests[ , 2] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 datatable_download_exp(up)
 
@@ -1922,7 +1942,11 @@ draw(
 ## F7_8
 
 ```{r, fig.height = 10, fig.width = 15}
-tests_up <- tests[tests[ , 2] == -1 & tests[ , 3] == -1 & tests[ , 1] == 0, ]
+tests_up <- tests[
+  tests[ , 2] == -1 & tests[ , 3] == -1 & tests[ , 1] == 0 |
+    tests[ , 2] == -1 & tests[ , 3] == 0 & tests[ , 1] == 0 |
+    tests[ , 2] == 0 & tests[ , 3] == -1 & tests[ , 1] == 0,
+]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 datatable_download_exp(up)
 
