@@ -75,6 +75,10 @@ source(file.path("utils.R"))
 
 data_name <- "zetaview"
 `%notin%` <- Negate(`%in%`)
+
+colour <- colour("vibrant")(7)
+colour <- append("#DDAA33", colour)
+colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
@@ -540,6 +544,10 @@ datatable_download(donor_fraction_data_mode)
 
 ## By Donor
 
+```{r}
+names(colour) <- c(NA, colnames(donor_data[ , -1]))
+```
+
 ### Unnormalised
 
 ```{r}
@@ -566,7 +574,8 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
     breaks = seq(0, max(molten_data$Concentration), 50000000000),
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
-  )
+  ) +
+  scale_colour_manual(values = colour[2:length(colour)])
 
 datatable_download(donor_data)
 ```
@@ -597,7 +606,8 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
     breaks = seq(0, max(molten_data$Concentration), 50000000000),
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
-  )
+  ) +
+  scale_colour_manual(values = colour[2:length(colour)])
 
 datatable_download(donor_data_scaled)
 ```
@@ -631,7 +641,8 @@ ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sampl
   scale_y_continuous(
     breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
-  )
+  ) +
+  scale_colour_manual(values = colour[2:length(colour)])
 
 datatable_download(donor_data_norm)
 ```
@@ -661,12 +672,17 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
   scale_y_continuous(
     breaks = seq(0, max(molten_data$Concentration), 0.1),
     limits = c(0, max(molten_data$Concentration))
-  )
+  ) +
+  scale_colour_manual(values = colour[2:length(colour)])
 
 datatable_download(donor_data_mode)
 ```
 
 ## By Fraction
+
+```{r}
+names(colour) <- colnames(fraction_data[ , -1])
+```
 
 ### Unnormalised
 
@@ -694,7 +710,8 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
     breaks = seq(0, max(molten_data$Concentration), 50000000000),
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
-  )
+  ) +
+  scale_colour_manual(values = colour)
 
 datatable_download(fraction_data)
 ```
@@ -725,7 +742,8 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
     breaks = seq(0, max(molten_data$Concentration), 50000000000),
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
-  )
+  ) +
+  scale_colour_manual(values = colour)
 
 datatable_download(fraction_data_scaled)
 ```
@@ -759,7 +777,8 @@ ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sampl
   scale_y_continuous(
     breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
-  )
+  ) +
+  scale_colour_manual(values = colour)
 
 datatable_download(fraction_data_norm)
 ```
@@ -789,7 +808,8 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
   scale_y_continuous(
     breaks = seq(0, max(molten_data$Concentration), 0.1),
     limits = c(0, max(molten_data$Concentration))
-  )
+  ) +
+  scale_colour_manual(values = colour)
 
 datatable_download(fraction_data_mode)
 ```
@@ -868,6 +888,10 @@ ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
 
 ## By Donor
 
+```{r}
+names(colour) <- c(NA, colnames(donor_data[ , -1]))
+```
+
 ### Unnormalised
 
 ```{r}
@@ -881,7 +905,8 @@ ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
   scale_y_continuous(
     breaks = seq(0, max(data_sub$Concentration), 5e+11),
     limits = c(0, max(data_sub$Concentration))
-  )
+  ) +
+  scale_fill_manual(values = colour[2:length(colour)])
 ```
 
 ### Normalised By Tissue Amt.
@@ -897,10 +922,15 @@ ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
   scale_y_continuous(
     breaks = seq(0, max(data_sub$Concentration), 5e+11),
     limits = c(0, max(data_sub$Concentration))
-  )
+  ) +
+  scale_fill_manual(values = colour[2:length(colour)])
 ```
 
 ## By Fraction
+
+```{r}
+names(colour) <- colnames(fraction_data[ , -1])
+```
 
 ### Unnormalised
 
@@ -915,7 +945,8 @@ ggplot(data_sub, aes(Fraction, Concentration, fill = Fraction)) +
   scale_y_continuous(
     breaks = seq(0, max(data_sub$Concentration), 1e+12),
     limits = c(0, max(data_sub$Concentration))
-  )
+  ) +
+  scale_fill_manual(values = colour)
 ```
 
 ### Normalised By Tissue Amt.
@@ -931,7 +962,8 @@ ggplot(data_sub, aes(Fraction, Concentration, fill = Fraction)) +
   scale_y_continuous(
     breaks = seq(0, max(data_sub$Concentration), 1e+12),
     limits = c(0, max(data_sub$Concentration))
-  )
+  ) +
+  scale_fill_manual(values = colour)
 ```
 
 # References
