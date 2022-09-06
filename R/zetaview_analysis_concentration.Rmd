@@ -135,7 +135,7 @@ data <- data[min(non_zero):max(non_zero), ]
 
 # Scaling factor based on tissue amount used.
 # -------------------------------------------
-scaling_factor <- data.frame(amount = c(1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
+scaling_factor <- data.frame(amount = c(1.25, 1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
 scaling_factor <- min(scaling_factor, na.rm = TRUE) / scaling_factor
 rownames(scaling_factor) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
 # -------------------------------------------
@@ -545,7 +545,7 @@ datatable_download(donor_fraction_data_mode)
 ## By Donor
 
 ```{r}
-names(colour) <- c(NA, colnames(donor_data[ , -1]))
+names(colour) <- colnames(donor_data[ , -1])
 ```
 
 ### Unnormalised
@@ -575,7 +575,7 @@ ggplot(molten_data, aes(Size, Concentration, group = Donor, color = Donor)) +
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
   ) +
-  scale_colour_manual(values = colour[2:length(colour)])
+  scale_colour_manual(values = colour)
 
 datatable_download(donor_data)
 ```
@@ -607,7 +607,7 @@ ggplot(molten_data, aes(Size, Concentration, group = Donor, color = Donor)) +
     limits = c(0, max(molten_data$Concentration)),
     labels = function(x) format(x, scientific = TRUE)
   ) +
-  scale_colour_manual(values = colour[2:length(colour)])
+  scale_colour_manual(values = colour)
 
 datatable_download(donor_data_scaled)
 ```
@@ -642,7 +642,7 @@ ggplot(molten_data, aes(Size, relative_proportion, group = Donor, color = Donor)
     breaks = seq(0, max(molten_data$relative_proportion), 0.5),
     limits = c(0, max(molten_data$relative_proportion))
   ) +
-  scale_colour_manual(values = colour[2:length(colour)])
+  scale_colour_manual(values = colour)
 
 datatable_download(donor_data_norm)
 ```
@@ -673,7 +673,7 @@ ggplot(molten_data, aes(Size, Concentration, group = Donor, color = Donor)) +
     breaks = seq(0, max(molten_data$Concentration), 0.1),
     limits = c(0, max(molten_data$Concentration))
   ) +
-  scale_colour_manual(values = colour[2:length(colour)])
+  scale_colour_manual(values = colour)
 
 datatable_download(donor_data_mode)
 ```
@@ -889,7 +889,7 @@ ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
 ## By Donor
 
 ```{r}
-names(colour) <- c(NA, colnames(donor_data[ , -1]))
+names(colour) <- colnames(donor_data[ , -1])
 ```
 
 ### Unnormalised
@@ -906,7 +906,7 @@ ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
     breaks = seq(0, max(data_sub$Concentration), 5e+11),
     limits = c(0, max(data_sub$Concentration))
   ) +
-  scale_fill_manual(values = colour[2:length(colour)])
+  scale_fill_manual(values = colour)
 ```
 
 ### Normalised By Tissue Amt.
@@ -923,7 +923,7 @@ ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
     breaks = seq(0, max(data_sub$Concentration), 5e+11),
     limits = c(0, max(data_sub$Concentration))
   ) +
-  scale_fill_manual(values = colour[2:length(colour)])
+  scale_fill_manual(values = colour)
 ```
 
 ## By Fraction
@@ -942,7 +942,7 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
   geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(data_sub$Concentration) + 1e+12, 1e+12)) +
-  scale_fill_manual(values = colour[2:length(colour)])
+  scale_fill_manual(values = colour)
 ```
 
 ### Normalised By Tissue Amt.
@@ -959,7 +959,7 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
   geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(data_sub$Concentration) + 1e+12, 1e+12)) +
-  scale_fill_manual(values = colour[2:length(colour)])
+  scale_fill_manual(values = colour)
 ```
 
 # References
