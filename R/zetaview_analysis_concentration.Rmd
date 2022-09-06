@@ -794,6 +794,146 @@ ggplot(molten_data, aes(Size, Concentration, group = Sample, color = Sample)) +
 datatable_download(fraction_data_mode)
 ```
 
+# Bar Plots
+
+## All Data
+
+### Unnormalised
+
+```{r}
+data_sub <- colSums(data[ , -1])
+data_sub <- data.frame(Sample = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 2.5e+12),
+    limits = c(0, max(data_sub$Concentration))
+  ) +
+  theme(axis.text.x = element_blank())
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- colSums(data_scaled[ , -1])
+data_sub <- data.frame(Sample = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 2.5e+12),
+    limits = c(0, max(data_sub$Concentration))
+  ) +
+  theme(axis.text.x = element_blank())
+```
+
+## Donor by Fraction
+
+### Unnormalised
+
+```{r}
+data_sub <- colSums(donor_fraction_data[ , -1])
+data_sub <- data.frame(Sample = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 2.5e+12),
+    limits = c(0, max(data_sub$Concentration))
+  ) +
+  theme(axis.text.x = element_blank())
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- colSums(donor_fraction_data_scaled[ , -1])
+data_sub <- data.frame(Sample = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Sample, Concentration, fill = Sample)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 2.5e+12),
+    limits = c(0, max(data_sub$Concentration))
+  ) +
+  theme(axis.text.x = element_blank())
+```
+
+## By Donor
+
+### Unnormalised
+
+```{r}
+data_sub <- colSums(donor_data[ , -1])
+data_sub <- data.frame(Donor = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 5e+11),
+    limits = c(0, max(data_sub$Concentration))
+  )
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- colSums(donor_data_scaled[ , -1])
+data_sub <- data.frame(Donor = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Donor, Concentration, fill = Donor)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 5e+11),
+    limits = c(0, max(data_sub$Concentration))
+  )
+```
+
+## By Fraction
+
+### Unnormalised
+
+```{r}
+data_sub <- colSums(fraction_data[ , -1])
+data_sub <- data.frame(Fraction = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Fraction, Concentration, fill = Fraction)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 1e+12),
+    limits = c(0, max(data_sub$Concentration))
+  )
+```
+
+### Normalised By Tissue Amt.
+
+```{r}
+data_sub <- colSums(fraction_data_scaled[ , -1])
+data_sub <- data.frame(Fraction = names(data_sub), Concentration = data_sub)
+
+ggplot(data_sub, aes(Fraction, Concentration, fill = Fraction)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    breaks = seq(0, max(data_sub$Concentration), 1e+12),
+    limits = c(0, max(data_sub$Concentration))
+  )
+```
+
 # References
 
 This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
