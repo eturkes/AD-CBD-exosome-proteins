@@ -537,13 +537,13 @@ names(colour) <- c(NA, colnames(donor_data[ , -1]))
 ```{r}
 data_sub <- donor_data[1:which(donor_data$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Donor", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Donor)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Donor, color = Donor)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -566,13 +566,13 @@ datatable_download(donor_data)
 ```{r}
 data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Donor", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Donor)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Donor, color = Donor)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -595,13 +595,13 @@ datatable_download(donor_data_scaled)
 ```{r}
 data_sub <- donor_data_norm[1:which(donor_data_norm$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "relative_proportion")
+colnames(molten_data) <- c("Donor", "relative_proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "relative_proportion", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Donor)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, relative_proportion, group = Donor, color = Donor)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -613,7 +613,7 @@ ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sampl
     color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Relative Proportion of Total Counts Per Donor (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
@@ -630,13 +630,13 @@ datatable_download(donor_data_norm)
 ```{r}
 data_sub <- donor_data_mode[1:which(donor_data_mode$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Donor", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Donor)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Donor, color = Donor)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -667,13 +667,13 @@ names(colour) <- colnames(fraction_data[ , -1])
 ```{r}
 data_sub <- fraction_data[1:which(fraction_data$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Fraction", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Fraction, color = Fraction)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -696,13 +696,13 @@ datatable_download(fraction_data)
 ```{r}
 data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Fraction", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Fraction, color = Fraction)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -725,13 +725,13 @@ datatable_download(fraction_data_scaled)
 ```{r}
 data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "relative_proportion")
+colnames(molten_data) <- c("Fraction", "relative_proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "relative_proportion", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, relative_proportion, group = Fraction, color = Fraction)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
@@ -743,7 +743,7 @@ ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sampl
     color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
@@ -760,13 +760,13 @@ datatable_download(fraction_data_norm)
 ```{r}
 data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 497.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "Frequency")
+colnames(molten_data) <- c("Fraction", "Frequency")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 stats <- data_summary(molten_data, "Frequency", "Size")
-molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
+molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
 
-ggplot(molten_data, aes(Size, Frequency, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, Frequency, group = Fraction, color = Fraction)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
