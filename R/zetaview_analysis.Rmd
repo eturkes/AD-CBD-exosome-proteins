@@ -1131,7 +1131,7 @@ ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
   scale_fill_manual(values = colour) +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter Range (nm)")
 ```
 
@@ -1150,14 +1150,14 @@ for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
 
   cut <- cut(molten_data_sub$Size, seq(0, 400, 50))
-  levels(cut) <- c(levels(cut), "(600,3460]")
-  cut[is.na(cut)] <- "(600,3460]"
+  levels(cut) <- c(levels(cut), "(400,3460]")
+  cut[is.na(cut)] <- "(400,3460]"
 
   df <- aggregate(molten_data_sub$relative_proportion, list(cut), sum)
 
   df$Group.1 <- factor(
-    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "600-3460"),
-    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "600-3460")
+    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "400-3460"),
+    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "400-3460")
   )
   df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
 
@@ -1170,7 +1170,7 @@ ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
   scale_fill_manual(values = colour) +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter Range (nm)")
 ```
 
