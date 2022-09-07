@@ -132,7 +132,7 @@ data <- data[min(non_zero):max(non_zero), ]
 # Scaling factor based on tissue amount used.
 # -------------------------------------------
 scaling_factor <- data.frame(amount = c(1.25, 1.29, 1.21, 1.19, 1.05, 1.01, 1.15, 1.2))
-scaling_factor <- min(scaling_factor, na.rm = TRUE) / scaling_factor
+scaling_factor <- 1 / scaling_factor
 rownames(scaling_factor) <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
 # -------------------------------------------
 
