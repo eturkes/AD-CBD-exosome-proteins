@@ -280,7 +280,7 @@ colnames(fraction_data_mode) <- c("size", names)
 
 # Distribution Plots
 
-We only plot sizes up to 500nm.
+We only plot sizes up to 600 nm.
 Data objects without any limit on size are also provided for browsing and download.
 
 ## All Data
@@ -1101,7 +1101,7 @@ for (i in seq_along(unique(molten_data$Statistic))) {
 names(colour) <- colnames(fraction_data[ , -1])
 ```
 
-## 0-600 (50nm Bins)
+## 0-600 (50 nm Bins)
 
 ### Proportion of Total Counts
 
@@ -1135,7 +1135,7 @@ ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
   xlab("Diameter Range (nm)")
 ```
 
-## 50nm Bins and 400 to End
+## 50 nm Bins and 400 to End
 
 ### Proportion of Total Counts
 
