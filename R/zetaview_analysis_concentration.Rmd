@@ -145,7 +145,6 @@ data_scaled <- data
 for (i in seq_along(rownames(scaling_factor))) {
   for (j in seq_along(colnames(data_scaled))) {
     if (sub("^([^_]*).*", "\\1", colnames(data))[j] == rownames(scaling_factor)[i])
-      # data_scaled[j] <- (data_scaled[j] * scaling_factor[i, ]) / 0.05
       data_scaled[j] <- data_scaled[j] * scaling_factor[i, ]
   }
 }
