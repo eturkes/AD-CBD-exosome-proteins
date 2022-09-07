@@ -1,5 +1,5 @@
 ---
-title: "Zetaview Analysis Concentration"
+title: "Zetaview Analysis"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "zetaview-analysis-concentration.html"
+    "..", "results", "zetaview-analysis.html"
   ))})
 ---
 
