@@ -1095,13 +1095,13 @@ for (i in seq_along(unique(molten_data$Statistic))) {
 }
 ```
 
-# 50nm Bin Histograms
-
-## By Fraction
+# Histograms
 
 ```{r}
 names(colour) <- colnames(fraction_data[ , -1])
 ```
+
+## 0-600 (50nm Bins)
 
 ### Proportion of Total Counts
 
@@ -1115,7 +1115,7 @@ molten_data_new <- data.frame()
 for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
   df <- aggregate(
-    molten_data_sub$relative_proportion, list(cut(molten_data_sub$Size, seq(0, 600, 50))), median
+    molten_data_sub$relative_proportion, list(cut(molten_data_sub$Size, seq(0, 600, 50))), sum
   )
   df$Group.1 <- factor(
     paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-"),
@@ -1129,41 +1129,48 @@ colnames(molten_data_new) <- c("Size", "relative_proportion", "Fraction")
 ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_light() +
-  scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 0.25)) +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
   scale_fill_manual(values = colour) +
   ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter Range (nm)")
 ```
 
+## 50nm Bins and 400 to End
+
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 597.5), ]
+data_sub <- fraction_data_norm
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Fraction", "Frequency")
+colnames(molten_data) <- c("Fraction", "relative_proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 molten_data_new <- data.frame()
 for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
-  df <- aggregate(
-    molten_data_sub$Frequency, list(cut(molten_data_sub$Size, seq(0, 600, 50))), median
-  )
+
+  cut <- cut(molten_data_sub$Size, seq(0, 400, 50))
+  levels(cut) <- c(levels(cut), "(600,3460]")
+  cut[is.na(cut)] <- "(600,3460]"
+
+  df <- aggregate(molten_data_sub$relative_proportion, list(cut), sum)
+
   df$Group.1 <- factor(
-    paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-"),
-    paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-")
+    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "600-3460"),
+    c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "600-3460")
   )
   df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
+
   molten_data_new <- rbind(molten_data_new, df)
 }
-colnames(molten_data_new) <- c("Size", "Frequency", "Fraction")
+colnames(molten_data_new) <- c("Size", "relative_proportion", "Fraction")
 
-ggplot(molten_data_new, aes(Size, Frequency, fill = Fraction)) +
+ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_light() +
-  scale_y_continuous(breaks = seq(0, max(molten_data_new$Frequency), 0.05)) +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
   scale_fill_manual(values = colour) +
-  ylab("Normalised Relative Frequency") +
+  ylab("Relative Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter Range (nm)")
 ```
 
