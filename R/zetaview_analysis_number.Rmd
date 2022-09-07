@@ -41,7 +41,7 @@ div.main-container {max-width: none; width: 100%;}
 *Please email for access.*
 
 The data here will be referenced using the name `zetaview`.
-It is particle count data from ZetaView of exosomes derived from post-mortem brains of 7 donors with Alzheimer's Disease (AD).
+It is particle count data from ZetaView of exosomes derived from post-mortem brains of 8 donors with Alzheimer's Disease (AD).
 Exosomes were fractionated into 8 fractions (plus 10k pellet, which are excluded from downstream analysis) for each donor.
 Three technical replicates per fraction was run through the Zetaview.
 
