@@ -190,43 +190,9 @@ The basic workflow is shown below:
 
 ```{r}
 # Step 1 in flowchart.
-# Remove proteins missing entirely in one condition.
-# # --------------------------------------------------
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.1")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.2")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.3")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.4")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.5")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.6")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.7")], TRUE)))
-# data <- data[-discard, ]
-# discard <- which(is.na(rowMeans(assay(data)[ , which(data$condition == "Fraction.8")], TRUE)))
-# data <- data[-discard, ]
-
-# rds <- file.path(cache_dir, "data_NA_replaced.rds")
-# if (file.exists(rds)) {
-#   data <- readRDS(rds)
-# } else {
-# 
-#   min <- min(assay(data), na.rm = TRUE)
-# 
-#   for (fraction in unique(data$condition)) {
-#     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
-#     set.seed(1)
-#     col <- sample(which(data$condition == fraction), length(replace), TRUE)
-#     for (i in seq_along(replace)) {
-#       assay(data)[replace[i], col[i]] <- min
-#     }
-#   }
-#   saveRDS(data, rds)
-# }
-
+# Replace proteins missing entirely in a condition with minimum value per condition in random
+# samples.
+# -------------------------------------------------------------------------------------------
 rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
 if (file.exists(rds)) {
   data <- readRDS(rds)
@@ -242,7 +208,7 @@ if (file.exists(rds)) {
   }
   saveRDS(data, rds)
 }
-# --------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 
@@ -253,8 +219,7 @@ plot_detect(data)
 # Step 2 of flowchart.
 # Find intensity cutoff point at which MNAR becomes MAR by finding the inflection point of intensity
 # where the proportion of proteins with missing values dramatically level off.
-# We do this separately for each condition to reduce the bias of biologically relevant missing
-# values.
+# We do this separately for each condition.
 # --------------------------------------------------------------------------------------------------
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.1")])
 plot_data <- ggplot_build(plot)
@@ -379,11 +344,11 @@ F8_MNAR <- names(
 
 # Step 4 in flowchart.
 # In each condition, remove MAR (non-MNAR) proteins where the majority are missing.
-# This has not been empirically tested, but we have found that MAR imputation with a majority of
-# missing values leads to suspect imputation.
-# MNAR imputation however, does not suffer from this limitation, and in fact it is logical that MNAR
-# proteins would have a high number of missing values.
-# --------------------------------------------------------------------------------------------------
+# Generally, we have found that MAR imputation with a majority of missing values leads to suspect
+# imputation.
+# MNAR imputation however, does not seem to suffer from this limitation, and in fact it is logical
+# that MNAR proteins would have a high number of missing values.
+# ------------------------------------------------------------------------------------------------
 F1_data <- data[ , which(data$condition == "Fraction.1")]
 F1_data <- F1_data[rownames(F1_data) %notin% F1_MNAR, ]
 missing_data <- assay(F1_data) %>% data.frame(.)
@@ -447,14 +412,14 @@ missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
 F8_data <- F8_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 8 group."))
-# --------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # Continuation of step 4 in flowchart.
 # In order to ensure that all conditions have MAR proteins with majority non-missing values, we
 # perform the unions below.
-# For example, out of the proteins that pass this QC in the AD condition, or have no missing values,
-# we only keep those that pass this QC, have no missing values, or are MNAR in the Control condition
-# as well.
+# For example, out of the proteins that pass this QC in one condition, or have no missing values, we
+# only keep those that pass this QC, have no missing values, or are MNAR in all other conditions as
+# well.
 # --------------------------------------------------------------------------------------------------
 F1_MAR <- rownames(F1_data)[
   rownames(F1_data) %in% F2_MNAR | rownames(F1_data) %in% rownames(F2_data)

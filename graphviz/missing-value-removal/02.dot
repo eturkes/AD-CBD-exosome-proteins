@@ -25,8 +25,10 @@ digraph {
     edge [fontname=Verdana, fontsize=12];
     splines=ortho;
 
-    rm_MAR [label="In each condition, remove MAR proteins where the majority missing"];
+    select_MNAR [label="Select MNAR proteins for each condition"];
+    rm_MAR [label="In each condition, remove MAR proteins where the majority are missing"];
     join_subset [label="Join MAR and MNAR lists and subset initial object"];
 
+    select_MNAR -> rm_MAR
     rm_MAR -> join_subset;
 }

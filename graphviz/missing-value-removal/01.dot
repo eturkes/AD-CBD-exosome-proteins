@@ -25,10 +25,8 @@ digraph {
     edge [fontname=Verdana, fontsize=12];
     splines=ortho;
 
-    rm_all_missing [label="Remove proteins missing entirely in a single condition"];
-    MNAR_cutoff [label="Find MNAR cutoff from inflection point of missing value/complete case proportion"];
-    select_MNAR [label="Select MNAR proteins separately for each condition"];
+    rm_all_missing [label="Replace proteins missing entirely in a condition with minimum value per condition in random samples"];
+    MNAR_cutoff [label="Find MNAR cutoff of each condition from inflection point of missing value/complete case proportion"];
 
     rm_all_missing -> MNAR_cutoff;
-    MNAR_cutoff -> select_MNAR;
 }
