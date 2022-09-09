@@ -1064,9 +1064,7 @@ data <- Imputed_Data
 # -----------------------------------------------
 
 plot_imputation(Imputed_Data)
-```
 
-```{r}
 # Create a few more plots.
 # ------------------------
 plot_normalization(Unimputed_Data, Imputed_Data) + theme(axis.text.y = element_text(size = 3))
@@ -1104,7 +1102,7 @@ datatable_download(data_sub)
 
 ## PCA
 
-**Using all proteins.**
+**Using all proteins**
 
 ```{r, dev = "svglite"}
 pca <- prcomp(t(assay(data)))
@@ -1127,7 +1125,7 @@ ggplot(df, aes(PC1, PC2, color = Fraction)) +
   theme(axis.title = element_text(size = 16))
 ```
 
-**Using complete cases only.**
+**Using complete cases only**
 
 ```{r}
 pca <- prcomp(t(assay(complete_cases)))
