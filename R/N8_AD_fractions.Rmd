@@ -122,27 +122,32 @@ data2 <- read_xlsx(
 colnames(data) <- c(colnames(data)[1:5], colnames(data2)[5:ncol(data2)])
 rm(data2)
 
+remove <- which(
+  colnames(data) == "5521 F8" | colnames(data) == "5365 F8" | colnames(data) == "5333 F8"
+)
+data <- data[ , -remove]
+
 remove <- which(data$Genes == "")
 data <- data[-remove, ]
 
 data$gene_names <- data$Genes
 data <- make_unique(data, "gene_names", "Protein.Ids", ";")
 
-LFQ_columns <- 6:69
+LFQ_columns <- 6:66
 data <- data[
   , c(
       1:5, (order(substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])) + 5),
-      70:ncol(data)
+      67:ncol(data)
     )
 ]
 
 experimental_design <- data.frame(
-  label = colnames(data)[6:69],
+  label = colnames(data)[6:66],
   condition = paste0(
     "Fraction ", substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])
   ),
-  replicate = rep(1:8, 8),
-  donor = sub(" .*", "", colnames(data)[6:69])
+  replicate = c(rep(1:8, 7), 2:4, 7:8),
+  donor = sub(" .*", "", colnames(data)[6:66])
 )
 
 colour <- colour("vibrant")(7)
@@ -150,7 +155,7 @@ colour <- append("#DDAA33", colour)
 colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
 names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
 
-experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
+experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 13))
 limma_design <- model.matrix(~ 0 + experimental_design$groups)
 colnames(limma_design) <- unique(experimental_design$groups)
 contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_design)
@@ -273,7 +278,7 @@ plot + geom_vline(xintercept = F7_MNAR_cutoff)
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
 plot_data <- ggplot_build(plot)
 F8_MNAR_cutoff <- 15.6
-F8_MNAR_cutoff <- 17.9
+F8_MNAR_cutoff <- 15.2
 cat(paste0("For Fraction 8.\nCutoff at ", F8_MNAR_cutoff))
 plot + geom_vline(xintercept = F8_MNAR_cutoff)
 # --------------------------------------------------------------------------------------------------
@@ -409,7 +414,7 @@ F8_data <- data[ , which(data$condition == "Fraction.8")]
 F8_data <- F8_data[rownames(F8_data) %notin% F8_MNAR, ]
 missing_data <- assay(F8_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
-discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
+discard <- which(rowSums(missing_data, TRUE) < 3) # TODO: Automate this.
 F8_data <- F8_data[-discard, ]
 print(paste0("Removed ", length(discard), " proteins from Fraction 8 group."))
 # ------------------------------------------------------------------------------------------------
