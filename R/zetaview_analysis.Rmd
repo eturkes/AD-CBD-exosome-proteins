@@ -333,31 +333,27 @@ datatable_download(data_scaled)
 ```{r}
 data_sub <- data_norm[1:which(data_norm$size == 597.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "relative_proportion")
+colnames(molten_data) <- c("Sample", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "relative_proportion", "Size")
+stats <- data_summary(molten_data, "proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, proportion, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(
-      ymin = relative_proportion - SD, ymax = relative_proportion + SD
-    ),
-    size = 0.2,
-    position = position_dodge(0.05),
-    color = "darkgrey"
+    aes(ymin = proportion - SD, ymax = proportion + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
   theme(legend.position = "none") +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
-    limits = c(0, max(molten_data$relative_proportion))
+    breaks = seq(0, max(molten_data$proportion), 0.5),
+    limits = c(0, max(molten_data$proportion))
   )
 
 datatable_download(data_norm)
@@ -461,30 +457,26 @@ datatable_download(donor_fraction_data_scaled)
 ```{r}
 data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 597.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Sample", "relative_proportion")
+colnames(molten_data) <- c("Sample", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "relative_proportion", "Size")
+stats <- data_summary(molten_data, "proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Sample)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Sample, color = Sample)) +
+ggplot(molten_data, aes(Size, proportion, group = Sample, color = Sample)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(
-      ymin = relative_proportion - SD, ymax = relative_proportion + SD
-    ),
-    size = 0.2,
-    position = position_dodge(0.05),
-    color = "darkgrey"
+    aes(ymin = proportion - SD, ymax = proportion + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Relative Proportion of Total Counts Per Sample (%)") +
+  ylab("Proportion of Total Counts Per Sample (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
-    limits = c(0, max(molten_data$relative_proportion))
+    breaks = seq(0, max(molten_data$proportion), 0.5),
+    limits = c(0, max(molten_data$proportion))
   )
 
 datatable_download(donor_fraction_data_norm)
@@ -593,30 +585,26 @@ datatable_download(donor_data_scaled)
 ```{r}
 data_sub <- donor_data_norm[1:which(donor_data_norm$size == 597.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Donor", "relative_proportion")
+colnames(molten_data) <- c("Donor", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "relative_proportion", "Size")
+stats <- data_summary(molten_data, "proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Donor)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Donor, color = Donor)) +
+ggplot(molten_data, aes(Size, proportion, group = Donor, color = Donor)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(
-      ymin = relative_proportion - SD, ymax = relative_proportion + SD
-    ),
-    size = 0.2,
-    position = position_dodge(0.05),
-    color = "darkgrey"
+    aes(ymin = proportion - SD, ymax = proportion + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Relative Proportion of Total Counts Per Donor (%)") +
+  ylab("Proportion of Total Counts Per Donor (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
-    limits = c(0, max(molten_data$relative_proportion))
+    breaks = seq(0, max(molten_data$proportion), 0.5),
+    limits = c(0, max(molten_data$proportion))
   ) +
   scale_colour_manual(values = colour)
 
@@ -727,30 +715,26 @@ datatable_download(fraction_data_scaled)
 ```{r}
 data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 597.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Fraction", "relative_proportion")
+colnames(molten_data) <- c("Fraction", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
-stats <- data_summary(molten_data, "relative_proportion", "Size")
+stats <- data_summary(molten_data, "proportion", "Size")
 molten_data$SD <- rep(stats$sd, length(unique(molten_data$Fraction)))
 
-ggplot(molten_data, aes(Size, relative_proportion, group = Fraction, color = Fraction)) +
+ggplot(molten_data, aes(Size, proportion, group = Fraction, color = Fraction)) +
   geom_smooth(se = FALSE, span = 0.2) +
   geom_point(size = 0.75) +
   geom_errorbar(
-    aes(
-      ymin = relative_proportion - SD, ymax = relative_proportion + SD
-    ),
-    size = 0.2,
-    position = position_dodge(0.05),
-    color = "darkgrey"
+    aes(ymin = proportion - SD, ymax = proportion + SD), size = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
   ) +
   theme_light() +
-  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
+  ylab("Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter (nm)") +
   scale_x_continuous(breaks = seq(0, max(molten_data$Size), 20)) +
   scale_y_continuous(
-    breaks = seq(0, max(molten_data$relative_proportion), 0.5),
-    limits = c(0, max(molten_data$relative_proportion))
+    breaks = seq(0, max(molten_data$proportion), 0.5),
+    limits = c(0, max(molten_data$proportion))
   ) +
   scale_colour_manual(values = colour)
 
@@ -981,12 +965,9 @@ for (i in seq_along(unique(molten_data$Statistic))) {
   molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
     ggplot(molten_data_sub, aes(Fraction, Diameter)) +
-      stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
-      stat_summary(
-        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
-        width = 0.75, linetype = "dashed", size = 1
-      ) +
+      stat_boxplot(geom = "errorbar", width = 0.5) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
+      stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
       geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
@@ -1035,12 +1016,9 @@ for (i in seq_along(unique(molten_data$Statistic))) {
   molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
   print(
     ggplot(molten_data_sub, aes(Fraction, Diameter)) +
-      stat_boxplot(geom = "errorbar") +
-      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL) +
-      stat_summary(
-        fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
-        width = 0.75, linetype = "dashed", size = 1
-      ) +
+      stat_boxplot(geom = "errorbar", width = 0.5) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
+      stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
       geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
       labs(
         title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
@@ -1071,15 +1049,13 @@ names(colour) <- colnames(fraction_data[ , -1])
 ```{r}
 data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 597.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Fraction", "relative_proportion")
+colnames(molten_data) <- c("Fraction", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 molten_data_new <- data.frame()
 for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
-  df <- aggregate(
-    molten_data_sub$relative_proportion, list(cut(molten_data_sub$Size, seq(0, 600, 50))), sum
-  )
+  df <- aggregate(molten_data_sub$proportion, list(cut(molten_data_sub$Size, seq(0, 600, 50))), sum)
   df$Group.1 <- factor(
     paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-"),
     paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-")
@@ -1087,14 +1063,14 @@ for (i in seq_along(unique(molten_data$Fraction))) {
   df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
   molten_data_new <- rbind(molten_data_new, df)
 }
-colnames(molten_data_new) <- c("Size", "relative_proportion", "Fraction")
+colnames(molten_data_new) <- c("Size", "proportion", "Fraction")
 
-ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
+ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_light() +
-  scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$proportion), 2)) +
   scale_fill_manual(values = colour) +
-  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
+  ylab("Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter Range (nm)")
 ```
 
@@ -1105,7 +1081,7 @@ ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
 ```{r}
 data_sub <- fraction_data_norm
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Fraction", "relative_proportion")
+colnames(molten_data) <- c("Fraction", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 molten_data_new <- data.frame()
@@ -1116,7 +1092,7 @@ for (i in seq_along(unique(molten_data$Fraction))) {
   levels(cut) <- c(levels(cut), "(400,3460]")
   cut[is.na(cut)] <- "(400,3460]"
 
-  df <- aggregate(molten_data_sub$relative_proportion, list(cut), sum)
+  df <- aggregate(molten_data_sub$proportion, list(cut), sum)
 
   df$Group.1 <- factor(
     c(paste(seq(0, 350, 50), seq(50, 400, 50), sep = "-"), "400-3460"),
@@ -1126,14 +1102,14 @@ for (i in seq_along(unique(molten_data$Fraction))) {
 
   molten_data_new <- rbind(molten_data_new, df)
 }
-colnames(molten_data_new) <- c("Size", "relative_proportion", "Fraction")
+colnames(molten_data_new) <- c("Size", "proportion", "Fraction")
 
-ggplot(molten_data_new, aes(Size, relative_proportion, fill = Fraction)) +
+ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_light() +
-  scale_y_continuous(breaks = seq(0, max(molten_data_new$relative_proportion), 2)) +
+  scale_y_continuous(breaks = seq(0, max(molten_data_new$proportion), 2)) +
   scale_fill_manual(values = colour) +
-  ylab("Relative Proportion of Total Counts Per Fraction (%)") +
+  ylab("Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter Range (nm)")
 ```
 
