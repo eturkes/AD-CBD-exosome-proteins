@@ -172,32 +172,29 @@ for (i in seq_along(names)) {
 }
 colnames(donor_fraction_data) <- c("size", names)
 
-names <- unique(sub("_[^_]+$", "", colnames(data_scaled[ , -1])))
-donor_fraction_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
-donor_fraction_data_scaled$X1 <- data_scaled$size
-for (i in seq_along(names)) {
-  data_sub <- data_scaled[ , which(sub("_[^_]+$", "", colnames(data_scaled)) %in% names[i])]
-  donor_fraction_data_scaled[ , i + 1] <- rowMeans(data_sub)
+donor_fraction_data_scaled <- donor_fraction_data
+for (i in seq_along(rownames(scaling_factor))) {
+  for (j in seq_along(colnames(donor_fraction_data_scaled))) {
+    if (sub("^([^_]*).*", "\\1", colnames(data))[j] == rownames(scaling_factor)[i])
+      donor_fraction_data_scaled[j] <- donor_fraction_data_scaled[j] * scaling_factor[i, ]
+  }
 }
-colnames(donor_fraction_data_scaled) <- c("size", names)
 
-names <- unique(sub("_[^_]+$", "", colnames(data_norm[ , -1])))
-donor_fraction_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
-donor_fraction_data_norm$X1 <- data_norm$size
-for (i in seq_along(names)) {
-  data_sub <- data_norm[ , which(sub("_[^_]+$", "", colnames(data_norm)) %in% names[i])]
-  donor_fraction_data_norm[ , i + 1] <- rowMeans(data_sub)
+donor_fraction_data_norm <- donor_fraction_data
+for (i in seq_along(colnames(donor_fraction_data_norm))) {
+  if (i != 1) {
+    donor_fraction_data_norm[i] <- (
+      donor_fraction_data_norm[i] / sum(donor_fraction_data_norm[i])
+    ) * 100
+  }
 }
-colnames(donor_fraction_data_norm) <- c("size", names)
 
-names <- unique(sub("_[^_]+$", "", colnames(data_mode[ , -1])))
-donor_fraction_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
-donor_fraction_data_mode$X1 <- data_mode$size
-for (i in seq_along(names)) {
-  data_sub <- data_mode[ , which(sub("_[^_]+$", "", colnames(data_mode)) %in% names[i])]
-  donor_fraction_data_mode[ , i + 1] <- rowMeans(data_sub)
+donor_fraction_data_mode <- donor_fraction_data
+for (i in seq_along(colnames(donor_fraction_data_mode))) {
+  if (i != 1) {
+    donor_fraction_data_mode[i] <- (donor_fraction_data_mode[i] / max(donor_fraction_data_mode[i]))
+  }
 }
-colnames(donor_fraction_data_mode) <- c("size", names)
 
 names <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
 donor_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
@@ -208,32 +205,27 @@ for (i in seq_along(names)) {
 }
 colnames(donor_data) <- c("size", names)
 
-names <- unique(sub("^([^_]*).*", "\\1", colnames(data_scaled[ , -1])))
-donor_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
-donor_data_scaled$X1 <- data_scaled$size
-for (i in seq_along(names)) {
-  data_sub <- data_scaled[ , which(sub("^([^_]*).*", "\\1", colnames(data_scaled)) %in% names[i])]
-  donor_data_scaled[ , i + 1] <- rowMeans(data_sub)
+donor_data_scaled <- donor_data
+for (i in seq_along(rownames(scaling_factor))) {
+  for (j in seq_along(colnames(donor_data_scaled))) {
+    if (sub("^([^_]*).*", "\\1", colnames(data))[j] == rownames(scaling_factor)[i])
+      donor_data_scaled[j] <- donor_data_scaled[j] * scaling_factor[i, ]
+  }
 }
-colnames(donor_data_scaled) <- c("size", names)
 
-names <- unique(sub("^([^_]*).*", "\\1", colnames(data_norm[ , -1])))
-donor_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
-donor_data_norm$X1 <- data_norm$size
-for (i in seq_along(names)) {
-  data_sub <- data_norm[ , which(sub("^([^_]*).*", "\\1", colnames(data_norm)) %in% names[i])]
-  donor_data_norm[ , i + 1] <- rowMeans(data_sub)
+donor_data_norm <- donor_data
+for (i in seq_along(colnames(donor_data_norm))) {
+  if (i != 1) {
+    donor_data_norm[i] <- (donor_data_norm[i] / sum(donor_data_norm[i])) * 100
+  }
 }
-colnames(donor_data_norm) <- c("size", names)
 
-names <- unique(sub("^([^_]*).*", "\\1", colnames(data_mode[ , -1])))
-donor_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
-donor_data_mode$X1 <- data_mode$size
-for (i in seq_along(names)) {
-  data_sub <- data_mode[ , which(sub("^([^_]*).*", "\\1", colnames(data_mode)) %in% names[i])]
-  donor_data_mode[ , i + 1] <- rowMeans(data_sub)
+donor_data_mode <- donor_data
+for (i in seq_along(colnames(donor_data_mode))) {
+  if (i != 1) {
+    donor_data_mode[i] <- (donor_data_mode[i] / max(donor_data_mode[i]))
+  }
 }
-colnames(donor_data_mode) <- c("size", names)
 
 names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data[ , -1])))
 fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
@@ -244,38 +236,27 @@ for (i in seq_along(names)) {
 }
 colnames(fraction_data) <- c("size", names)
 
-names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled[ , -1])))
-fraction_data_scaled <- data.frame(matrix(nrow = nrow(data_scaled), ncol = length(names) + 1))
-fraction_data_scaled$X1 <- data_scaled$size
-for (i in seq_along(names)) {
-  data_sub <- data_scaled[
-    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_scaled)) %in% names[i])
-  ]
-  fraction_data_scaled[ , i + 1] <- rowMeans(data_sub)
+fraction_data_scaled <- fraction_data
+for (i in seq_along(rownames(scaling_factor))) {
+  for (j in seq_along(colnames(fraction_data_scaled))) {
+    if (sub("^([^_]*).*", "\\1", colnames(data))[j] == rownames(scaling_factor)[i])
+      fraction_data_scaled[j] <- fraction_data_scaled[j] * scaling_factor[i, ]
+  }
 }
-colnames(fraction_data_scaled) <- c("size", names)
 
-names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm[ , -1])))
-fraction_data_norm <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
-fraction_data_norm$X1 <- data_norm$size
-for (i in seq_along(names)) {
-  data_sub <- data_norm[
-    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_norm)) %in% names[i])
-  ]
-  fraction_data_norm[ , i + 1] <- rowMeans(data_sub)
+fraction_data_norm <- fraction_data
+for (i in seq_along(colnames(fraction_data_norm))) {
+  if (i != 1) {
+    fraction_data_norm[i] <- (fraction_data_norm[i] / sum(fraction_data_norm[i])) * 100
+  }
 }
-colnames(fraction_data_norm) <- c("size", names)
 
-names <- unique(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_mode[ , -1])))
-fraction_data_mode <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
-fraction_data_mode$X1 <- data_mode$size
-for (i in seq_along(names)) {
-  data_sub <- data_mode[
-    , which(sub("^[^_]*_([^_]*).*", "\\1", colnames(data_mode)) %in% names[i])
-  ]
-  fraction_data_mode[ , i + 1] <- rowMeans(data_sub)
+fraction_data_mode <- fraction_data
+for (i in seq_along(colnames(fraction_data_mode))) {
+  if (i != 1) {
+    fraction_data_mode[i] <- (fraction_data_mode[i] / max(fraction_data_mode[i]))
+  }
 }
-colnames(fraction_data_mode) <- c("size", names)
 ```
 
 # Distribution Plots
@@ -972,22 +953,13 @@ Here we calculate the mean, median, mode and percentiles of each distribution.
 ### Proportion of Total Counts
 
 ```{r}
-names <- unique(sub("_[^_]+$", "", colnames(data_norm[ , -1])))
-donor_fraction_sums <- data.frame(matrix(nrow = nrow(data_norm), ncol = length(names) + 1))
-donor_fraction_sums$X1 <- data_norm$size
-for (i in seq_along(names)) {
-  data_sub <- data_norm[ , which(sub("_[^_]+$", "", colnames(data_norm)) %in% names[i])]
-  donor_fraction_sums[ , i + 1] <- rowSums(data_sub)
-}
-colnames(donor_fraction_sums) <- c("size", names)
-
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_sums) - 1))
-colnames(stats) <- colnames(donor_fraction_sums[ , -1])
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_data_norm) - 1))
+colnames(stats) <- colnames(donor_fraction_data_norm[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
-counts_per_size <- vector("list", ncol(donor_fraction_sums) - 1)
+counts_per_size <- vector("list", ncol(donor_fraction_data_norm) - 1)
 for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(donor_fraction_sums[ , 1], donor_fraction_sums[ , i + 1])
+  counts_per_size[[i]] <- rep(donor_fraction_data_norm[ , 1], donor_fraction_data_norm[ , i + 1])
   stats[1, i] <- mean(counts_per_size[[i]])
   stats[2, i] <- median(counts_per_size[[i]])
   stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
@@ -1035,22 +1007,13 @@ for (i in seq_along(unique(molten_data$Statistic))) {
 ### Normalised by Mode
 
 ```{r}
-names <- unique(sub("_[^_]+$", "", colnames(data_mode[ , -1])))
-donor_fraction_sums <- data.frame(matrix(nrow = nrow(data_mode), ncol = length(names) + 1))
-donor_fraction_sums$X1 <- data_mode$size
-for (i in seq_along(names)) {
-  data_sub <- data_mode[ , which(sub("_[^_]+$", "", colnames(data_mode)) %in% names[i])]
-  donor_fraction_sums[ , i + 1] <- rowSums(data_sub)
-}
-colnames(donor_fraction_sums) <- c("size", names)
-
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_sums) - 1))
-colnames(stats) <- colnames(donor_fraction_sums[ , -1])
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_data_mode) - 1))
+colnames(stats) <- colnames(donor_fraction_data_mode[ , -1])
 rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
 
-counts_per_size <- vector("list", ncol(donor_fraction_sums) - 1)
+counts_per_size <- vector("list", ncol(donor_fraction_data_mode) - 1)
 for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(donor_fraction_sums[ , 1], donor_fraction_sums[ , i + 1])
+  counts_per_size[[i]] <- rep(donor_fraction_data_mode[ , 1], donor_fraction_data_mode[ , i + 1])
   stats[1, i] <- mean(counts_per_size[[i]])
   stats[2, i] <- median(counts_per_size[[i]])
   stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
