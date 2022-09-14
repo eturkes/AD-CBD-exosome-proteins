@@ -263,7 +263,7 @@ for (i in seq_along(colnames(fraction_data_mode))) {
 
 # Distribution Plots
 
-We only plot sizes up to 600 nm.
+We only plot sizes up to 300 nm.
 Data objects without any limit on size are also provided for browsing and download.
 
 ## All Data
@@ -271,7 +271,7 @@ Data objects without any limit on size are also provided for browsing and downlo
 ### Unnormalised
 
 ```{r}
-data_sub <- data[1:which(data$size == 597.5), ]
+data_sub <- data[1:which(data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -302,7 +302,7 @@ datatable_download(data)
 ### Normalised By Tissue Amt.
 
 ```{r}
-data_sub <- data_scaled[1:which(data_scaled$size == 597.5), ]
+data_sub <- data_scaled[1:which(data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -333,7 +333,7 @@ datatable_download(data_scaled)
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- data_norm[1:which(data_norm$size == 597.5), ]
+data_sub <- data_norm[1:which(data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -364,7 +364,7 @@ datatable_download(data_norm)
 ### Normalised by Mode
 
 ```{r}
-data_sub <- data_mode[1:which(data_mode$size == 597.5), ]
+data_sub <- data_mode[1:which(data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -397,7 +397,7 @@ datatable_download(data_mode)
 ### Unnormalised
 
 ```{r}
-data_sub <- donor_fraction_data[1:which(donor_fraction_data$size == 597.5), ]
+data_sub <- donor_fraction_data[1:which(donor_fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -427,7 +427,7 @@ datatable_download(donor_fraction_data)
 ### Normalised By Tissue Amt.
 
 ```{r}
-data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_scaled$size == 597.5), ]
+data_sub <- donor_fraction_data_scaled[1:which(donor_fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -457,7 +457,7 @@ datatable_download(donor_fraction_data_scaled)
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 597.5), ]
+data_sub <- donor_fraction_data_norm[1:which(donor_fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -487,7 +487,7 @@ datatable_download(donor_fraction_data_norm)
 ### Normalised by Mode
 
 ```{r}
-data_sub <- donor_fraction_data_mode[1:which(donor_fraction_data_mode$size == 597.5), ]
+data_sub <- donor_fraction_data_mode[1:which(donor_fraction_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Sample", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -523,7 +523,7 @@ names(colour) <- colnames(donor_data[ , -1])
 ### Unnormalised
 
 ```{r}
-data_sub <- donor_data[1:which(donor_data$size == 597.5), ]
+data_sub <- donor_data[1:which(donor_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Donor", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -554,7 +554,7 @@ datatable_download(donor_data)
 ### Normalised By Tissue Amt.
 
 ```{r}
-data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 597.5), ]
+data_sub <- donor_data_scaled[1:which(donor_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Donor", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -585,7 +585,7 @@ datatable_download(donor_data_scaled)
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- donor_data_norm[1:which(donor_data_norm$size == 597.5), ]
+data_sub <- donor_data_norm[1:which(donor_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Donor", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -616,7 +616,7 @@ datatable_download(donor_data_norm)
 ### Normalised by Mode
 
 ```{r}
-data_sub <- donor_data_mode[1:which(donor_data_mode$size == 597.5), ]
+data_sub <- donor_data_mode[1:which(donor_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Donor", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -653,7 +653,7 @@ names(colour) <- colnames(fraction_data[ , -1])
 ### Unnormalised
 
 ```{r}
-data_sub <- fraction_data[1:which(fraction_data$size == 597.5), ]
+data_sub <- fraction_data[1:which(fraction_data$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Fraction", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -684,7 +684,7 @@ datatable_download(fraction_data)
 ### Normalised By Tissue Amt.
 
 ```{r}
-data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 597.5), ]
+data_sub <- fraction_data_scaled[1:which(fraction_data_scaled$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Fraction", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -715,7 +715,7 @@ datatable_download(fraction_data_scaled)
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 597.5), ]
+data_sub <- fraction_data_norm[1:which(fraction_data_norm$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Fraction", "proportion")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
@@ -746,7 +746,7 @@ datatable_download(fraction_data_norm)
 ### Normalised by Mode
 
 ```{r}
-data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 597.5), ]
+data_sub <- fraction_data_mode[1:which(fraction_data_mode$size == 297.5), ]
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("Fraction", "Concentration")
 molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
