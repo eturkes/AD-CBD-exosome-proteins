@@ -936,7 +936,7 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
 names(colour) <- colnames(fraction_data[ , -1])
 ```
 
-## 0-600 (50 nm Bins)
+## 0-600 nm (50 nm Bins)
 
 ### Proportion of Total Counts
 
@@ -968,7 +968,7 @@ ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   xlab("Diameter Range (nm)")
 ```
 
-## 50 nm Bins and 300 to End
+## 50 nm Bins (Last Bin from 300 nm to End)
 
 ### Proportion of Total Counts
 
