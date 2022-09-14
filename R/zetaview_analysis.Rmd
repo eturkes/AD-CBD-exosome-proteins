@@ -69,7 +69,9 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma")
+packages <- c(
+  "conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma", "matrixStats"
+)
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -928,114 +930,6 @@ ggplot(data_sub, aes(Fraction, Concentration)) +
   scale_fill_manual(values = colour)
 ```
 
-# Summary Stats
-
-Here we calculate the mean, median, mode and percentiles of each distribution.
-
-## Donor by Fraction
-
-### Proportion of Total Counts
-
-```{r}
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_data_norm) - 1))
-colnames(stats) <- colnames(donor_fraction_data_norm[ , -1])
-rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
-
-counts_per_size <- vector("list", ncol(donor_fraction_data_norm) - 1)
-for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(donor_fraction_data_norm[ , 1], donor_fraction_data_norm[ , i + 1])
-  stats[1, i] <- mean(counts_per_size[[i]])
-  stats[2, i] <- median(counts_per_size[[i]])
-  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
-    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ])[1]
-  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-}
-
-datatable_download(stats)
-
-molten_data <- as.data.frame(t(stats))
-molten_data$`Donor by Fraction` <- rownames(molten_data)
-molten_data <- melt(molten_data, id.vars = "Donor by Fraction")
-colnames(molten_data) <- c("Donor by Fraction", "Statistic", "Diameter")
-molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
-molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
-
-for (i in seq_along(unique(molten_data$Statistic))) {
-  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
-  print(
-    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
-      stat_boxplot(geom = "errorbar", width = 0.5) +
-      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
-      stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
-      geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
-      labs(
-        title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
-      ) +
-      theme_light() +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      scale_fill_manual(values = colour) +
-      scale_y_continuous(
-        breaks = seq(
-          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
-        ),
-        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
-      )
-  )
-}
-```
-
-### Normalised by Mode
-
-```{r}
-stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_data_mode) - 1))
-colnames(stats) <- colnames(donor_fraction_data_mode[ , -1])
-rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
-
-counts_per_size <- vector("list", ncol(donor_fraction_data_mode) - 1)
-for (i in seq_along(counts_per_size)) {
-  counts_per_size[[i]] <- rep(donor_fraction_data_mode[ , 1], donor_fraction_data_mode[ , i + 1])
-  stats[1, i] <- mean(counts_per_size[[i]])
-  stats[2, i] <- median(counts_per_size[[i]])
-  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
-    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
-  ])[1]
-  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
-}
-
-datatable_download(stats)
-
-molten_data <- as.data.frame(t(stats))
-molten_data$`Donor by Fraction` <- rownames(molten_data)
-molten_data <- melt(molten_data, id.vars = "Donor by Fraction")
-colnames(molten_data) <- c("Donor by Fraction", "Statistic", "Diameter")
-molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
-molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
-
-for (i in seq_along(unique(molten_data$Statistic))) {
-  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
-  print(
-    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
-      stat_boxplot(geom = "errorbar", width = 0.5) +
-      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
-      stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
-      geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
-      labs(
-        title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
-      ) +
-      theme_light() +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      scale_fill_manual(values = colour) +
-      scale_y_continuous(
-        breaks = seq(
-          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
-        ),
-        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
-      )
-  )
-}
-```
-
 # Histograms
 
 ```{r}
@@ -1111,6 +1005,104 @@ ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   scale_fill_manual(values = colour) +
   ylab("Proportion of Total Counts Per Fraction (%)") +
   xlab("Diameter Range (nm)")
+```
+
+# Summary Stats
+
+Here we calculate the mean, median, mode and percentiles of each distribution.
+
+## Donor by Fraction
+
+```{r}
+names(colour) <- colnames(donor_data[ , -1])
+
+file_list <- list.files(file.path(assets_dir, data_name, "raw-data"))
+file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+
+for (i in seq_along(file_list)) {
+  file <- read.delim(
+    file.path(assets_dir, data_name, "raw-data", file_list[i]), skip = 70
+  )
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1]
+  }
+  data[ , i + 1] <- file[1:1200, 2]
+}
+
+colnames(data) <- c(
+  "size",
+    paste(
+      sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sep = "_"
+  )
+)
+
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+
+names <- unique(sub("_[^_]+$", "", colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowMedians(as.matrix(data_sub))
+}
+colnames(donor_fraction_data) <- c("size", names)
+```
+
+### Unnormalised
+
+```{r}
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(donor_fraction_data) - 1))
+colnames(stats) <- colnames(donor_fraction_data[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_size <- vector("list", ncol(donor_fraction_data) - 1)
+for (i in seq_along(counts_per_size)) {
+  counts_per_size[[i]] <- rep(donor_fraction_data[ , 1], donor_fraction_data[ , i + 1])
+  stats[1, i] <- mean(counts_per_size[[i]])
+  stats[2, i] <- median(counts_per_size[[i]])
+  stats[3, i] <- as.numeric(names(table(counts_per_size[[i]]))[
+    table(counts_per_size[[i]]) == max(table(counts_per_size[[i]]))
+  ])[1]
+  stats[4:6, i] <- as.numeric(quantile(counts_per_size[[i]], probs = c(0.1, 0.5, 0.9)))
+}
+
+datatable_download(stats)
+
+molten_data <- as.data.frame(t(stats))
+molten_data$`Donor by Fraction` <- rownames(molten_data)
+molten_data <- melt(molten_data, id.vars = "Donor by Fraction")
+colnames(molten_data) <- c("Donor by Fraction", "Statistic", "Diameter")
+molten_data$Donor <- sub("^([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
+molten_data$Fraction <- sub("^[^_]*_([^_]*).*", "\\1", molten_data$`Donor by Fraction`)
+
+for (i in seq_along(unique(molten_data$Statistic))) {
+  molten_data_sub <- molten_data[molten_data$Statistic == unique(molten_data$Statistic)[i], ]
+  print(
+    ggplot(molten_data_sub, aes(Fraction, Diameter)) +
+      stat_boxplot(geom = "errorbar", width = 0.5) +
+      geom_boxplot(fill = "#F2F3F4", outlier.shape = NA, fatten = NULL, coef = 0) +
+      stat_summary(fun = median, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..), width = 0.75) +
+      geom_beeswarm(aes(fill = Donor), size = 2, pch = 21, cex = 2) +
+      labs(
+        title = paste0(unique(molten_data$Statistic)[i], " of Diameter of EVs"), y = "Diameter (nm)"
+      ) +
+      theme_light() +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      scale_fill_manual(values = colour) +
+      scale_y_continuous(
+        breaks = seq(
+          floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)), 2
+        ),
+        limits = c(floor(min(molten_data_sub$Diameter)), ceiling(max(molten_data_sub$Diameter)))
+      )
+  )
+}
 ```
 
 # References
