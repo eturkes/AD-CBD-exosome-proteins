@@ -69,9 +69,7 @@ Three technical replicates per fraction was run through the Zetaview.
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c(
-  "conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma", "matrixStats"
-)
+packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm", "khroma")
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -1049,7 +1047,7 @@ donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names)
 donor_fraction_data$X1 <- data$size
 for (i in seq_along(names)) {
   data_sub <- data[ , which(sub("_[^_]+$", "", colnames(data)) %in% names[i])]
-  donor_fraction_data[ , i + 1] <- rowMedians(as.matrix(data_sub))
+  donor_fraction_data[ , i + 1] <- rowSums(data_sub)
 }
 colnames(donor_fraction_data) <- c("size", names)
 ```
