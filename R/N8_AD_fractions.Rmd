@@ -217,7 +217,9 @@ if (file.exists(rds)) {
 
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 
-plot_numbers(data) + theme(axis.text.x = element_text(size = 7))
+plot_numbers(data) +
+  theme(axis.text.x = element_text(size = 7)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 plot_frequency(data)
 plot_detect(data)
 
@@ -936,7 +938,9 @@ missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), 
 ```
 
 ```{r}
-plot_numbers(data) + theme(axis.text.x = element_text(size = 7))
+plot_numbers(data) +
+  theme(axis.text.x = element_text(size = 7)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 plot_frequency(data)
 plot_detect(data)
 ```
@@ -967,9 +971,12 @@ meanSdPlot(VSN_Normalized)
 print("VSN_Normalized_Non_Missing_Data")
 meanSdPlot(VSN_Normalized_Non_Missing_Data)
 
-plot_normalization(Log_Transform_Only, VSN_Normalized) + theme(axis.text.y = element_text(size = 3))
+plot_normalization(Log_Transform_Only, VSN_Normalized) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data) +
-  theme(axis.text.y = element_text(size = 3))
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 # ---------------------------------
 
 # Move normalized data to main objects and clean up.
@@ -1055,7 +1062,9 @@ plot_imputation(Imputed_Data)
 
 # Create a few more plots.
 # ------------------------
-plot_normalization(Unimputed_Data, Imputed_Data) + theme(axis.text.y = element_text(size = 3))
+plot_normalization(Unimputed_Data, Imputed_Data) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 
 print("Unimputed Data")
 meanSdPlot(Unimputed_Data)
