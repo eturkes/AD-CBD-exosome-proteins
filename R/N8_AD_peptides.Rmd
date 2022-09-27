@@ -1162,9 +1162,9 @@ df$Donor <- complete_cases$donor
 summary <- summary(pca)$importance
 
 ggplot(df, aes(PC1, PC2, color = Fraction)) +
-  geom_point(aes(shape = Donor), size = 2, stroke = 2) +
+  geom_point(aes(shape = Donor), size = 2, stroke = 1) +
   theme_bw() +
-  geom_polygon(stat = "ellipse", aes(fill = Fraction), alpha = 0.05) +
+  geom_polygon(stat = "ellipse", aes(fill = Fraction), level = 0.68, alpha = 0.05) +
   labs(
     x = paste0("PC1: ", round(summary[2, 1] * 100, 1), "% of Variance Explained"),
     y = paste0("PC2: ", round(summary[2, 2] * 100, 1), "% of Variance Explained")
