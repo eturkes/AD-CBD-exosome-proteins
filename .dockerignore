@@ -7,7 +7,6 @@ AD-exosome-characterisation.bib
 AD-exosome-characterisation.Rproj
 docker-compose.yml
 .gitignore
-LICENSE
 NOTICE
 README.md
 results
@@ -16,3 +15,6 @@ singularity.sh
 tmp
 .env
 nohup.out
+notes
+COPYING
+.Rproj.user
