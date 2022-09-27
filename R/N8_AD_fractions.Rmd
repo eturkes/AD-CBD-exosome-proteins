@@ -232,49 +232,49 @@ plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.1")])
 plot_data <- ggplot_build(plot)
 F1_MNAR_cutoff <- 14.9
 cat(paste0("For Fraction 1.\nCutoff at ", F1_MNAR_cutoff))
-plot + geom_vline(xintercept = F1_MNAR_cutoff)
+plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.2")])
 plot_data <- ggplot_build(plot)
 F2_MNAR_cutoff <- 14.7
 cat(paste0("For Fraction 2.\nCutoff at ", F2_MNAR_cutoff))
-plot + geom_vline(xintercept = F2_MNAR_cutoff)
+plot + geom_vline(xintercept = F2_MNAR_cutoff) + ggtitle("Fraction 2")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.3")])
 plot_data <- ggplot_build(plot)
 F3_MNAR_cutoff <- 14.9
 cat(paste0("For Fraction 3.\nCutoff at ", F3_MNAR_cutoff))
-plot + geom_vline(xintercept = F3_MNAR_cutoff)
+plot + geom_vline(xintercept = F3_MNAR_cutoff) + ggtitle("Fraction 3")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.4")])
 plot_data <- ggplot_build(plot)
 F4_MNAR_cutoff <- 14.3
 cat(paste0("For Fraction 4.\nCutoff at ", F4_MNAR_cutoff))
-plot + geom_vline(xintercept = F4_MNAR_cutoff)
+plot + geom_vline(xintercept = F4_MNAR_cutoff) + ggtitle("Fraction 4")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.5")])
 plot_data <- ggplot_build(plot)
 F5_MNAR_cutoff <- 14.6
 cat(paste0("For Fraction 5.\nCutoff at ", F5_MNAR_cutoff))
-plot + geom_vline(xintercept = F5_MNAR_cutoff)
+plot + geom_vline(xintercept = F5_MNAR_cutoff) + ggtitle("Fraction 5")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.6")])
 plot_data <- ggplot_build(plot)
 F6_MNAR_cutoff <- 14.5
 cat(paste0("For Fraction 6.\nCutoff at ", F6_MNAR_cutoff))
-plot + geom_vline(xintercept = F6_MNAR_cutoff)
+plot + geom_vline(xintercept = F6_MNAR_cutoff) + ggtitle("Fraction 6")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.7")])
 plot_data <- ggplot_build(plot)
 F7_MNAR_cutoff <- 15.3
 cat(paste0("For Fraction 7.\nCutoff at ", F7_MNAR_cutoff))
-plot + geom_vline(xintercept = F7_MNAR_cutoff)
+plot + geom_vline(xintercept = F7_MNAR_cutoff) + ggtitle("Fraction 7")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
 plot_data <- ggplot_build(plot)
 F8_MNAR_cutoff <- 15.2
 cat(paste0("For Fraction 8.\nCutoff at ", F8_MNAR_cutoff))
-plot + geom_vline(xintercept = F8_MNAR_cutoff)
+plot + geom_vline(xintercept = F8_MNAR_cutoff) + ggtitle("Fraction 8")
 # --------------------------------------------------------------------------------------------------
 ```
 
