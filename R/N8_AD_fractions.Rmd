@@ -1151,6 +1151,38 @@ ggplot(df, aes(PC1, PC2, color = Fraction)) +
   theme(axis.title = element_text(size = 16))
 ```
 
+# Tau Expression
+
+```{r}
+for (fraction in unique(data$condition)) {
+  rowmeans <- data.frame(x = rowMeans(assay(data)[ , which(data$condition == fraction)]))
+  print(
+    ggplot(rowmeans, aes(x)) +
+      geom_density() +
+      theme_bw() +
+      labs(x = "log2 Intensity", title = sub("\\.", " ", fraction)) +
+      geom_vline(aes(xintercept = x[rownames(rowmeans) == "MAPT"]), color = "red") +
+      scale_x_continuous(breaks = pretty_breaks(15))
+  )
+}
+
+set.seed(1)
+draw(
+  Heatmap(
+    t(assay(data)[which(rownames(data) == "MAPT"), ]),
+    cluster_columns = FALSE,
+    heatmap_legend_param = list(
+      title = "log2 Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    column_names_gp = gpar(fontsize = 10),
+    row_title = "MAPT",
+    row_title_rot = 0
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 # Differential Expression
 
 ```{r}
