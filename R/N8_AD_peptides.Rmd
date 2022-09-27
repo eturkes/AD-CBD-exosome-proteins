@@ -73,7 +73,7 @@ Each sample in the dataset represents a fraction from a single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "tibble", "readxl", "khroma"
+  "ComplexHeatmap", "tibble", "readxl", "khroma", "NormalyzerDE"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -936,6 +936,24 @@ plot_detect(data)
 ```
 
 ## Normalization
+
+```{r}
+mat <- data
+colnames(mat) <- mat$label
+assay(mat) <- 2 ^ assay(mat)
+
+if (!dir.exists(file.path(cache_dir, "NormalyzerDE"))) {
+  suppressWarnings(
+    normalyzer(
+      "NormalyzerDE", experimentObj = mat, outputDir = cache_dir, normalizeRetentionTime = FALSE,
+      sampleColName = "label", groupColName = "condition", writeReportAsPngs = TRUE, quiet = TRUE
+    )
+  )
+}
+```
+
+![](../tmp/cache/oxford-ms-data-april-2022/peptides/NormalyzerDE/pngs/10_boxplot.png)
+![](../tmp/cache/oxford-ms-data-april-2022/peptides/NormalyzerDE/pngs/11_rel_log_expr.png)
 
 Here we perform VSN normalization.
 

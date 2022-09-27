@@ -32,6 +32,7 @@ RUN apt-get update \
         libcairo2-dev \
         libxt-dev \
         libgsl23 \
+        libgdal26 \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
@@ -56,6 +57,8 @@ RUN apt-get update \
         -e "BiocManager::install('variancePartition')" \
         -e "BiocManager::install('biomaRt')" \
         -e "BiocManager::install('EnhancedVolcano')" \
+        -e "BiocManager::install('preprocessCore', configure.args = '--disable-threading', force = TRUE)" \
+        -e "BiocManager::install('NormalyzerDE')" \
         -e "remotes::install_github('lgatto/pRolocdata')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
