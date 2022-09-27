@@ -70,8 +70,8 @@ Each sample in the dataset represents a fraction from a single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble",
-  "readxl", "khroma", "biomaRt", "NormalyzerDE"
+  "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "readxl",
+  "khroma", "biomaRt", "NormalyzerDE"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
