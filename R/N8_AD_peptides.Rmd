@@ -935,7 +935,7 @@ plot_frequency(data)
 plot_detect(data)
 ```
 
-## Normalization
+## Normalisation
 
 ```{r}
 mat <- data
@@ -955,7 +955,7 @@ if (!dir.exists(file.path(cache_dir, "NormalyzerDE"))) {
 ![](../tmp/cache/oxford-ms-data-april-2022/peptides/NormalyzerDE/pngs/10_boxplot.png)
 ![](../tmp/cache/oxford-ms-data-april-2022/peptides/NormalyzerDE/pngs/11_rel_log_expr.png)
 
-Here we perform VSN normalization.
+We decide to use VSN normalisation.
 
 ```{r}
 # Normalize using VSN.
