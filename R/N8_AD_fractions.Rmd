@@ -1179,6 +1179,15 @@ meanSdPlot(Unnormalised_Imputed_Data_Renormalised)
 
 plot_imputation(Unnormalised_Imputed_Data_Renormalised, Imputed_Data_Renormalised)
 
+rds <- file.path(cache_dir, "imputed.rds")
+rds2 <- file.path(cache_dir, "unimputed.rds")
+rds3 <- file.path(cache_dir, "complete.rds")
+if (!file.exists(rds)) {
+  saveRDS(Imputed_Data, rds)
+  saveRDS(Unimputed_Data, rds2)
+  saveRDS(Non_Missing_Data, rds3)
+}
+
 data <- Imputed_Data
 rm(
   Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
