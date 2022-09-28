@@ -162,6 +162,9 @@ contrast_mat <- makeContrasts(F1_3-F4_6, F1_3-F7_8, F4_6-F7_8, levels = limma_de
 
 data <- make_se(data, LFQ_columns, experimental_design)
 data
+
+unimputed_data <- data # Keep an object that won't go through the imputation proecess.
+complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 ```
 
 **Unaltered data, already log2 transformed**
@@ -214,8 +217,6 @@ if (file.exists(rds)) {
   saveRDS(data, rds)
 }
 # -------------------------------------------------------------------------------------------
-
-complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 
 plot_numbers(data) +
   theme(axis.text.x = element_text(size = 7)) +
@@ -974,6 +975,9 @@ We decide to use VSN normalisation.
 VSN_Normalized <- normalize_vsn(data)
 Log_Transform_Only <- data
 
+VSN_Normalized_Unimputed_Data <- normalize_vsn(unimputed_data)
+Log_Transform_Only_Unimputed_Data <- unimputed_data
+
 VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
 Log_Transform_Only_Non_Missing_Data <- complete_cases
 # ------------------------------------------------------------------
@@ -982,14 +986,21 @@ Log_Transform_Only_Non_Missing_Data <- complete_cases
 # ---------------------------------
 print("Log_Transform_Only")
 meanSdPlot(Log_Transform_Only)
+print("Log_Transform_Only_Unimputed_Data")
+meanSdPlot(Log_Transform_Only_Unimputed_Data)
 print("Log_Transform_Only_Non_Missing_Data")
 meanSdPlot(Log_Transform_Only_Non_Missing_Data)
 print("VSN_Normalized")
 meanSdPlot(VSN_Normalized)
+print("VSN_Normalized_Unimputed_Data")
+meanSdPlot(VSN_Normalized_Unimputed_Data)
 print("VSN_Normalized_Non_Missing_Data")
 meanSdPlot(VSN_Normalized_Non_Missing_Data)
 
 plot_normalization(Log_Transform_Only, VSN_Normalized) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+plot_normalization(Log_Transform_Only_Unimputed_Data, VSN_Normalized_Unimputed_Data) +
   theme(axis.text.y = element_text(size = 3)) +
   scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
 plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data) +
@@ -1000,10 +1011,12 @@ plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missi
 # Move normalized data to main objects and clean up.
 # --------------------------------------------------
 data <- VSN_Normalized
+unnormalised_data <- Log_Transform_Only
+unimputed_data <- VSN_Normalized_Unimputed_Data
 complete_cases <- VSN_Normalized_Non_Missing_Data
 rm(
-  VSN_Normalized, VSN_Normalized_Non_Missing_Data,
-  Log_Transform_Only, Log_Transform_Only_Non_Missing_Data
+  VSN_Normalized, VSN_Normalized_Unimputed_Data, VSN_Normalized_Non_Missing_Data,
+  Log_Transform_Only, Log_Transform_Only_Unimputed_Data, Log_Transform_Only_Non_Missing_Data
 )
 # --------------------------------------------------
 ```
@@ -1015,15 +1028,17 @@ Here we impute missing values using both MAR (`knn`) and MNAR methods (`MinProb`
 ```{r}
 # We create several extra variables for better plotting labels.
 # -------------------------------------------------------------
-unimputed_data <- data
 Unimputed_Data <- unimputed_data
-Non_Missing_data <- complete_cases
+Non_Missing_Data <- complete_cases
+Unnormalised_Data <- unnormalised_data
+Normalised_Data <- data
 # -------------------------------------------------------------
 
-plot_imputation(Unimputed_Data, Non_Missing_data)
+plot_imputation(Unimputed_Data, Non_Missing_Data)
+plot_imputation(Unnormalised_Data, Normalised_Data)
 
-# The main imputation code.
-# -------------------------
+# The main imputation code for normalised data.
+# ---------------------------------------------
 impute1 <- data[ , which(data$condition == "Fraction.1")]
 impute_vector <- rownames(impute1) %in% F1_MNAR # Logical vector specifying MNAR.
 set.seed(1)
@@ -1063,7 +1078,7 @@ impute8 <- data[ , which(data$condition == "Fraction.8")]
 impute_vector <- rownames(impute8) %in% F8_MNAR # Logical vector specifying MNAR.
 set.seed(1)
 impute8 <- impute(impute8, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
-# -------------------------
+# ---------------------------------------------
 
 # Move imputed data to main objects and clean up.
 # -----------------------------------------------
@@ -1072,11 +1087,63 @@ assay(Imputed_Data, withDimnames = FALSE) <- cbind(
   assay(impute1), assay(impute2), assay(impute3), assay(impute4),
   assay(impute5), assay(impute6), assay(impute7), assay(impute8)
 )
-rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8, Non_Missing_data)
-data <- Imputed_Data
 # -----------------------------------------------
 
-plot_imputation(Imputed_Data)
+# The main imputation code for unnormalised data.
+# -----------------------------------------------
+impute1 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.1")]
+impute_vector <- rownames(impute1) %in% F1_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute1 <- impute(impute1, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute2 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.2")]
+impute_vector <- rownames(impute2) %in% F2_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute2 <- impute(impute2, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute3 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.3")]
+impute_vector <- rownames(impute3) %in% F3_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute3 <- impute(impute3, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute4 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.4")]
+impute_vector <- rownames(impute4) %in% F4_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute4 <- impute(impute4, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute5 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.5")]
+impute_vector <- rownames(impute5) %in% F5_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute5 <- impute(impute5, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute6 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.6")]
+impute_vector <- rownames(impute6) %in% F6_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute6 <- impute(impute6, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute7 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.7")]
+impute_vector <- rownames(impute7) %in% F7_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute7 <- impute(impute7, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+
+impute8 <- unnormalised_data[ , which(unnormalised_data$condition == "Fraction.8")]
+impute_vector <- rownames(impute8) %in% F8_MNAR # Logical vector specifying MNAR.
+set.seed(1)
+impute8 <- impute(impute8, "mixed", randna = !impute_vector, mar = "knn", mnar = "MinProb")
+# -----------------------------------------------
+
+# Move imputed data to main objects and clean up.
+# -----------------------------------------------
+Unnormalised_Imputed_Data <- unnormalised_data
+assay(Unnormalised_Imputed_Data, withDimnames = FALSE) <- cbind(
+  assay(impute1), assay(impute2), assay(impute3), assay(impute4),
+  assay(impute5), assay(impute6), assay(impute7), assay(impute8)
+)
+# -----------------------------------------------
+
+rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8)
+
+plot_imputation(Unnormalised_Imputed_Data, Imputed_Data)
 
 # Create a few more plots.
 # ------------------------
@@ -1090,7 +1157,32 @@ print("Imputed Data")
 meanSdPlot(Imputed_Data)
 # ------------------------
 
-rm(Imputed_Data, Unimputed_Data)
+Imputed_Data_Renormalised <- normalize_vsn(Imputed_Data)
+Unnormalised_Imputed_Data_Renormalised <- normalize_vsn(Unnormalised_Imputed_Data)
+
+plot_normalization(Imputed_Data, Imputed_Data_Renormalised) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+
+print("Imputed Data Renormalised")
+meanSdPlot(Imputed_Data_Renormalised)
+
+plot_normalization(Unnormalised_Imputed_Data, Unnormalised_Imputed_Data_Renormalised) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+
+print("Unnormalised Imputed Data Renormalised")
+meanSdPlot(Unnormalised_Imputed_Data_Renormalised)
+
+plot_imputation(Unnormalised_Imputed_Data_Renormalised, Imputed_Data_Renormalised)
+
+data <- Imputed_Data
+rm(
+  Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
+  Imputed_Data_Renormalised, Imputed_Data,
+  Unimputed_Data, Normalised_Data,
+  Non_Missing_data
+)
 ```
 
 **Data after missing value imputation**  

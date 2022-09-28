@@ -161,6 +161,8 @@ names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
 
 data <- make_se(data, LFQ_columns, experimental_design)
 data
+
+complete_cases <- filter_proteins(data, "complete") # Keep an object with only complete values.
 ```
 
 # QC
@@ -204,8 +206,6 @@ if (file.exists(rds)) {
   saveRDS(data, rds)
 }
 # -------------------------------------------------------------------------------------------
-
-complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 
 plot_numbers(data) +
   theme(axis.text.x = element_text(size = 7)) +
@@ -1084,7 +1084,7 @@ assay(Imputed_Data, withDimnames = FALSE) <- cbind(
   assay(impute1), assay(impute2), assay(impute3), assay(impute4),
   assay(impute5), assay(impute6), assay(impute7), assay(impute8)
 )
-rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8, Non_Missing_data)
+rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8)
 data <- Imputed_Data
 # -----------------------------------------------
 
@@ -1102,7 +1102,7 @@ print("Imputed Data")
 meanSdPlot(Imputed_Data)
 # ------------------------
 
-rm(Imputed_Data, Unimputed_Data)
+rm(Imputed_Data, Unimputed_Data, Non_Missing_data)
 ```
 
 ### Normalised Data After Imputation
