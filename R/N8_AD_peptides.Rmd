@@ -153,6 +153,9 @@ experimental_design <- data.frame(
   replicate = c(rep(1:8, 7), 2:4, 7:8),
   donor = sub(" .*", "", colnames(data)[11:71])
 )
+experimental_design$nice_names <- sub(
+  "\\.", " ", paste(experimental_design$condition, experimental_design$donor, sep = " ")
+)
 
 colour <- colour("vibrant")(7)
 colour <- append("#DDAA33", colour)
@@ -209,7 +212,7 @@ if (file.exists(rds)) {
 
 plot_numbers(data) +
   theme(axis.text.x = element_text(size = 7)) +
-  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+  scale_x_discrete(labels = data$nice_names)
 plot_frequency(data)
 plot_detect(data)
 
@@ -930,7 +933,7 @@ missing_data <- missing_data[apply(missing_data, 1, function(x) any(is.na(x))), 
 ```{r}
 plot_numbers(data) +
   theme(axis.text.x = element_text(size = 7)) +
-  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+  scale_x_discrete(labels = data$nice_names)
 plot_frequency(data)
 plot_detect(data)
 ```
@@ -981,10 +984,10 @@ meanSdPlot(VSN_Normalized_Non_Missing_Data)
 
 plot_normalization(Log_Transform_Only, VSN_Normalized) +
   theme(axis.text.y = element_text(size = 3)) +
-  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+  scale_x_discrete(labels = data$nice_names)
 plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data) +
   theme(axis.text.y = element_text(size = 3)) +
-  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+  scale_x_discrete(labels = data$nice_names)
 # ---------------------------------
 
 # Move normalized data to main objects and clean up.
@@ -1002,7 +1005,7 @@ rm(
 
 ```{r}
 datatable <- assay(data)
-colnames(datatable) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+colnames(datatable) <- data$nice_names
 
 datatable_download(datatable)
 ```
@@ -1094,7 +1097,7 @@ plot_imputation(Imputed_Data)
 # ------------------------
 plot_normalization(Unimputed_Data, Imputed_Data) +
   theme(axis.text.y = element_text(size = 3)) +
-  scale_x_discrete(labels = sub("\\.", " ", paste(data$condition, data$donor, sep = " ")))
+  scale_x_discrete(labels = data$nice_names)
 
 print("Unimputed Data")
 meanSdPlot(Unimputed_Data)
@@ -1109,7 +1112,7 @@ rm(Imputed_Data, Unimputed_Data, Non_Missing_data)
 
 ```{r}
 datatable <- assay(data)
-colnames(datatable) <- sub("\\.", " ", paste(data$condition, data$donor, sep = " "))
+colnames(datatable) <- data$nice_names
 
 datatable_download(datatable)
 ```
