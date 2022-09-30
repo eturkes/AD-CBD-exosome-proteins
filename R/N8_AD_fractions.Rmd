@@ -1274,6 +1274,7 @@ set.seed(1)
 draw(
   Heatmap(
     t(assay(data)[which(rownames(data) == "MAPT"), ]),
+    column_labels = data$nice_names,
     cluster_columns = FALSE,
     heatmap_legend_param = list(
       title = "log2 Intensity", direction = "horizontal",
