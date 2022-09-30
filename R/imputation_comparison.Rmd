@@ -67,7 +67,10 @@ div.main-container {max-width: none; width: 100%;}
 
 # This section should be checked per document.
 # --------------------------------------------
-packages <- c("conflicted", "SummarizedExperiment", "limma", "khroma", "stringr", "DT", "volcano3D")
+packages <- c(
+  "conflicted", "SummarizedExperiment", "limma", "khroma", "stringr", "DT", "volcano3D",
+  "VennDiagram", "RColorBrewer", "htmltools", "ComplexHeatmap", "circlize"
+)
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
@@ -105,9 +108,20 @@ colour <- colour("vibrant")(7)
 colour <- append("#DDAA33", colour)
 colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
 names(colour) <- unique(sub("\\.", " ", data_list[[1]]$condition))
+
+intensity_range <- range(
+  rbind(rbind(assay(data_list[[1]]), assay(data_list[[2]]))), assay(data_list[[3]]), na.rm = TRUE
+)
+heatmap_colour <- colorRamp2(
+  c(
+    intensity_range[1], intensity_range[1] + (intensity_range[2] - intensity_range[1]) / 2,
+    intensity_range[2]
+  ),
+  c("#0077BB", "#FFFFFF", "#CC3311")
+)
 ```
 
-# Differential Expression
+# DEP Pipeline
 
 ## `r str_to_title(names(data_list)[1])`
 
@@ -629,6 +643,70 @@ radial_plotly(polar, 2)
 ```{r, dpi = 96}
 volcano3D(polar_main, 2)
 volcano3D(polar, 2)
+```
+
+# DEP Comparison
+
+## Venn Diagram
+
+```{r}
+results_list <- list(
+  "imputed" = read.delim(
+    file.path(cache_dir, paste(names(data_list)[1], "results.tsv", sep = "_"))
+  ),
+  "unimputed" = read.delim(
+    file.path(cache_dir, paste(names(data_list)[2], "results.tsv", sep = "_"))
+  ),
+  "complete" = read.delim(
+    file.path(cache_dir, paste(names(data_list)[3], "results.tsv", sep = "_"))
+  )
+)
+
+venn_list <- list(
+  "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05],
+  "unimputed" = results_list[[2]]$X[results_list[[2]]$F.p.value < 0.05],
+  "complete" = results_list[[3]]$X[results_list[[3]]$F.p.value < 0.05]
+)
+venn_list <- lapply(venn_list, function(x) x[!is.na(x)])
+
+plot <- venn.diagram(
+  venn_list, NULL, TRUE,
+  category.names = str_to_title(names(venn_list)), fill = brewer.pal(3, "Pastel2")
+)
+grid.draw(plot)
+
+overlap <- calculate.overlap(venn_list)
+```
+
+## Heatmaps
+
+```{r, results = "asis"}
+for (name in names(venn_list)) {
+  cat("\n")
+  cat("###", str_to_title(name), "\n")
+
+  set.seed(1)
+  mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list[[name]], 36), ])
+  colnames(mat) <- data_list[[name]]$nice_names
+  set.seed(1)
+  draw(
+    Heatmap(
+      mat,
+      heatmap_colour,
+      cluster_columns = FALSE,
+      heatmap_legend_param = list(
+        title = "log2 Intensity", direction = "horizontal",
+        legend_width = unit(7.5, "cm")
+      ),
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 10),
+      rect_gp = gpar(col = "grey", lwd = 1)
+    ),
+    heatmap_legend_side = "top"
+  )
+
+  cat('\n')
+}
 ```
 
 # References
