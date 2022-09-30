@@ -166,7 +166,7 @@ names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
 data <- make_se(data, LFQ_columns, experimental_design)
 data
 
-unimputed_data <- data # Keep an object that won't go through the imputation proecess.
+unimputed_data <- data # Keep an object that won't go through the imputation process.
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 ```
 
