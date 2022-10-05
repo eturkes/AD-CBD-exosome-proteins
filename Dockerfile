@@ -51,6 +51,7 @@ RUN apt-get update \
         -e "install.packages('fastmatch')" \
         -e "install.packages('volcano3D')" \
         -e "install.packages('VennDiagram')" \
+        -e "install.packages('mice')" \
         -e "install.packages('BiocManager')" \
         -e "install.packages('remotes')" \
         -e "BiocManager::install('DEP')" \
