@@ -166,6 +166,8 @@ names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
 data <- make_se(data, LFQ_columns, experimental_design)
 data
 
+hist(assay(data), n = 100)
+
 unimputed_data <- data # Keep an object that won't go through the imputation process.
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
 ```
@@ -182,15 +184,6 @@ datatable_download(datatable)
 # QC
 
 We apply quality control to the data.
-
-## Summary Statistics
-
-Basic descriptions of the data such as distributions.
-For now we just have a histogram.
-
-```{r}
-hist(assay(data), n = 100)
-```
 
 ## Missing Value Removal
 
@@ -221,6 +214,7 @@ if (file.exists(rds)) {
 }
 # -------------------------------------------------------------------------------------------
 
+hist(assay(data), n = 100)
 plot_numbers(data) +
   theme(axis.text.x = element_text(size = 7)) +
   scale_x_discrete(labels = data$nice_names)
@@ -1195,6 +1189,8 @@ rm(
   Unimputed_Data, Normalised_Data,
   Non_Missing_data
 )
+
+hist(assay(data), n = 100)
 ```
 
 **Data after missing value imputation**  
