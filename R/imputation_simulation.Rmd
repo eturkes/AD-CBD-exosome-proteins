@@ -164,25 +164,14 @@ data
 # Simulate Data
 
 ```{r}
-sim_list <- vector("list", length(unique(data$condition)))
-names(sim_list) <- unique(data$condition)
-for (fraction in unique(data$condition)) {
-  data_sub <- assay(data)[ , which(data$condition == fraction)]
-
-  mu <- rowMeans(data_sub, TRUE)
-  std <- apply(data_sub, 1, sd, na.rm = TRUE)
-  discard <- which(is.na(std))
-  std <- std[-discard]
-  mu <- mu[-discard]
-
-  set.seed(1)
-  sim_list[[fraction]] <- suppressWarnings(
-    t(as.data.frame(mapply(function(x, y) rnorm(ncol(data_sub), x, y), mu, std)))
-  )
-}
-keep <- Reduce(intersect, lapply(sim_list, rownames))
-sim_list <- lapply(sim_list, function(x) x[keep, ])
-sim_data <- do.call("cbind", sim_list)
+mu <- rowMeans(assay(data), TRUE)
+std <- apply(assay(data), 1, sd, na.rm = TRUE)
+discard <- which(is.na(std))
+std <- std[-discard]
+mu <- mu[-discard]
+sim_data <- suppressWarnings(
+  t(as.data.frame(mapply(function(x, y) rnorm(ncol(data), x, y), mu, std)))
+)
 
 hist(sim_data, n = 100)
 
