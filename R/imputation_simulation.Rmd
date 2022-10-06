@@ -173,6 +173,17 @@ set.seed(1)
 sim_data <- suppressWarnings(
   t(as.data.frame(mapply(function(x, y) rnorm(ncol(data), x, y), mu, std)))
 )
+colnames(sim_data) <- colnames(data)
+
+hist(sim_data, n = 100)
+
+idx <- 1
+for (group in unique(data$groups)) {
+  for (i in idx:(idx + 999)) {
+    sim_data[i, which(data$groups != group)] <- sim_data[i, which(data$groups != group)] / 2
+  }
+  idx <- idx + 1000
+}
 
 hist(sim_data, n = 100)
 
