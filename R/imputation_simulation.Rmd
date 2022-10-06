@@ -169,6 +169,7 @@ std <- apply(assay(data), 1, sd, na.rm = TRUE)
 discard <- which(is.na(std))
 std <- std[-discard]
 mu <- mu[-discard]
+set.seed(1)
 sim_data <- suppressWarnings(
   t(as.data.frame(mapply(function(x, y) rnorm(ncol(data), x, y), mu, std)))
 )
