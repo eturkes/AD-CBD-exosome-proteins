@@ -192,24 +192,36 @@ for (fraction in unique(data$condition)) {
 }
 
 set.seed(1)
-amp_MAR <- ampute(sim_data, 0.2, pattern, mech = "MAR")
+amp_MAR <- ampute(
+  sim_data,
+  0.7,
+  pattern,
+  sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern)),
+  mech = "MAR"
+)
 set.seed(1)
-amp_MNAR <- ampute(sim_data, 0.8, pattern, mech = "MNAR")
+amp_MNAR <- ampute(
+  sim_data,
+  0.7,
+  pattern,
+  rowSums(pattern) / sum(rowSums(pattern)),
+  mech = "MNAR"
+)
 
 set.seed(1)
-idx <- sample(c(1, 2), nrow(data), TRUE, c(0.5, 0.5))
+idx <- sample(c(1, 2), nrow(data), TRUE, c(0.25, 0.75))
 
 amp_data <- matrix(nrow = nrow(data), ncol = ncol(data))
 amp_data[idx == 1, ] <- as.matrix(amp_MAR$amp[idx == 1, ])
 amp_data[idx == 2, ] <- as.matrix(amp_MNAR$amp[idx == 2, ])
+
+hist(amp_data, n = 100)
 
 colnames(amp_data) <- colnames(data)
 rownames(amp_data) <- rownames(data)
 assay(data) <- amp_data
 rm(sim_data, amp_data, amp_MAR, amp_MNAR)
 data
-
-hist(assay(data), n = 100)
 
 unimputed_data <- data # Keep an object that won't go through the imputation process.
 complete_cases <- filter_proteins(data, "complete") # Keep another object with only complete values.
