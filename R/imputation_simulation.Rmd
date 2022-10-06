@@ -153,6 +153,7 @@ colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
 names(colour) <- unique(sub("\\.", " ", experimental_design$condition))
 
 data <- make_se(data, LFQ_columns, experimental_design)
+rownames(data) <- paste0("Protein_", seq(nrow(data)))
 data
 ```
 
@@ -190,37 +191,27 @@ for (fraction in unique(data$condition)) {
     expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[sample(256), ]
   )
 }
+freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
+pattern <- pattern[order(freq, decreasing = TRUE), ][seq(ncol(data)), ]
+freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
 
 set.seed(1)
-amp_MAR <- ampute(
-  sim_data,
-  0.7,
-  pattern,
-  sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern)),
-  mech = "MAR"
-)
+sim_data <- as.matrix(ampute(sim_data, 0.15, pattern, freq, mech = "MCAR")$amp)
+
+below_LOD <- which(sim_data < 8.5)
 set.seed(1)
-amp_MNAR <- ampute(
-  sim_data,
-  0.7,
-  pattern,
-  rowSums(pattern) / sum(rowSums(pattern)),
-  mech = "MNAR"
-)
+below_LOD <- sample(below_LOD, 1e6, TRUE, (1 / sim_data[below_LOD]) ^ 6)
+sim_data[below_LOD] <- NA
 
-set.seed(1)
-idx <- sample(c(1, 2), nrow(data), TRUE, c(0.25, 0.75))
+hist(sim_data, n = 100)
 
-amp_data <- matrix(nrow = nrow(data), ncol = ncol(data))
-amp_data[idx == 1, ] <- as.matrix(amp_MAR$amp[idx == 1, ])
-amp_data[idx == 2, ] <- as.matrix(amp_MNAR$amp[idx == 2, ])
+colnames(sim_data) <- colnames(data)
+data <- data[rownames(data) %in% rownames(sim_data), ]
+rownames(data) <- paste0("Protein_", seq(nrow(data)))
+rownames(sim_data) <- rownames(data)
 
-hist(amp_data, n = 100)
-
-colnames(amp_data) <- colnames(data)
-rownames(amp_data) <- rownames(data)
-assay(data) <- amp_data
-rm(sim_data, amp_data, amp_MAR, amp_MNAR)
+assay(data) <- sim_data
+rm(sim_data)
 data
 
 unimputed_data <- data # Keep an object that won't go through the imputation process.
