@@ -906,6 +906,7 @@ MNAR <- unique(
 # -----------------------------------------------
 keep <- unique(append(MAR, MNAR))
 data <- data[rownames(data) %in% keep, ]
+data
 # -----------------------------------------------
 
 # Save some orders/subsets for later use.
@@ -1083,6 +1084,7 @@ assay(Imputed_Data, withDimnames = FALSE) <- cbind(
 )
 rm(impute1, impute2, impute3, impute4, impute5, impute6, impute7, impute8)
 data <- Imputed_Data
+data
 # -----------------------------------------------
 
 plot_imputation(Imputed_Data)

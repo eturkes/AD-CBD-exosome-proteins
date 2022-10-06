@@ -963,6 +963,7 @@ MNAR <- unique(
 # -----------------------------------------------
 keep <- unique(append(MAR, MNAR))
 data <- data[rownames(data) %in% keep, ]
+data
 # -----------------------------------------------
 
 # Save some orders/subsets for later use.
@@ -1211,6 +1212,7 @@ if (!file.exists(rds)) {
 }
 
 data <- Imputed_Data
+data
 rm(
   Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
   Imputed_Data_Renormalised, Imputed_Data,
