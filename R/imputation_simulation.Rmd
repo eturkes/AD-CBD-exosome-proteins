@@ -116,37 +116,32 @@ data2 <- read_xlsx(
 colnames(data) <- c(colnames(data)[1:5], colnames(data2)[5:ncol(data2)])
 rm(data2)
 
-remove <- which(
-  colnames(data) == "5521 F8" | colnames(data) == "5365 F8" | colnames(data) == "5333 F8"
-)
-data <- data[ , -remove]
-
 remove <- which(data$Genes == "")
 data <- data[-remove, ]
 
 data$gene_names <- data$Genes
 data <- make_unique(data, "gene_names", "Protein.Ids", ";")
 
-LFQ_columns <- 6:66
+LFQ_columns <- 6:69
 data <- data[
   , c(
       1:5, (order(substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])) + 5),
-      67:ncol(data)
+      70:ncol(data)
     )
 ]
 
 experimental_design <- data.frame(
-  label = colnames(data)[6:66],
+  label = colnames(data)[6:69],
   condition = paste0(
     "Fraction ", substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])
   ),
-  replicate = c(rep(1:8, 7), 2:4, 7:8),
-  donor = sub(" .*", "", colnames(data)[6:66])
+  replicate = rep(1:8, 8),
+  donor = sub(" .*", "", colnames(data)[6:69])
 )
 experimental_design$nice_names <- sub(
   "\\.", " ", paste(experimental_design$condition, experimental_design$donor, sep = " ")
 )
-experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 13))
+experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
 
 limma_design <- model.matrix(~ 0 + experimental_design$groups)
 colnames(limma_design) <- unique(experimental_design$groups)
@@ -187,10 +182,19 @@ for (group in unique(data$groups)) {
 
 hist(sim_data, n = 100)
 
+pattern <- matrix(nrow = 256, ncol = ncol(data))
+for (fraction in unique(data$condition)) {
+  idx <- which(data$condition == fraction)
+  set.seed(idx[1])
+  pattern[ , idx] <- as.matrix(
+    expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[sample(256), ]
+  )
+}
+
 set.seed(1)
-amp_MAR <- ampute(sim_data, 0.2, mech = "MAR")
+amp_MAR <- ampute(sim_data, 0.2, pattern, mech = "MAR")
 set.seed(1)
-amp_MNAR <- ampute(sim_data, 0.8, mech = "MNAR")
+amp_MNAR <- ampute(sim_data, 0.8, pattern, mech = "MNAR")
 
 set.seed(1)
 idx <- sample(c(1, 2), nrow(data), TRUE, c(0.5, 0.5))
@@ -202,7 +206,7 @@ amp_data[idx == 2, ] <- as.matrix(amp_MNAR$amp[idx == 2, ])
 colnames(amp_data) <- colnames(data)
 rownames(amp_data) <- rownames(data)
 assay(data) <- amp_data
-rm(sim_data, sim_list, amp_data, amp_MAR, amp_MNAR)
+rm(sim_data, amp_data, amp_MAR, amp_MNAR)
 data
 
 hist(assay(data), n = 100)
