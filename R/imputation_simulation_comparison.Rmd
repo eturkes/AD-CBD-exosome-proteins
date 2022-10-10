@@ -679,7 +679,7 @@ grid.draw(plot)
 overlap <- calculate.overlap(venn_list)
 ```
 
-## Venn Diagram (Only True DEPs)
+## Venn Diagram (True DEPs)
 
 ```{r}
 venn_list <- list(
@@ -704,7 +704,7 @@ grid.draw(plot)
 overlap <- calculate.overlap(venn_list)
 ```
 
-## Heatmaps (Only True DEPs)
+## Heatmaps (True DEPs)
 
 ```{r, results = "asis"}
 for (name in names(venn_list)) {
