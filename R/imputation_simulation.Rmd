@@ -183,20 +183,23 @@ for (group in unique(data$groups)) {
 
 hist(sim_data, n = 100)
 
-pattern <- matrix(nrow = 256, ncol = ncol(data))
+pattern <- matrix(nrow = 93, ncol = ncol(data))
 for (fraction in unique(data$condition)) {
   idx <- which(data$condition == fraction)
   set.seed(idx[1])
   pattern[ , idx] <- as.matrix(
-    expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[sample(256), ]
+    expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[
+      rowSums(expand.grid(replicate(length(idx), 0:1, simplify = FALSE))) >= 5,
+    ][sample(93), ]
   )
 }
-freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
-pattern <- pattern[order(freq, decreasing = TRUE), ][seq(ncol(data)), ]
+if (any(rowSums(pattern) == 0)) {
+  pattern <- pattern[-(rowSums(pattern) == 0), ]
+}
 freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
 
 set.seed(1)
-sim_data <- as.matrix(ampute(sim_data, 0.15, pattern, freq, mech = "MCAR")$amp)
+sim_data <- as.matrix(ampute(sim_data, 0.15, pattern, freq, "MCAR")$amp)
 
 below_LOD <- which(sim_data < 8.5)
 set.seed(1)
