@@ -679,6 +679,41 @@ grid.draw(plot)
 overlap <- calculate.overlap(venn_list)
 ```
 
+## Heatmaps (All DEPs)
+
+```{r, results = "asis"}
+for (name in names(venn_list)) {
+  cat("\n")
+  cat("###", str_to_title(name), "\n")
+
+  set.seed(1)
+  mat <- assay(
+    data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list[[name]], 40), ]
+  )
+  mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
+  colnames(mat) <- data_list[[name]]$nice_names
+  set.seed(1)
+  draw(
+    Heatmap(
+      mat,
+      heatmap_colour,
+      cluster_columns = FALSE,
+      cluster_rows = FALSE,
+      heatmap_legend_param = list(
+        title = "log2 Intensity", direction = "horizontal",
+        legend_width = unit(7.5, "cm")
+      ),
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 10),
+      rect_gp = gpar(col = "grey", lwd = 1)
+    ),
+    heatmap_legend_side = "top"
+  )
+
+  cat('\n')
+}
+```
+
 ## Venn Diagram (True DEPs)
 
 ```{r}
@@ -721,7 +756,7 @@ for (name in names(venn_list)) {
     keep <- intersect(venn_list$imputed, venn_list$unimputed)[
       intersect(venn_list$imputed, venn_list$unimputed) %notin% venn_list$complete
     ]
-    set.seed(10000)
+    set.seed(1)
     mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(keep, 40), ])
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   }
@@ -747,7 +782,6 @@ for (name in names(venn_list)) {
   cat('\n')
 }
 ```
-
 # References
 
 This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
