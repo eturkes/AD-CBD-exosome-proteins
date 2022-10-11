@@ -25,7 +25,7 @@ digraph {
     edge [fontname=Verdana, fontsize=12];
     splines=ortho;
 
-    rm_all_missing [label="Replace proteins missing entirely in a condition with minimum value per condition in random samples"];
+    rm_all_missing [label="Replace proteins missing entirely in a condition with minimum value per sample in random samples"];
     MNAR_cutoff [label="Find MNAR cutoff of each condition from inflection point of missing value/complete case proportion"];
 
     rm_all_missing -> MNAR_cutoff;

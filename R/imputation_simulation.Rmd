@@ -243,25 +243,23 @@ The basic workflow is shown below:
 
 ```{r}
 # Step 1 in flowchart.
-# Replace proteins missing entirely in a condition with minimum value per condition in random
-# samples.
-# -------------------------------------------------------------------------------------------
+# Replace proteins missing entirely in a condition with minimum value per sample in random samples.
+# -------------------------------------------------------------------------------------------------
 rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
 if (file.exists(rds)) {
   data <- readRDS(rds)
 } else {
   for (fraction in unique(data$condition)) {
-    min <- min(assay(data)[ , which(data$condition == fraction)], na.rm = TRUE)
     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
-    set.seed(1)
+    set.seed(grep("[:digit:]", fraction))
     col <- sample(which(data$condition == fraction), length(replace), TRUE)
     for (i in seq_along(replace)) {
-      assay(data)[replace[i], col[i]] <- min
+      assay(data)[replace[i], col[i]] <- min(assay(data)[ , col[i]], na.rm = TRUE)
     }
   }
   saveRDS(data, rds)
 }
-# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 hist(assay(data), n = 100)
 plot_numbers(data) +
