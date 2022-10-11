@@ -717,7 +717,7 @@ for (name in names(venn_list)) {
 ## Venn Diagram (True DEPs)
 
 ```{r}
-venn_list <- list(
+venn_list_true <- list(
   "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05][
     as.numeric(gsub("\\D+","", results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05])) <= 3000
   ],
@@ -728,33 +728,33 @@ venn_list <- list(
     as.numeric(gsub("\\D+","", results_list[[3]]$X[results_list[[3]]$F.p.value < 0.05])) <= 3000
   ]
 )
-venn_list <- lapply(venn_list, function(x) x[!is.na(x)])
+venn_list_true <- lapply(venn_list_true, function(x) x[!is.na(x)])
 
 plot <- venn.diagram(
-  venn_list, NULL, TRUE,
-  category.names = str_to_title(names(venn_list)), fill = brewer.pal(3, "Pastel2")
+  venn_list_true, NULL, TRUE,
+  category.names = str_to_title(names(venn_list_true)), fill = brewer.pal(3, "Pastel2")
 )
 grid.draw(plot)
 
-overlap <- calculate.overlap(venn_list)
+overlap <- calculate.overlap(venn_list_true)
 ```
 
 ## Heatmaps (True DEPs)
 
 ```{r, results = "asis"}
-for (name in names(venn_list)) {
+for (name in names(venn_list_true)) {
   cat("\n")
   cat("###", str_to_title(name), "\n")
 
   if (name == "complete") {
     set.seed(1)
     mat <- assay(
-      data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list[[name]], 40), ]
+      data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list_true[[name]], 40), ]
     )
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   } else {
-    keep <- intersect(venn_list$imputed, venn_list$unimputed)[
-      intersect(venn_list$imputed, venn_list$unimputed) %notin% venn_list$complete
+    keep <- intersect(venn_list_true$imputed, venn_list_true$unimputed)[
+      intersect(venn_list_true$imputed, venn_list_true$unimputed) %notin% venn_list_true$complete
     ]
     set.seed(1)
     mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(keep, 40), ])
@@ -782,6 +782,29 @@ for (name in names(venn_list)) {
   cat('\n')
 }
 ```
+
+## Percent True DEP Captured
+
+```{r}
+df <- data.frame(
+  Imputed = round(length(venn_list_true$imputed) / 3000 * 100, 2),
+  Unimputed = round(length(venn_list_true$unimputed) / 3000 * 100, 2),
+  Complete = round(length(venn_list_true$complete) / 3000 * 100, 2)
+)
+datatable_download(df)
+```
+
+## Accuracy
+
+```{r}
+df <- data.frame(
+  Imputed = round(length(venn_list_true$imputed) / length(venn_list$imputed) * 100, 2),
+  Unimputed = round(length(venn_list_true$unimputed) / length(venn_list$unimputed) * 100, 2),
+  Complete = round(length(venn_list_true$complete) / length(venn_list$complete) * 100, 2)
+)
+datatable_download(df)
+```
+
 # References
 
 This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
