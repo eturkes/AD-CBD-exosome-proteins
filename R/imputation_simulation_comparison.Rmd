@@ -134,9 +134,8 @@ fit <- lmFit(assay(data_list[[idx]]), limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global")
 write.fit(
-  cont_fit, tests,
-  adjust = "BH", method = "global",
-  file = file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_"))
+  cont_fit, tests, file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")),
+  adjust = "BH", method = "global", F.adjust = "BH"
 )
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
@@ -156,6 +155,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F1_3 <- rownames(up)[1]
+F1_3_imputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -182,6 +182,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F4_6 <- rownames(up)[1]
+F4_6_imputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -208,6 +209,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F7_8 <- rownames(up)[1]
+F7_8_imputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -269,20 +271,6 @@ polar_main <- polar_coords(
   labs = unique(experimental_design$groups)
 )
 
-polar <- polar_coords(
-  experimental_design$groups,
-  t(mat),
-  p_mat,
-  p_adj_mat,
-  scheme = c(
-    colour("vibrant")(7)[[7]], colour("vibrant")(7)[[1]],
-    colour("vibrant")(7)[[2]], colour("vibrant")(7)[[3]],
-    colour("vibrant")(7)[[6]], colour("vibrant")(7)[[4]],
-    colour("vibrant")(7)[[5]]
-  ),
-  labs = unique(experimental_design$groups)
-)
-
 radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, marker_size = 2)
 ```
 
@@ -290,12 +278,10 @@ radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, 
 
 ```{r, dpi = 96}
 radial_plotly(polar_main, 2)
-radial_plotly(polar, 2)
 ```
 
 ```{r, dpi = 96}
 volcano3D(polar_main, 2)
-volcano3D(polar, 2)
 ```
 
 ## `r str_to_title(names(data_list)[2])`
@@ -307,9 +293,8 @@ fit <- lmFit(assay(data_list[[idx]]), limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global")
 write.fit(
-  cont_fit, tests,
-  adjust = "BH", method = "global",
-  file = file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_"))
+  cont_fit, tests, file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")),
+  adjust = "BH", method = "global", F.adjust = "BH"
 )
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
@@ -329,6 +314,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F1_3 <- rownames(up)[1]
+F1_3_unimputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -355,6 +341,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F4_6 <- rownames(up)[1]
+F4_6_unimputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -381,6 +368,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F7_8 <- rownames(up)[1]
+F7_8_unimputed <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -442,20 +430,6 @@ polar_main <- polar_coords(
   labs = unique(experimental_design$groups)
 )
 
-polar <- polar_coords(
-  experimental_design$groups,
-  t(mat),
-  p_mat,
-  p_adj_mat,
-  scheme = c(
-    colour("vibrant")(7)[[7]], colour("vibrant")(7)[[1]],
-    colour("vibrant")(7)[[2]], colour("vibrant")(7)[[3]],
-    colour("vibrant")(7)[[6]], colour("vibrant")(7)[[4]],
-    colour("vibrant")(7)[[5]]
-  ),
-  labs = unique(experimental_design$groups)
-)
-
 radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, marker_size = 2)
 ```
 
@@ -463,12 +437,10 @@ radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, 
 
 ```{r, dpi = 96}
 radial_plotly(polar_main, 2)
-radial_plotly(polar, 2)
 ```
 
 ```{r, dpi = 96}
 volcano3D(polar_main, 2)
-volcano3D(polar, 2)
 ```
 
 ## `r str_to_title(names(data_list)[3])`
@@ -480,9 +452,8 @@ fit <- lmFit(assay(data_list[[idx]]), limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global")
 write.fit(
-  cont_fit, tests,
-  adjust = "BH", method = "global",
-  file = file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_"))
+  cont_fit, tests, file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")),
+  adjust = "BH", method = "global", F.adjust = "BH"
 )
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
@@ -502,6 +473,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F1_3 <- rownames(up)[1]
+F1_3_complete <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -528,6 +500,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F4_6 <- rownames(up)[1]
+F4_6_complete <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -554,6 +527,7 @@ tests_up <- tests[
 ]
 up <- results[rownames(results) %in% rownames(tests_up), ]
 F7_8 <- rownames(up)[1]
+F7_8_complete <- rownames(up)
 datatable_download_exp(up)
 ```
 
@@ -615,20 +589,6 @@ polar_main <- polar_coords(
   labs = unique(experimental_design$groups)
 )
 
-polar <- polar_coords(
-  experimental_design$groups,
-  t(mat),
-  p_mat,
-  p_adj_mat,
-  scheme = c(
-    colour("vibrant")(7)[[7]], colour("vibrant")(7)[[1]],
-    colour("vibrant")(7)[[2]], colour("vibrant")(7)[[3]],
-    colour("vibrant")(7)[[6]], colour("vibrant")(7)[[4]],
-    colour("vibrant")(7)[[5]]
-  ),
-  labs = unique(experimental_design$groups)
-)
-
 radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, marker_size = 2)
 ```
 
@@ -636,12 +596,10 @@ radial_ggplot(polar_main, 2, label_rows = DEPs_main, colour_code_labels = TRUE, 
 
 ```{r, dpi = 96}
 radial_plotly(polar_main, 2)
-radial_plotly(polar, 2)
 ```
 
 ```{r, dpi = 96}
 volcano3D(polar_main, 2)
-volcano3D(polar, 2)
 ```
 
 # DEP Comparison
@@ -664,9 +622,15 @@ results_list <- list(
 
 ```{r}
 venn_list <- list(
-  "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05],
-  "unimputed" = results_list[[2]]$X[results_list[[2]]$F.p.value < 0.05],
-  "complete" = results_list[[3]]$X[results_list[[3]]$F.p.value < 0.05]
+  "imputed" = results_list[[1]]$X[
+    results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)
+  ],
+  "unimputed" = results_list[[2]]$X[
+    results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)
+  ],
+  "complete" = results_list[[3]]$X[
+    results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)
+  ]
 )
 venn_list <- lapply(venn_list, function(x) x[!is.na(x)])
 
@@ -688,7 +652,9 @@ for (name in names(venn_list)) {
 
   set.seed(1)
   mat <- assay(
-    data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list[[name]], 40), ]
+    data_list[[name]][
+      rownames(data_list[[name]]) %in% sample(venn_list[[name]], length(venn_list$complete)),
+    ]
   )
   mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   colnames(mat) <- data_list[[name]]$nice_names
@@ -718,15 +684,39 @@ for (name in names(venn_list)) {
 
 ```{r}
 venn_list_true <- list(
-  "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05][
-    as.numeric(gsub("\\D+","", results_list[[1]]$X[results_list[[1]]$F.p.value < 0.05])) <= 3000
-  ],
-  "unimputed" = results_list[[2]]$X[results_list[[2]]$F.p.value < 0.05][
-    as.numeric(gsub("\\D+","", results_list[[2]]$X[results_list[[2]]$F.p.value < 0.05])) <= 3000
-  ],
-  "complete" = results_list[[3]]$X[results_list[[3]]$F.p.value < 0.05][
-    as.numeric(gsub("\\D+","", results_list[[3]]$X[results_list[[3]]$F.p.value < 0.05])) <= 3000
-  ]
+  "imputed" = results_list[[1]]$X[
+    results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)][
+      as.numeric(
+        gsub(
+          "\\D+", "",
+          results_list[[1]]$X[
+            results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)
+          ]
+        )
+      ) <= 2250
+    ],
+  "unimputed" = results_list[[2]]$X[
+    results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)][
+      as.numeric(
+        gsub(
+          "\\D+", "",
+          results_list[[2]]$X[
+            results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)
+          ]
+        )
+      ) <= 2250
+    ],
+  "complete" = results_list[[3]]$X[
+    results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)][
+      as.numeric(
+        gsub(
+          "\\D+", "",
+          results_list[[3]]$X[
+            results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)
+          ]
+        )
+      ) <= 2250
+    ]
 )
 venn_list_true <- lapply(venn_list_true, function(x) x[!is.na(x)])
 
@@ -749,7 +739,10 @@ for (name in names(venn_list_true)) {
   if (name == "complete") {
     set.seed(1)
     mat <- assay(
-      data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list_true[[name]], 40), ]
+      data_list[[name]][
+        rownames(data_list[[name]]) %in%
+          sample(venn_list_true[[name]], length(venn_list_true$complete)),
+      ]
     )
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   } else {
@@ -757,7 +750,11 @@ for (name in names(venn_list_true)) {
       intersect(venn_list_true$imputed, venn_list_true$unimputed) %notin% venn_list_true$complete
     ]
     set.seed(1)
-    mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(keep, 40), ])
+    mat <- assay(
+      data_list[[name]][
+        rownames(data_list[[name]]) %in% sample(keep, length(venn_list_true$complete)),
+      ]
+    )
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   }
   colnames(mat) <- data_list[[name]]$nice_names
@@ -787,9 +784,9 @@ for (name in names(venn_list_true)) {
 
 ```{r}
 df <- data.frame(
-  Imputed = round(length(venn_list_true$imputed) / 3000 * 100, 2),
-  Unimputed = round(length(venn_list_true$unimputed) / 3000 * 100, 2),
-  Complete = round(length(venn_list_true$complete) / 3000 * 100, 2)
+  Imputed = round(length(venn_list_true$imputed) / 2250 * 100, 2),
+  Unimputed = round(length(venn_list_true$unimputed) / 2250 * 100, 2),
+  Complete = round(length(venn_list_true$complete) / 2250 * 100, 2)
 )
 datatable_download(df)
 ```

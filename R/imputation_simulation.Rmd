@@ -173,24 +173,35 @@ colnames(sim_data) <- colnames(data)
 
 hist(sim_data, n = 100)
 
+# min_vector <- vector("numeric", ncol(sim_data))
+# for (i in seq_along(min_vector)) {
+#   min_vector[i] <- min(sim_data[ , i])
+# }
+
+min_vector <- vector("numeric", length(unique(data$condition)))
+for (i in seq_along(min_vector)) {
+  min_vector[i] <- min(sim_data[ , which(data$condition == unique(data$condition)[i])])
+}
+
 idx <- 1
 for (group in unique(data$groups)) {
-  for (i in idx:(idx + 999)) {
+  for (i in idx:(idx + 749)) {
     sim_data[i, which(data$groups != group)] <- sim_data[i, which(data$groups != group)] / 2
   }
-  idx <- idx + 1000
+  idx <- idx + 750
 }
 
 hist(sim_data, n = 100)
+abline(v = 8.5)
 
-pattern <- matrix(nrow = 93, ncol = ncol(data))
+pattern <- matrix(nrow = 163, ncol = ncol(data))
 for (fraction in unique(data$condition)) {
   idx <- which(data$condition == fraction)
   set.seed(idx[1])
   pattern[ , idx] <- as.matrix(
     expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[
-      rowSums(expand.grid(replicate(length(idx), 0:1, simplify = FALSE))) >= 5,
-    ][sample(93), ]
+      rowSums(expand.grid(replicate(length(idx), 0:1, simplify = FALSE))) >= 4,
+    ][sample(163), ]
   )
 }
 if (any(rowSums(pattern) == 0)) {
@@ -199,11 +210,70 @@ if (any(rowSums(pattern) == 0)) {
 freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
 
 set.seed(1)
-sim_data <- as.matrix(ampute(sim_data, 0.15, pattern, freq, "MCAR")$amp)
+sim_data <- as.matrix(ampute(sim_data, 0.05, pattern, freq, "MCAR")$amp)
+
+sim_data_tmp <- sim_data
+colnames(sim_data_tmp) <- colnames(data)
+data_tmp <- data[rownames(data) %in% rownames(sim_data_tmp), ]
+rownames(data_tmp) <- paste0("Protein_", seq(nrow(data_tmp)))
+rownames(sim_data_tmp) <- rownames(data_tmp)
+assay(data_tmp) <- sim_data_tmp
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.1")])
+plot_data <- ggplot_build(plot)
+# F1_MNAR_cutoff <- 14
+F1_MNAR_cutoff <- 12
+cat(paste0("For Fraction 1.\nCutoff at ", F1_MNAR_cutoff))
+plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.2")])
+plot_data <- ggplot_build(plot)
+F2_MNAR_cutoff <- 12
+cat(paste0("For Fraction 2.\nCutoff at ", F2_MNAR_cutoff))
+plot + geom_vline(xintercept = F2_MNAR_cutoff) + ggtitle("Fraction 2")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.3")])
+plot_data <- ggplot_build(plot)
+F3_MNAR_cutoff <- 12
+cat(paste0("For Fraction 3.\nCutoff at ", F3_MNAR_cutoff))
+plot + geom_vline(xintercept = F3_MNAR_cutoff) + ggtitle("Fraction 3")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.4")])
+plot_data <- ggplot_build(plot)
+F4_MNAR_cutoff <- 12
+cat(paste0("For Fraction 4.\nCutoff at ", F4_MNAR_cutoff))
+plot + geom_vline(xintercept = F4_MNAR_cutoff) + ggtitle("Fraction 4")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.5")])
+plot_data <- ggplot_build(plot)
+F5_MNAR_cutoff <- 12
+cat(paste0("For Fraction 5.\nCutoff at ", F5_MNAR_cutoff))
+plot + geom_vline(xintercept = F5_MNAR_cutoff) + ggtitle("Fraction 5")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.6")])
+plot_data <- ggplot_build(plot)
+F6_MNAR_cutoff <- 12
+cat(paste0("For Fraction 6.\nCutoff at ", F6_MNAR_cutoff))
+plot + geom_vline(xintercept = F6_MNAR_cutoff) + ggtitle("Fraction 6")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.7")])
+plot_data <- ggplot_build(plot)
+F7_MNAR_cutoff <- 12
+cat(paste0("For Fraction 7.\nCutoff at ", F7_MNAR_cutoff))
+plot + geom_vline(xintercept = F7_MNAR_cutoff) + ggtitle("Fraction 7")
+
+plot <- plot_detect_custom(data_tmp[ , which(data_tmp$condition == "Fraction.8")])
+plot_data <- ggplot_build(plot)
+F8_MNAR_cutoff <- 12
+cat(paste0("For Fraction 8.\nCutoff at ", F8_MNAR_cutoff))
+plot + geom_vline(xintercept = F8_MNAR_cutoff) + ggtitle("Fraction 8")
 
 below_LOD <- which(sim_data < 8.5)
+# below_LOD <- which(sim_data < 10.5)
 set.seed(1)
-below_LOD <- sample(below_LOD, 1e6, TRUE, (1 / sim_data[below_LOD]) ^ 6)
+# below_LOD <- sample(below_LOD, 1e6, TRUE, (1 / sim_data[below_LOD]) ^ 8)
+# below_LOD <- sample(below_LOD, 5e8, TRUE, (1 / sim_data[below_LOD]) ^ 9)
+below_LOD <- sample(below_LOD, 1e7, TRUE, (1 / sim_data[below_LOD]) ^ 9)
 sim_data[below_LOD] <- NA
 
 hist(sim_data, n = 100)
@@ -214,7 +284,7 @@ rownames(data) <- paste0("Protein_", seq(nrow(data)))
 rownames(sim_data) <- rownames(data)
 
 assay(data) <- sim_data
-rm(sim_data)
+rm(sim_data, sim_data_tmp, data_tmp)
 data
 
 unimputed_data <- data # Keep an object that won't go through the imputation process.
@@ -245,16 +315,30 @@ The basic workflow is shown below:
 # Step 1 in flowchart.
 # Replace proteins missing entirely in a condition with minimum value per sample in random samples.
 # -------------------------------------------------------------------------------------------------
+# rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
+# if (file.exists(rds)) {
+#   data <- readRDS(rds)
+# } else {
+#   for (fraction in unique(data$condition)) {
+#     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
+#     set.seed(1)
+#     col <- sample(which(data$condition == fraction), length(replace), TRUE)
+#     for (i in seq_along(replace)) {
+#       assay(data)[replace[i], col[i]] <- min_vector[col[i]]
+#     }
+#   }
+#   saveRDS(data, rds)
+# }
 rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
 if (file.exists(rds)) {
   data <- readRDS(rds)
 } else {
   for (fraction in unique(data$condition)) {
     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
-    set.seed(grep("[:digit:]", fraction))
+    set.seed(1)
     col <- sample(which(data$condition == fraction), length(replace), TRUE)
     for (i in seq_along(replace)) {
-      assay(data)[replace[i], col[i]] <- min(assay(data)[ , col[i]], na.rm = TRUE)
+      assay(data)[replace[i], col[i]] <- min_vector[which(unique(data$condition) == fraction)]
     }
   }
   saveRDS(data, rds)
@@ -275,49 +359,57 @@ plot_detect(data)
 # --------------------------------------------------------------------------------------------------
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.1")])
 plot_data <- ggplot_build(plot)
-F1_MNAR_cutoff <- 8.5
+# F1_MNAR_cutoff <- 11.8
+F1_MNAR_cutoff <- 12
 cat(paste0("For Fraction 1.\nCutoff at ", F1_MNAR_cutoff))
 plot + geom_vline(xintercept = F1_MNAR_cutoff) + ggtitle("Fraction 1")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.2")])
 plot_data <- ggplot_build(plot)
-F2_MNAR_cutoff <- 8.5
+# F2_MNAR_cutoff <- 11.7
+F2_MNAR_cutoff <- 12
 cat(paste0("For Fraction 2.\nCutoff at ", F2_MNAR_cutoff))
 plot + geom_vline(xintercept = F2_MNAR_cutoff) + ggtitle("Fraction 2")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.3")])
 plot_data <- ggplot_build(plot)
-F3_MNAR_cutoff <- 8.5
+# F3_MNAR_cutoff <- 11.9
+F3_MNAR_cutoff <- 12
 cat(paste0("For Fraction 3.\nCutoff at ", F3_MNAR_cutoff))
 plot + geom_vline(xintercept = F3_MNAR_cutoff) + ggtitle("Fraction 3")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.4")])
 plot_data <- ggplot_build(plot)
-F4_MNAR_cutoff <- 8.5
+# F4_MNAR_cutoff <- 11.8
+F4_MNAR_cutoff <- 12
 cat(paste0("For Fraction 4.\nCutoff at ", F4_MNAR_cutoff))
 plot + geom_vline(xintercept = F4_MNAR_cutoff) + ggtitle("Fraction 4")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.5")])
 plot_data <- ggplot_build(plot)
-F5_MNAR_cutoff <- 8.5
+# F5_MNAR_cutoff <- 12.2
+F5_MNAR_cutoff <- 12
 cat(paste0("For Fraction 5.\nCutoff at ", F5_MNAR_cutoff))
 plot + geom_vline(xintercept = F5_MNAR_cutoff) + ggtitle("Fraction 5")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.6")])
 plot_data <- ggplot_build(plot)
-F6_MNAR_cutoff <- 8.5
+# F6_MNAR_cutoff <- 12
+F6_MNAR_cutoff <- 12
 cat(paste0("For Fraction 6.\nCutoff at ", F6_MNAR_cutoff))
 plot + geom_vline(xintercept = F6_MNAR_cutoff) + ggtitle("Fraction 6")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.7")])
 plot_data <- ggplot_build(plot)
-F7_MNAR_cutoff <- 8.5
+# F7_MNAR_cutoff <- 11.8
+F7_MNAR_cutoff <- 12
 cat(paste0("For Fraction 7.\nCutoff at ", F7_MNAR_cutoff))
 plot + geom_vline(xintercept = F7_MNAR_cutoff) + ggtitle("Fraction 7")
 
 plot <- plot_detect_custom(data[ , which(data$condition == "Fraction.8")])
 plot_data <- ggplot_build(plot)
-F8_MNAR_cutoff <- 8.5
+# F8_MNAR_cutoff <- 11.8
+F8_MNAR_cutoff <- 12
 cat(paste0("For Fraction 8.\nCutoff at ", F8_MNAR_cutoff))
 plot + geom_vline(xintercept = F8_MNAR_cutoff) + ggtitle("Fraction 8")
 # --------------------------------------------------------------------------------------------------
@@ -1217,8 +1309,7 @@ data
 rm(
   Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
   Imputed_Data_Renormalised, Imputed_Data,
-  Unimputed_Data, Normalised_Data,
-  Non_Missing_data
+  Unimputed_Data, Normalised_Data
 )
 
 hist(assay(data), n = 100)
