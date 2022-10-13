@@ -201,11 +201,12 @@ if (file.exists(rds)) {
   data <- readRDS(rds)
 } else {
   for (fraction in unique(data$condition)) {
+    min <- min(assay(data)[ , which(data$condition == fraction)], na.rm = TRUE)
     replace <- which(is.na(rowMeans(assay(data)[ , which(data$condition == fraction)], TRUE)))
-    set.seed(grep("[:digit:]", fraction))
+    set.seed(1)
     col <- sample(which(data$condition == fraction), length(replace), TRUE)
     for (i in seq_along(replace)) {
-      assay(data)[replace[i], col[i]] <- min(assay(data)[ , col[i]], na.rm = TRUE)
+      assay(data)[replace[i], col[i]] <- min
     }
   }
   saveRDS(data, rds)
@@ -1186,8 +1187,7 @@ data
 rm(
   Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
   Imputed_Data_Renormalised, Imputed_Data,
-  Unimputed_Data, Normalised_Data,
-  Non_Missing_data
+  Unimputed_Data, Normalised_Data
 )
 
 hist(assay(data), n = 100)
