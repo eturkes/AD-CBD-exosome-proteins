@@ -193,9 +193,9 @@ The basic workflow is shown below:
 ![](../assets/figures/missing-value-removal.svg)
 
 ```{r}
-# Step 1 in flowchart.
-# Replace proteins missing entirely in a condition with minimum value per sample in random samples.
-# -------------------------------------------------------------------------------------------------
+# Replace proteins missing entirely in a condition with minimum value per condition in random
+# samples.
+# -------------------------------------------------------------------------------------------
 rds <- file.path(cache_dir, "data_NA_replaced_by_fraction.rds")
 if (file.exists(rds)) {
   data <- readRDS(rds)
@@ -211,7 +211,7 @@ if (file.exists(rds)) {
   }
   saveRDS(data, rds)
 }
-# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
 hist(assay(data), n = 100)
 plot_numbers(data) +
