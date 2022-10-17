@@ -140,7 +140,7 @@ write.fit(
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
 results <- results[ , -1]
-results <- results[order(results$F.p.value), ]
+results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 ```
@@ -241,7 +241,7 @@ results <- results[match(rownames(mat), rownames(results)), ]
 
 p_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.F1_3...F4_6 = results$P.value.F1_3...F4_6,
     P.value.F1_3...F7_8 = results$P.value.F1_3...F7_8,
     P.value.F4_6...F7_8 = results$P.value.F4_6...F7_8
@@ -250,7 +250,7 @@ p_mat <- as.matrix(
 
 p_adj_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.adj.F1_3...F4_6 = results$P.value.adj.F1_3...F4_6,
     P.value.adj.F1_3...F7_8 = results$P.value.adj.F1_3...F7_8,
     P.value.adj.F4_6...F7_8 = results$P.value.adj.F4_6...F7_8
@@ -299,7 +299,7 @@ write.fit(
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
 results <- results[ , -1]
-results <- results[order(results$F.p.value), ]
+results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 ```
@@ -400,7 +400,7 @@ results <- results[match(rownames(mat), rownames(results)), ]
 
 p_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.F1_3...F4_6 = results$P.value.F1_3...F4_6,
     P.value.F1_3...F7_8 = results$P.value.F1_3...F7_8,
     P.value.F4_6...F7_8 = results$P.value.F4_6...F7_8
@@ -409,7 +409,7 @@ p_mat <- as.matrix(
 
 p_adj_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.adj.F1_3...F4_6 = results$P.value.adj.F1_3...F4_6,
     P.value.adj.F1_3...F7_8 = results$P.value.adj.F1_3...F7_8,
     P.value.adj.F4_6...F7_8 = results$P.value.adj.F4_6...F7_8
@@ -458,7 +458,7 @@ write.fit(
 results <- read.delim(file.path(cache_dir, paste(names(data_list)[idx], "results.tsv", sep = "_")))
 rownames(results) <- results$X
 results <- results[ , -1]
-results <- results[order(results$F.p.value), ]
+results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 ```
@@ -559,7 +559,7 @@ results <- results[match(rownames(mat), rownames(results)), ]
 
 p_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.F1_3...F4_6 = results$P.value.F1_3...F4_6,
     P.value.F1_3...F7_8 = results$P.value.F1_3...F7_8,
     P.value.F4_6...F7_8 = results$P.value.F4_6...F7_8
@@ -568,7 +568,7 @@ p_mat <- as.matrix(
 
 p_adj_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.adj.F1_3...F4_6 = results$P.value.adj.F1_3...F4_6,
     P.value.adj.F1_3...F7_8 = results$P.value.adj.F1_3...F7_8,
     P.value.adj.F4_6...F7_8 = results$P.value.adj.F4_6...F7_8
