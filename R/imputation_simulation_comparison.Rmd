@@ -651,11 +651,7 @@ for (name in names(venn_list)) {
   cat("###", str_to_title(name), "\n")
 
   set.seed(1)
-  mat <- assay(
-    data_list[[name]][
-      rownames(data_list[[name]]) %in% sample(venn_list[[name]], length(venn_list$complete)),
-    ]
-  )
+  mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list[[name]], 40),])
   mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   colnames(mat) <- data_list[[name]]$nice_names
   set.seed(1)
@@ -739,10 +735,7 @@ for (name in names(venn_list_true)) {
   if (name == "complete") {
     set.seed(1)
     mat <- assay(
-      data_list[[name]][
-        rownames(data_list[[name]]) %in%
-          sample(venn_list_true[[name]], length(venn_list_true$complete)),
-      ]
+      data_list[[name]][rownames(data_list[[name]]) %in% sample(venn_list_true[[name]], 40), ]
     )
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   } else {
@@ -750,11 +743,7 @@ for (name in names(venn_list_true)) {
       intersect(venn_list_true$imputed, venn_list_true$unimputed) %notin% venn_list_true$complete
     ]
     set.seed(1)
-    mat <- assay(
-      data_list[[name]][
-        rownames(data_list[[name]]) %in% sample(keep, length(venn_list_true$complete)),
-      ]
-    )
+    mat <- assay(data_list[[name]][rownames(data_list[[name]]) %in% sample(keep, 40), ])
     mat <- mat[order(as.numeric(gsub("\\D+", "", rownames(mat)))), ]
   }
   colnames(mat) <- data_list[[name]]$nice_names
@@ -780,26 +769,55 @@ for (name in names(venn_list_true)) {
 }
 ```
 
-## Percent True DEP Captured
+## Summary
 
 ```{r}
-df <- data.frame(
-  Imputed = round(length(venn_list_true$imputed) / 2250 * 100, 2),
-  Unimputed = round(length(venn_list_true$unimputed) / 2250 * 100, 2),
-  Complete = round(length(venn_list_true$complete) / 2250 * 100, 2)
-)
-datatable_download(df)
-```
+results_list[[1]]$F.p.value.adj[is.na(results_list[[1]]$F.p.value.adj)] <- 1
+results_list[[2]]$F.p.value.adj[is.na(results_list[[2]]$F.p.value.adj)] <- 1
+results_list[[3]]$F.p.value.adj[is.na(results_list[[3]]$F.p.value.adj)] <- 1
 
-## Accuracy
-
-```{r}
-df <- data.frame(
-  Imputed = round(length(venn_list_true$imputed) / length(venn_list$imputed) * 100, 2),
-  Unimputed = round(length(venn_list_true$unimputed) / length(venn_list$unimputed) * 100, 2),
-  Complete = round(length(venn_list_true$complete) / length(venn_list$complete) * 100, 2)
+summary <- data.frame(
+  Imputed = c(
+    signif(length(venn_list_true$imputed) / 2250 * 100, 4),
+    signif(length(venn_list_true$imputed) / length(venn_list$imputed) * 100, 4),
+    signif(
+      mean(
+        results_list[[1]]$F.p.value.adj[
+          order(as.numeric(gsub("\\D+", "", results_list[[1]]$X)))
+        ][1:2250]
+      ),
+      4
+    )
+  ),
+  Unimputed = c(
+    signif(length(venn_list_true$unimputed) / 2250 * 100, 4),
+    signif(length(venn_list_true$unimputed) / length(venn_list$unimputed) * 100, 4),
+    signif(
+      mean(
+        results_list[[2]]$F.p.value.adj[
+          order(as.numeric(gsub("\\D+", "", results_list[[2]]$X)))
+        ][1:2250]
+      ),
+      4
+    )
+  ),
+  Complete = c(
+    signif(length(venn_list_true$complete) / 2250 * 100, 4),
+    signif(length(venn_list_true$complete) / length(venn_list$complete) * 100, 4),
+    signif(
+      mean(
+        results_list[[3]]$F.p.value.adj[
+          order(as.numeric(gsub("\\D+", "", results_list[[3]]$X)))
+        ][1:2250]
+      ),
+      4
+    )
+  )
 )
-datatable_download(df)
+rownames(summary) <- c(
+  "Percent True DEP Captured", "Accuracy", "Average Adjusted F P-value in True DEPs"
+)
+datatable_download(summary)
 ```
 
 # References
