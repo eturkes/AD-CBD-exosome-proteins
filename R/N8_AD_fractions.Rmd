@@ -193,6 +193,21 @@ The basic workflow is shown below:
 ![](../assets/figures/missing-value-removal.svg)
 
 ```{r}
+hist(assay(data), n = 100)
+plot_numbers(data) +
+  theme(axis.text.x = element_text(size = 7)) +
+  scale_x_discrete(labels = data$nice_names)
+plot_frequency(data)
+plot_detect(data)
+```
+
+```{r, fig.width = 12}
+colnames(data) <- data$nice_names
+plot_missval(data)
+colnames(data) <- data$ID
+```
+
+```{r}
 # Replace proteins missing entirely in a condition with minimum value per condition in random
 # samples.
 # -------------------------------------------------------------------------------------------
@@ -212,13 +227,6 @@ if (file.exists(rds)) {
   saveRDS(data, rds)
 }
 # -------------------------------------------------------------------------------------------
-
-hist(assay(data), n = 100)
-plot_numbers(data) +
-  theme(axis.text.x = element_text(size = 7)) +
-  scale_x_discrete(labels = data$nice_names)
-plot_frequency(data)
-plot_detect(data)
 
 # Step 2 of flowchart.
 # Find intensity cutoff point at which MNAR becomes MAR by finding the inflection point of intensity
