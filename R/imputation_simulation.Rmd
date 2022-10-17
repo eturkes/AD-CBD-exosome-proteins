@@ -487,7 +487,9 @@ F1_data <- F1_data[rownames(F1_data) %notin% F1_MNAR, ]
 missing_data <- assay(F1_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F1_data <- F1_data[-discard, ]
+if (length(discard) > 0) {
+  F1_data <- F1_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 1 group."))
 
 F2_data <- data[ , which(data$condition == "Fraction.2")]
@@ -495,7 +497,9 @@ F2_data <- F2_data[rownames(F2_data) %notin% F2_MNAR, ]
 missing_data <- assay(F2_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F2_data <- F2_data[-discard, ]
+if (length(discard) > 0) {
+  F2_data <- F2_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 2 group."))
 
 F3_data <- data[ , which(data$condition == "Fraction.3")]
@@ -503,7 +507,9 @@ F3_data <- F3_data[rownames(F3_data) %notin% F3_MNAR, ]
 missing_data <- assay(F3_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F3_data <- F3_data[-discard, ]
+if (length(discard) > 0) {
+  F3_data <- F3_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 3 group."))
 
 F4_data <- data[ , which(data$condition == "Fraction.4")]
@@ -511,7 +517,9 @@ F4_data <- F4_data[rownames(F4_data) %notin% F4_MNAR, ]
 missing_data <- assay(F4_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F4_data <- F4_data[-discard, ]
+if (length(discard) > 0) {
+  F4_data <- F4_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 4 group."))
 
 F5_data <- data[ , which(data$condition == "Fraction.5")]
@@ -519,7 +527,9 @@ F5_data <- F5_data[rownames(F5_data) %notin% F5_MNAR, ]
 missing_data <- assay(F5_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F5_data <- F5_data[-discard, ]
+if (length(discard) > 0) {
+  F5_data <- F5_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 5 group."))
 
 F6_data <- data[ , which(data$condition == "Fraction.6")]
@@ -527,7 +537,9 @@ F6_data <- F6_data[rownames(F6_data) %notin% F6_MNAR, ]
 missing_data <- assay(F6_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F6_data <- F6_data[-discard, ]
+if (length(discard) > 0) {
+  F6_data <- F6_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 6 group."))
 
 F7_data <- data[ , which(data$condition == "Fraction.7")]
@@ -535,7 +547,9 @@ F7_data <- F7_data[rownames(F7_data) %notin% F7_MNAR, ]
 missing_data <- assay(F7_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F7_data <- F7_data[-discard, ]
+if (length(discard) > 0) {
+  F7_data <- F7_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 7 group."))
 
 F8_data <- data[ , which(data$condition == "Fraction.8")]
@@ -543,7 +557,9 @@ F8_data <- F8_data[rownames(F8_data) %notin% F8_MNAR, ]
 missing_data <- assay(F8_data) %>% data.frame(.)
 missing_data <- ifelse(is.na(missing_data), 0, 1)
 discard <- which(rowSums(missing_data, TRUE) < 5) # TODO: Automate this.
-F8_data <- F8_data[-discard, ]
+if (length(discard) > 0) {
+  F8_data <- F8_data[-discard, ]
+}
 print(paste0("Removed ", length(discard), " proteins from Fraction 8 group."))
 # ------------------------------------------------------------------------------------------------
 
