@@ -189,25 +189,30 @@ for (group in unique(data$groups)) {
     sim_data[i, which(data$groups != group)] <- sim_data[i, which(data$groups != group)] / 2
   }
   idx <- idx + 750
+  for (i in idx:(idx + 249)) {
+    sim_data[i, which(data$groups == group)] <- sim_data[i, which(data$groups == group)] * 1.5
+  }
+  idx <- idx + 250
 }
 
 hist(sim_data, n = 100)
 abline(v = 8.5)
 
-pattern <- matrix(nrow = 163, ncol = ncol(data))
+pattern <- matrix(nrow = 255, ncol = ncol(data))
 for (fraction in unique(data$condition)) {
   idx <- which(data$condition == fraction)
   set.seed(idx[1])
   pattern[ , idx] <- as.matrix(
     expand.grid(replicate(length(idx), 0:1, simplify = FALSE))[
-      rowSums(expand.grid(replicate(length(idx), 0:1, simplify = FALSE))) >= 4,
-    ][sample(163), ]
+      rowSums(expand.grid(replicate(length(idx), 0:1, simplify = FALSE))) >= 1,
+    ][sample(255), ]
   )
 }
-if (any(rowSums(pattern) == 0)) {
-  pattern <- pattern[-(rowSums(pattern) == 0), ]
+if (any(rowSums(pattern) == ncol(data))) {
+  pattern <- pattern[-(rowSums(pattern) == ncol(data)), ]
 }
-freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
+freq <- rowSums(pattern) / sum(rowSums(pattern))
+# freq <- sum(rowSums(pattern)) / rowSums(pattern) / sum(sum(rowSums(pattern)) / rowSums(pattern))
 
 set.seed(1)
 sim_data <- as.matrix(ampute(sim_data, 0.05, pattern, freq, "MCAR")$amp)
@@ -273,7 +278,7 @@ below_LOD <- which(sim_data < 8.5)
 set.seed(1)
 # below_LOD <- sample(below_LOD, 1e6, TRUE, (1 / sim_data[below_LOD]) ^ 8)
 # below_LOD <- sample(below_LOD, 5e8, TRUE, (1 / sim_data[below_LOD]) ^ 9)
-below_LOD <- sample(below_LOD, 1e7, TRUE, (1 / sim_data[below_LOD]) ^ 9)
+below_LOD <- sample(below_LOD, 5e6, TRUE, (1 / sim_data[below_LOD]) ^ 7.5)
 sim_data[below_LOD] <- NA
 
 hist(sim_data, n = 100)

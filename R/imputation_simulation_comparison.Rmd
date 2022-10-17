@@ -689,7 +689,7 @@ venn_list_true <- list(
             results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)
           ]
         )
-      ) <= 2250
+      ) <= 3000
     ],
   "unimputed" = results_list[[2]]$X[
     results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)][
@@ -700,7 +700,7 @@ venn_list_true <- list(
             results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)
           ]
         )
-      ) <= 2250
+      ) <= 3000
     ],
   "complete" = results_list[[3]]$X[
     results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)][
@@ -711,7 +711,7 @@ venn_list_true <- list(
             results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)
           ]
         )
-      ) <= 2250
+      ) <= 3000
     ]
 )
 venn_list_true <- lapply(venn_list_true, function(x) x[!is.na(x)])
@@ -778,37 +778,37 @@ results_list[[3]]$F.p.value.adj[is.na(results_list[[3]]$F.p.value.adj)] <- 1
 
 summary <- data.frame(
   Imputed = c(
-    signif(length(venn_list_true$imputed) / 2250 * 100, 4),
+    signif(length(venn_list_true$imputed) / 3000 * 100, 4),
     signif(length(venn_list_true$imputed) / length(venn_list$imputed) * 100, 4),
     signif(
       mean(
         results_list[[1]]$F.p.value.adj[
           order(as.numeric(gsub("\\D+", "", results_list[[1]]$X)))
-        ][1:2250]
+        ][1:3000]
       ),
       4
     )
   ),
   Unimputed = c(
-    signif(length(venn_list_true$unimputed) / 2250 * 100, 4),
+    signif(length(venn_list_true$unimputed) / 3000 * 100, 4),
     signif(length(venn_list_true$unimputed) / length(venn_list$unimputed) * 100, 4),
     signif(
       mean(
         results_list[[2]]$F.p.value.adj[
           order(as.numeric(gsub("\\D+", "", results_list[[2]]$X)))
-        ][1:2250]
+        ][1:3000]
       ),
       4
     )
   ),
   Complete = c(
-    signif(length(venn_list_true$complete) / 2250 * 100, 4),
+    signif(length(venn_list_true$complete) / 3000 * 100, 4),
     signif(length(venn_list_true$complete) / length(venn_list$complete) * 100, 4),
     signif(
       mean(
         results_list[[3]]$F.p.value.adj[
           order(as.numeric(gsub("\\D+", "", results_list[[3]]$X)))
-        ][1:2250]
+        ][1:3000]
       ),
       4
     )
