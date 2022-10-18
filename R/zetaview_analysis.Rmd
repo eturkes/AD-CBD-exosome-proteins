@@ -73,7 +73,6 @@ packages <- c("conflicted", "DT", "ggplot2", "reshape2", "scales", "ggbeeswarm",
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 
-data_name <- "zetaview"
 `%notin%` <- Negate(`%in%`)
 
 colour <- colour("vibrant")(7)
@@ -85,7 +84,7 @@ colour <- colour[c(1, 2, 5, 3, 4, 7, 6, 8)]
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name)
+cache_dir <- file.path("..", "tmp", "cache", "zetaview")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }

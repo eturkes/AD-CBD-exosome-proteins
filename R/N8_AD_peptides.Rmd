@@ -82,7 +82,6 @@ conflict_prefer("which", "BiocGenerics", quiet = TRUE)
 conflict_prefer("select", "dplyr", quiet = TRUE)
 conflict_prefer("intersect", "base", quiet = TRUE)
 
-data_name <- "oxford-ms-data-april-2022"
 `%notin%` <- Negate(`%in%`)
 # --------------------------------------------
 
@@ -90,7 +89,7 @@ data_name <- "oxford-ms-data-april-2022"
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "peptides")
+cache_dir <- file.path("..", "tmp", "cache", "peptides")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }

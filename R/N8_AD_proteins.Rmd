@@ -80,7 +80,6 @@ conflict_prefer("which", "BiocGenerics", quiet = TRUE)
 conflict_prefer("select", "dplyr", quiet = TRUE)
 conflict_prefer("intersect", "base", quiet = TRUE)
 
-data_name <- "oxford-ms-data-april-2022"
 `%notin%` <- Negate(`%in%`)
 
 heatmap_color <- colorRamp2(c(-1, 0, 1), c("#0077BB", "#FFFFFF", "#CC3311"))
@@ -90,7 +89,7 @@ heatmap_color <- colorRamp2(c(-1, 0, 1), c("#0077BB", "#FFFFFF", "#CC3311"))
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "proteins")
+cache_dir <- file.path("..", "tmp", "cache", "proteins")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }

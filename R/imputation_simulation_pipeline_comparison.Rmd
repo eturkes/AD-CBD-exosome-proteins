@@ -75,15 +75,13 @@ invisible(suppressPackageStartupMessages(lapply(packages, library, character.onl
 source(file.path("utils.R"))
 
 `%notin%` <- Negate(`%in%`)
-
-data_name <- "oxford-ms-data-april-2022"
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "simulation-comparison")
+cache_dir <- file.path("..", "tmp", "cache", "simulation-comparison")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
@@ -97,9 +95,9 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 
 ```{r}
 data_list <- list(
-  "imputed" = readRDS(file.path(cache_dir, "..", "imputation-simulation", "imputed.rds")),
-  "unimputed" = readRDS(file.path(cache_dir, "..", "imputation-simulation", "unimputed.rds")),
-  "complete" = readRDS(file.path(cache_dir, "..", "imputation-simulation", "complete.rds"))
+  "imputed" = readRDS(file.path(cache_dir, "..", "simulation", "imputed.rds")),
+  "unimputed" = readRDS(file.path(cache_dir, "..", "simulation", "unimputed.rds")),
+  "complete" = readRDS(file.path(cache_dir, "..", "simulation", "complete.rds"))
 )
 
 limma_design <- model.matrix(~ 0 + data_list[[1]]$groups)

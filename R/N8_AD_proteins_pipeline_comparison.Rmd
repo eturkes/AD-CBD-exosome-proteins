@@ -73,15 +73,13 @@ packages <- c(
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
-
-data_name <- "oxford-ms-data-april-2022"
 # --------------------------------------------
 
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "proteins-comparison")
+cache_dir <- file.path("..", "tmp", "cache", "proteins-comparison")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
