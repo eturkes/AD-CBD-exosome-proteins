@@ -100,17 +100,17 @@ The data is spread out across many files, so we first aggregate them to obtain a
 We also create variations of this object that are aggregated by the mean of values by donor and fraction as well as various normalisation schemes found in following sections.
 
 ```{r}
-file_list <- list.files(file.path(assets_dir, data_name, "raw-data"))
+file_list <- list.files(file.path(assets_dir, "zetaview", "raw-data"))
 file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 
 for (i in seq_along(file_list)) {
   file <- read.delim(
-    file.path(assets_dir, data_name, "raw-data", file_list[i]), skip = 70
+    file.path(assets_dir, "zetaview", "raw-data", file_list[i]), skip = 70
   )
   dilution <- read.delim(
-    file.path(assets_dir, data_name, "raw-data", file_list[i]), FALSE, nrows = 1, skip = 24
+    file.path(assets_dir, "zetaview", "raw-data", file_list[i]), FALSE, nrows = 1, skip = 24
   )
   dilution <- dilution$V7
   if (i == 1) {
@@ -1013,14 +1013,14 @@ Here we calculate the mean, median, mode and percentiles of each distribution.
 ```{r}
 names(colour) <- colnames(donor_data[ , -1])
 
-file_list <- list.files(file.path(assets_dir, data_name, "raw-data"))
+file_list <- list.files(file.path(assets_dir, "zetaview", "raw-data"))
 file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
 
 data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
 
 for (i in seq_along(file_list)) {
   file <- read.delim(
-    file.path(assets_dir, data_name, "raw-data", file_list[i]), skip = 70
+    file.path(assets_dir, "zetaview", "raw-data", file_list[i]), skip = 70
   )
   if (i == 1) {
     data[ , i] <- file[1:1200, 1]
