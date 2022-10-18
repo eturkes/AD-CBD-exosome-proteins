@@ -95,9 +95,9 @@ knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
 
 ```{r}
 data_list <- list(
-  "imputed" = readRDS(file.path(cache_dir, "..", "fractions", "imputed.rds")),
-  "unimputed" = readRDS(file.path(cache_dir, "..", "fractions", "unimputed.rds")),
-  "complete" = readRDS(file.path(cache_dir, "..", "fractions", "complete.rds"))
+  "imputed" = readRDS(file.path(cache_dir, "..", "proteins", "imputed.rds")),
+  "unimputed" = readRDS(file.path(cache_dir, "..", "proteins", "unimputed.rds")),
+  "complete" = readRDS(file.path(cache_dir, "..", "proteins", "complete.rds"))
 )
 
 limma_design <- model.matrix(~ 0 + data_list[[1]]$groups)

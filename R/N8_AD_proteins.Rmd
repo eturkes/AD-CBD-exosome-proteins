@@ -1,5 +1,5 @@
 ---
-title: "N8 AD Fractions"
+title: "N8 AD Proteins"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "N8-AD-fractions.html"
+    "..", "results", "N8-AD-proteins.html"
   ))})
 ---
 
@@ -40,7 +40,7 @@ div.main-container {max-width: none; width: 100%;}
 *This file is a part of [AD-exosome-characterisation](https://github.com/eturkes/AD-exosome-characterisation).*
 *Please email for access.*
 
-The data here will be referenced using the name `fractions`.
+The data here will be referenced using the name `proteins`.
 It is a label-free mass spec dataset consisting of 8 Alzheimer's Disease (AD) human brain tissue donors where extracellular vesicles (EVs) were isolated and fractionated into 8 fractions.
 Each sample in the dataset represents a fraction from a single donor.
 
@@ -90,7 +90,7 @@ heatmap_color <- colorRamp2(c(-1, 0, 1), c("#0077BB", "#FFFFFF", "#CC3311"))
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "fractions")
+cache_dir <- file.path("..", "tmp", "cache", data_name, "proteins")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
@@ -984,8 +984,8 @@ if (!dir.exists(file.path(cache_dir, "NormalyzerDE"))) {
 }
 ```
 
-![](../tmp/cache/oxford-ms-data-april-2022/fractions/NormalyzerDE/pngs/10_boxplot.png)
-![](../tmp/cache/oxford-ms-data-april-2022/fractions/NormalyzerDE/pngs/11_rel_log_expr.png)
+![](../tmp/cache/oxford-ms-data-april-2022/proteins/NormalyzerDE/pngs/10_boxplot.png)
+![](../tmp/cache/oxford-ms-data-april-2022/proteins/NormalyzerDE/pngs/11_rel_log_expr.png)
 
 We decide to use VSN normalisation.
 
