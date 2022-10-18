@@ -1,5 +1,5 @@
 ---
-title: "Imputation Comparison"
+title: "N8 AD Proteins Pipeline Comparison"
 author:
   - name: "Emir Turkes and Stephanie Fowler"
 date: '`r strftime(Sys.time(), "%B %d, %Y")`'
@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "imputation-comparison.html"
+    "..", "results", "N8-AD-proteins-pipeline-comparison.html"
   ))})
 ---
 
@@ -81,7 +81,7 @@ data_name <- "oxford-ms-data-april-2022"
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
 
-cache_dir <- file.path("..", "tmp", "cache", data_name, "imputation-comparison")
+cache_dir <- file.path("..", "tmp", "cache", data_name, "proteins-comparison")
 if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
