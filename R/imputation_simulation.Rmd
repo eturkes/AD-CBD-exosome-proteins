@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "imputation-simulation.html"
+    "..", "results", "imputation_simulation.html"
   ))})
 ---
 

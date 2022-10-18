@@ -18,7 +18,7 @@ output:
       smooth_scroll: false
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(
-    "..", "results", "zetaview-analysis.html"
+    "..", "results", "zetaview_analysis.html"
   ))})
 ---
 
