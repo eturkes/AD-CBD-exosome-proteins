@@ -23,30 +23,26 @@
 setwd(dirname(parent.frame(2)$ofile)) # Move to location of this file.
 
 rmarkdown::render(
-  file.path("dataset1_AD_CBD_CTRL.Rmd"),
-  output_file = file.path("..", "results", "dataset1-AD-CBD-CTRL.html")
+  file.path("N8_AD_proteins.Rmd"),
+  output_file = file.path("..", "results", "N8_AD_proteins.html")
 )
 rmarkdown::render(
-  file.path("dataset2_AD_CTRL.Rmd"),
-  output_file = file.path("..", "results", "dataset2-AD-CTRL.html")
+  file.path("N8_AD_proteins_pipeline_comparison.Rmd"),
+  output_file = file.path("..", "results", "N8_AD_proteins_pipeline_comparison.html")
 )
 rmarkdown::render(
-  file.path("combined_AD_CTRL.Rmd"),
-  output_file = file.path("..", "results", "combined-AD-CTRL.html")
+  file.path("N8_AD_peptides.Rmd"),
+  output_file = file.path("..", "results", "N8_AD_peptides.html")
 )
 rmarkdown::render(
-  file.path("AD_fractions_no_scaling_factor.Rmd"),
-  output_file = file.path("..", "results", "AD-fractions-no-scaling-factor.html")
+  file.path("imputation_simulation.Rmd"),
+  output_file = file.path("..", "results", "imputation_simulation.html")
 )
 rmarkdown::render(
-  file.path("AD_fractions_with_scaling_factor.Rmd"),
-  output_file = file.path("..", "results", "AD-fractions-with-scaling-factor.html")
+  file.path("imputation_simulation_pipeline_comparison.Rmd"),
+  output_file = file.path("..", "results", "imputation_simulation_pipeline_comparison.html")
 )
 rmarkdown::render(
-  file.path("TAU_peptides_no_scaling_factor.Rmd"),
-  output_file = file.path("..", "results", "TAU-peptides-no-scaling-factor.html")
-)
-rmarkdown::render(
-  file.path("TAU_peptides_with_scaling_factor.Rmd"),
-  output_file = file.path("..", "results", "TAU-peptides-with-scaling-factor.html")
+  file.path("zetaview_analysis.Rmd"),
+  output_file = file.path("..", "results", "zetaview_analysis.html")
 )
