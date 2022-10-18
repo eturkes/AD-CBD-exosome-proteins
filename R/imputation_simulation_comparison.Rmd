@@ -620,17 +620,11 @@ results_list <- list(
 
 ## Venn Diagram (All DEPs)
 
-```{r}
+```{r, dev = "svglite"}
 venn_list <- list(
-  "imputed" = results_list[[1]]$X[
-    results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)
-  ],
-  "unimputed" = results_list[[2]]$X[
-    results_list[[2]]$X %in% c(F1_3_unimputed, F4_6_unimputed, F7_8_unimputed)
-  ],
-  "complete" = results_list[[3]]$X[
-    results_list[[3]]$X %in% c(F1_3_complete, F4_6_complete, F7_8_complete)
-  ]
+  "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value.adj < 0.05],
+  "unimputed" = results_list[[2]]$X[results_list[[2]]$F.p.value.adj < 0.05],
+  "complete" = results_list[[3]]$X[results_list[[3]]$F.p.value.adj < 0.05]
 )
 venn_list <- lapply(venn_list, function(x) x[!is.na(x)])
 
@@ -678,7 +672,7 @@ for (name in names(venn_list)) {
 
 ## Venn Diagram (True DEPs)
 
-```{r}
+```{r, dev = "svglite"}
 venn_list_true <- list(
   "imputed" = results_list[[1]]$X[
     results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)][
