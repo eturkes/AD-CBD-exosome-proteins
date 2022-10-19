@@ -94,7 +94,7 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 # ----------------------------------------------------------
 # --------------------------
 ```
@@ -1234,7 +1234,7 @@ datatable_download(datatable)
 
 **Using all proteins**
 
-```{r, dev = "svglite"}
+```{r}
 pca <- prcomp(t(assay(data)))
 df <- as.data.frame(predict(pca)[ , 1:2])
 df$Fraction <- sub("\\.", " ", data$condition)
@@ -1408,7 +1408,7 @@ datatable_download_exp(up)
 
 ## Radial and 3D Volcano Plots
 
-```{r, dev = "svglite"}
+```{r}
 DEPs_main <- c(F1_3, F4_6, F7_8)
 DEPs <- c(DEPs_main, F1_3_plus_F4_6, F4_6_plus_F7_8, F7_8_plus_F1_3)
 
@@ -2304,7 +2304,7 @@ print("None detected")
 
 ## Combined
 
-```{r, fig.height = 25, fig.width = 15, dev = "svglite"}
+```{r, fig.height = 25, fig.width = 15}
 order <- c(rownames(F1_3_combined), rownames(F4_6_combined), rownames(F7_8_combined))
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
@@ -2406,7 +2406,7 @@ draw(
 
 ### Two Per Ontology
 
-```{r, fig.height = 5, fig.width = 15, dev = "svglite"}
+```{r, fig.height = 5, fig.width = 15}
 order <- c(
   "stimulatory C-type lectin receptor signaling pathway",
   "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
@@ -2453,7 +2453,7 @@ draw(
 
 ### One Per Ontology
 
-```{r, fig.height = 3, fig.width = 15, dev = "svglite"}
+```{r, fig.height = 3, fig.width = 15}
 order <- c(
   "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
   "proteoglycan binding",

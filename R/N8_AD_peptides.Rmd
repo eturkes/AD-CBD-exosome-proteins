@@ -94,7 +94,7 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 # ----------------------------------------------------------
 # --------------------------
 ```
@@ -1135,7 +1135,7 @@ datatable_download(data_sub)
 
 **Using all proteins**
 
-```{r, dev = "svglite"}
+```{r}
 pca <- prcomp(t(assay(data)))
 df <- as.data.frame(predict(pca)[ , 1:2])
 df$Fraction <- sub("\\.", " ", data$condition)

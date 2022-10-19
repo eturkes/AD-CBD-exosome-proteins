@@ -84,7 +84,7 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300)
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 # ----------------------------------------------------------
 # --------------------------
 ```
@@ -226,7 +226,7 @@ datatable_download_exp(up)
 
 ### Radial and 3D Volcano Plots
 
-```{r, dev = "svglite"}
+```{r}
 DEPs_main <- c(F1_3, F4_6, F7_8)
 DEPs <- c(DEPs_main, F1_3_plus_F4_6, F4_6_plus_F7_8, F7_8_plus_F1_3)
 
@@ -404,7 +404,7 @@ datatable_download_exp(up)
 
 ### Radial and 3D Volcano Plots
 
-```{r, dev = "svglite"}
+```{r}
 DEPs_main <- c(F1_3, F4_6, F7_8)
 DEPs <- c(DEPs_main, F1_3_plus_F4_6, F4_6_plus_F7_8, F7_8_plus_F1_3)
 
@@ -582,7 +582,7 @@ datatable_download_exp(up)
 
 ### Radial and 3D Volcano Plots
 
-```{r, dev = "svglite"}
+```{r}
 DEPs_main <- c(F1_3, F4_6, F7_8)
 DEPs <- c(DEPs_main, F1_3_plus_F4_6, F4_6_plus_F7_8, F7_8_plus_F1_3)
 
@@ -673,7 +673,7 @@ results_list <- list(
 
 ## Venn Diagram (Adjusted F Value)
 
-```{r, dev = "svglite"}
+```{r}
 venn_list <- list(
   "imputed" = results_list[[1]]$X[results_list[[1]]$F.p.value.adj < 0.05],
   "unimputed" = results_list[[2]]$X[results_list[[2]]$F.p.value.adj < 0.05],
@@ -730,7 +730,7 @@ for (name in names(venn_list)) {
 
 ## Venn Diagram (Specific to F1_3, F4_6, F7_8)
 
-```{r, dev = "svglite"}
+```{r}
 venn_list <- list(
   "imputed" = results_list[[1]]$X[
     results_list[[1]]$X %in% c(F1_3_imputed, F4_6_imputed, F7_8_imputed)
@@ -793,7 +793,7 @@ for (name in names(venn_list)) {
 
 ## Venn Diagram (F1_3 vs. F7_8)
 
-```{r, dev = "svglite"}
+```{r}
 venn_list <- list(
   "imputed" = results_list[[1]]$X[
     results_list[[1]]$X %in% c(

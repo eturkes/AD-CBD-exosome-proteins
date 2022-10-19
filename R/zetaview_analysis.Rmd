@@ -89,7 +89,7 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dpi = 300, dev = "svglite")
+knitr::opts_chunk$set(fig.width = 10, fig.height = 7, dev = "svglite")
 # ----------------------------------------------------------
 # --------------------------
 ```
