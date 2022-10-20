@@ -1316,6 +1316,14 @@ meanSdPlot(Unnormalised_Imputed_Data_Renormalised)
 
 plot_imputation(Unnormalised_Imputed_Data_Renormalised, Imputed_Data_Renormalised)
 
+VSN_Normalised_Imputed_Data <- Imputed_Data
+
+plot_normalization(Unnormalised_Imputed_Data, VSN_Normalised_Imputed_Data) +
+  theme(axis.text.y = element_text(size = 3)) +
+  scale_x_discrete(labels = data$nice_names)
+
+plot_imputation(Unnormalised_Imputed_Data, VSN_Normalised_Imputed_Data)
+
 rds <- file.path(cache_dir, "imputed.rds")
 rds2 <- file.path(cache_dir, "unimputed.rds")
 rds3 <- file.path(cache_dir, "complete.rds")
@@ -1330,7 +1338,8 @@ data
 rm(
   Unnormalised_Imputed_Data_Renormalised, Unnormalised_Imputed_Data,
   Imputed_Data_Renormalised, Imputed_Data,
-  Unimputed_Data, Normalised_Data
+  Unimputed_Data, Normalised_Data,
+  VSN_Normalised_Imputed_Data
 )
 
 hist(assay(data), n = 100)
