@@ -73,7 +73,7 @@ Each sample in the dataset represents a fraction from a single donor.
 # --------------------------------------------
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "tibble", "readxl", "khroma", "NormalyzerDE"
+  "ComplexHeatmap", "tibble", "khroma", "NormalyzerDE"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -117,17 +117,20 @@ tmp4 <- data[ , 20:ncol(data)]
 data <- cbind(tmp1, tmp3, tmp2, tmp4)
 rm(tmp1, tmp2, tmp3, tmp4)
 
-data2 <- read_xlsx(
-  file.path(
-    assets_dir, "oxford-ms-data-april-2022", "20220405_MSQ2321_StephanieFowler_DOB_EV64.xlsx"
-  )
+data <- data[ , c(1:10, c(1:32, 41:48, 33:40, 57:64, 49:56) + 10)]
+colnames(data) <- c(
+  colnames(data)[1:10],
+  paste(paste0("F", seq(8)), rep("A", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("B", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("C", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("D", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("E", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("F", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("G", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("H", 8), sep = " ")
 )
-colnames(data) <- c(colnames(data)[1:10], colnames(data2)[5:ncol(data2)])
-rm(data2)
 
-remove <- which(
-  colnames(data) == "5521 F8" | colnames(data) == "5365 F8" | colnames(data) == "5333 F8"
-)
+remove <- which(colnames(data) == "F8 A" | colnames(data) == "F8 E" | colnames(data) == "F8 F")
 data <- data[ , -remove]
 
 remove <- which(data$Genes == "")
@@ -140,25 +143,15 @@ data$name <- paste(data$gene_names, data$Precursor.Id, sep = "_")
 data$ID <- data$Protein.Ids
 
 LFQ_columns <- 11:71
-data <- data[
-  , c(
-      1:10,
-      (order(substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])) + 10),
-      72:ncol(data)
-    )
-]
+data <- data[ , c(1:10, (order(substring(colnames(data)[LFQ_columns], 2, 2)) + 10), 72:ncol(data))]
 
 experimental_design <- data.frame(
   label = colnames(data)[11:71],
-  condition = paste0(
-    "Fraction ", substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])
-  ),
+  condition = paste0("Fraction ", substring(colnames(data)[LFQ_columns], 2, 2)),
   replicate = c(rep(1:8, 7), 2:4, 7:8),
-  donor = sub(" .*", "", colnames(data)[11:71])
+  donor = substring(colnames(data)[LFQ_columns], 4)
 )
-experimental_design$nice_names <- sub(
-  "\\.", " ", paste(experimental_design$condition, experimental_design$donor, sep = " ")
-)
+experimental_design$nice_names <- paste(experimental_design$condition, experimental_design$donor)
 
 colour <- colour("vibrant")(7)
 colour <- append("#DDAA33", colour)

@@ -66,7 +66,7 @@ div.main-container {max-width: none; width: 100%;}
 # --------------------------------------------
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
-  "ComplexHeatmap", "volcano3D", "RColorBrewer", "limma", "tibble", "readxl", "khroma", "mice"
+  "ComplexHeatmap", "volcano3D", "RColorBrewer", "limma", "tibble", "khroma", "mice"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -103,6 +103,7 @@ Read in the data and organize into a `SummarizedExperiment` object.
 data <- read.delim(
   file.path(assets_dir, "oxford-ms-data-april-2022", "20220404_DOB_AllPatients_v1.pg_matrix.tsv")
 )
+
 tmp1 <- data[ , 1:5]
 tmp2 <- as.data.frame(data[ , 6])
 colnames(tmp2) <- colnames(data)[6]
@@ -111,13 +112,18 @@ tmp4 <- data[ , 15:ncol(data)]
 data <- cbind(tmp1, tmp3, tmp2, tmp4)
 rm(tmp1, tmp2, tmp3, tmp4)
 
-data2 <- read_xlsx(
-  file.path(
-    assets_dir, "oxford-ms-data-april-2022", "20220405_MSQ2321_StephanieFowler_DOB_EV64.xlsx"
-  )
+data <- data[ , c(1:5, c(1:32, 41:48, 33:40, 57:64, 49:56) + 5)]
+colnames(data) <- c(
+  colnames(data)[1:5],
+  paste(paste0("F", seq(8)), rep("A", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("B", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("C", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("D", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("E", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("F", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("G", 8), sep = " "),
+  paste(paste0("F", seq(8)), rep("H", 8), sep = " ")
 )
-colnames(data) <- c(colnames(data)[1:5], colnames(data2)[5:ncol(data2)])
-rm(data2)
 
 remove <- which(data$Genes == "")
 data <- data[-remove, ]
@@ -126,25 +132,16 @@ data$gene_names <- data$Genes
 data <- make_unique(data, "gene_names", "Protein.Ids", ";")
 
 LFQ_columns <- 6:69
-data <- data[
-  , c(
-      1:5, (order(substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])) + 5),
-      70:ncol(data)
-    )
-]
+data <- data[ , c(1:5, (order(substring(colnames(data)[LFQ_columns], 2, 2)) + 5), 70:ncol(data))]
 
 experimental_design <- data.frame(
   label = colnames(data)[6:69],
-  condition = paste0(
-    "Fraction ", substring(colnames(data)[LFQ_columns], nchar(colnames(data))[LFQ_columns])
-  ),
+  condition = paste0("Fraction ", substring(colnames(data)[LFQ_columns], 2, 2)),
   replicate = rep(1:8, 8),
-  donor = sub(" .*", "", colnames(data)[6:69])
-)
-experimental_design$nice_names <- sub(
-  "\\.", " ", paste(experimental_design$condition, experimental_design$donor, sep = " ")
+  donor = substring(colnames(data)[LFQ_columns], 4)
 )
 experimental_design$groups <- c(rep("F1_3", 24), rep("F4_6", 24), rep("F7_8", 16))
+experimental_design$nice_names <- paste(experimental_design$condition, experimental_design$donor)
 
 limma_design <- model.matrix(~ 0 + experimental_design$groups)
 colnames(limma_design) <- unique(experimental_design$groups)
