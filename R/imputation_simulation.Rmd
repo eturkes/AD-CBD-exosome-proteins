@@ -1109,20 +1109,20 @@ plot_detect(data)
 We decide to use VSN normalisation.
 
 ```{r}
-# Normalize using VSN.
+# Normalise using VSN.
 # We also create several extra variables for better plotting labels.
 # ------------------------------------------------------------------
-VSN_Normalized <- normalize_vsn(data)
+VSN_Normalised <- normalize_vsn(data)
 Log_Transform_Only <- data
 
-VSN_Normalized_Unimputed_Data <- normalize_vsn(unimputed_data)
+VSN_Normalised_Unimputed_Data <- normalize_vsn(unimputed_data)
 Log_Transform_Only_Unimputed_Data <- unimputed_data
 
-VSN_Normalized_Non_Missing_Data <- normalize_vsn(complete_cases)
+VSN_Normalised_Non_Missing_Data <- normalize_vsn(complete_cases)
 Log_Transform_Only_Non_Missing_Data <- complete_cases
 # ------------------------------------------------------------------
 
-# Display results of normalization.
+# Display results of normalisation.
 # ---------------------------------
 print("Log_Transform_Only")
 meanSdPlot(Log_Transform_Only)
@@ -1130,32 +1130,32 @@ print("Log_Transform_Only_Unimputed_Data")
 meanSdPlot(Log_Transform_Only_Unimputed_Data)
 print("Log_Transform_Only_Non_Missing_Data")
 meanSdPlot(Log_Transform_Only_Non_Missing_Data)
-print("VSN_Normalized")
-meanSdPlot(VSN_Normalized)
-print("VSN_Normalized_Unimputed_Data")
-meanSdPlot(VSN_Normalized_Unimputed_Data)
-print("VSN_Normalized_Non_Missing_Data")
-meanSdPlot(VSN_Normalized_Non_Missing_Data)
+print("VSN_Normalised")
+meanSdPlot(VSN_Normalised)
+print("VSN_Normalised_Unimputed_Data")
+meanSdPlot(VSN_Normalised_Unimputed_Data)
+print("VSN_Normalised_Non_Missing_Data")
+meanSdPlot(VSN_Normalised_Non_Missing_Data)
 
-plot_normalization(Log_Transform_Only, VSN_Normalized) +
+plot_normalization(Log_Transform_Only, VSN_Normalised) +
   theme(axis.text.y = element_text(size = 3)) +
   scale_x_discrete(labels = data$nice_names)
-plot_normalization(Log_Transform_Only_Unimputed_Data, VSN_Normalized_Unimputed_Data) +
+plot_normalization(Log_Transform_Only_Unimputed_Data, VSN_Normalised_Unimputed_Data) +
   theme(axis.text.y = element_text(size = 3)) +
   scale_x_discrete(labels = data$nice_names)
-plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalized_Non_Missing_Data) +
+plot_normalization(Log_Transform_Only_Non_Missing_Data, VSN_Normalised_Non_Missing_Data) +
   theme(axis.text.y = element_text(size = 3)) +
   scale_x_discrete(labels = data$nice_names)
 # ---------------------------------
 
-# Move normalized data to main objects and clean up.
+# Move normalised data to main objects and clean up.
 # --------------------------------------------------
-data <- VSN_Normalized
+data <- VSN_Normalised
 unnormalised_data <- Log_Transform_Only
-unimputed_data <- VSN_Normalized_Unimputed_Data
-complete_cases <- VSN_Normalized_Non_Missing_Data
+unimputed_data <- VSN_Normalised_Unimputed_Data
+complete_cases <- VSN_Normalised_Non_Missing_Data
 rm(
-  VSN_Normalized, VSN_Normalized_Unimputed_Data, VSN_Normalized_Non_Missing_Data,
+  VSN_Normalised, VSN_Normalised_Unimputed_Data, VSN_Normalised_Non_Missing_Data,
   Log_Transform_Only, Log_Transform_Only_Unimputed_Data, Log_Transform_Only_Non_Missing_Data
 )
 # --------------------------------------------------
