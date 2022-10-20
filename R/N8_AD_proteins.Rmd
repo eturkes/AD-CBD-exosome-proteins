@@ -1313,12 +1313,13 @@ fit <- lmFit(assay(data), limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global")
 write.fit(
-  cont_fit, tests, adjust = "BH", method = "global", file = file.path(cache_dir, "results.tsv")
+  cont_fit, tests, file.path(cache_dir, "results.tsv"),
+  adjust = "BH", method = "global", F.adjust = "BH"
 )
 results <- read.delim(file.path(cache_dir, "results.tsv"))
 rownames(results) <- results$X
 results <- results[ , -1]
-results <- results[order(results$F.p.value), ]
+results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 ```
@@ -1415,7 +1416,7 @@ results <- results[match(rownames(mat), rownames(results)), ]
 
 p_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.F1_3...F4_6 = results$P.value.F1_3...F4_6,
     P.value.F1_3...F7_8 = results$P.value.F1_3...F7_8,
     P.value.F4_6...F7_8 = results$P.value.F4_6...F7_8
@@ -1424,7 +1425,7 @@ p_mat <- as.matrix(
 
 p_adj_mat <- as.matrix(
   data.frame(
-    F.p.value = results$F.p.value,
+    F.p.value.adj = results$F.p.value.adj,
     P.value.adj.F1_3...F4_6 = results$P.value.adj.F1_3...F4_6,
     P.value.adj.F1_3...F7_8 = results$P.value.adj.F1_3...F7_8,
     P.value.adj.F4_6...F7_8 = results$P.value.adj.F4_6...F7_8
@@ -1619,12 +1620,13 @@ fit <- lmFit(gsva, limma_design)
 cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
 tests <- decideTests(cont_fit, "global", p.value = 5e-4)
 write.fit(
-  cont_fit, tests, adjust = "BH", method = "global", file = file.path(cache_dir, "results.tsv")
+  cont_fit, tests, file.path(cache_dir, "results.tsv"),
+  adjust = "BH", method = "global", F.adjust = "BH"
 )
 results <- read.delim(file.path(cache_dir, "results.tsv"))
 rownames(results) <- results$X
 results <- results[ , -1]
-results <- results[order(results$F.p.value), ]
+results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 
@@ -1655,7 +1657,7 @@ for (i in seq(length(sub_ontology@.Data))) {
 
 ## F1_3
 
-```{r, fig.height = 12, fig.width = 15}
+```{r, fig.height = 25, fig.width = 15}
 tests_up <- tests[
   tests[ , 1] == 1 & tests[ , 2] == 1 & tests[ , 3] == 0 |
     tests[ , 1] == 1 & tests[ , 2] == 0 & tests[ , 3] == 0 |
@@ -1691,7 +1693,7 @@ draw(
 
 ### BP
 
-```{r, fig.height = 10, fig.width = 15}
+```{r, fig.height = 15, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
 draw(
@@ -1715,7 +1717,7 @@ draw(
 
 ### MF
 
-```{r, fig.width = 15}
+```{r, fig.height = 12, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
 draw(
@@ -1763,7 +1765,7 @@ draw(
 
 ## F1_3 + F4_6
 
-```{r, fig.height = 15, fig.width = 15}
+```{r, fig.height = 20, fig.width = 15}
 tests_up <- tests[
   tests[ , 1] == -1 & tests[ , 2] == 1 & tests[ , 3] == 1 |
     tests[ , 1] == 0 & tests[ , 2] == 1 & tests[ , 3] == 1 |
@@ -1797,7 +1799,7 @@ draw(
 
 ### BP
 
-```{r, fig.height = 10, fig.width = 15}
+```{r, fig.height = 15, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
 draw(
@@ -1869,7 +1871,7 @@ draw(
 
 ## F4_6
 
-```{r, fig.width = 15}
+```{r, fig.height = 25, fig.width = 15}
 tests_up <- tests[
   tests[ , 1] == -1 & tests[ , 3] == 1 & tests[ , 2] == 0 |
     tests[ , 1] == -1 & tests[ , 3] == 0 & tests[ , 2] == 0 |
@@ -1905,7 +1907,7 @@ draw(
 
 ### BP
 
-```{r, fig.width = 15}
+```{r, fig.height = 20, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
 draw(
@@ -2299,7 +2301,7 @@ print("None detected")
 
 ## Combined
 
-```{r, fig.height = 25, fig.width = 15}
+```{r, fig.height = 50, fig.width = 15}
 order <- c(rownames(F1_3_combined), rownames(F4_6_combined), rownames(F7_8_combined))
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
@@ -2327,7 +2329,7 @@ draw(
 
 ### BP
 
-```{r, fig.height = 15, fig.width = 15}
+```{r, fig.height = 35, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
 draw(
@@ -2351,7 +2353,7 @@ draw(
 
 ### MF
 
-```{r, fig.height = 10, fig.width = 15}
+```{r, fig.height = 30, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
 draw(
@@ -2405,22 +2407,22 @@ draw(
 order <- c(
   "stimulatory C-type lectin receptor signaling pathway",
   "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
-  "G protein activity",
+  "excitatory extracellular ligand-gated ion channel activity",
   "proteoglycan binding",
-  "platelet alpha granule membrane",
+  "juxtaparanode region of axon",
   "anchored component of external side of plasma membrane",
-  "vesicle targeting",
+  "receptor recycling",
   "vesicle-mediated transport between endosomal compartments",
-  "protein-membrane adaptor activity",
+  "protein folding chaperone",
   "tau protein binding",
   "early phagosome",
-  "postsynaptic specialization, intracellular component",
-  "mitochondrial genome maintenance",
-  "mitochondrial fission",
+  "retromer complex",
+  "cytochrome complex assembly",
+  "mitochondrial protein processing",
+  "quinone binding",
   "fatty-acyl-CoA binding",
-  "NADH dehydrogenase activity",
-  "intrinsic component of mitochondrial outer membrane",
-  "cytochrome complex"
+  "nucleoid",
+  "tricarboxylic acid cycle enzyme complex"
 )
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
@@ -2456,9 +2458,9 @@ order <- c(
   "vesicle-mediated transport between endosomal compartments",
   "tau protein binding",
   "early phagosome",
-  "mitochondrial fission",
-  "NADH dehydrogenase activity",
-  "cytochrome complex"
+  "mitochondrial protein processing",
+  "fatty-acyl-CoA binding",
+  "nucleoid"
 )
 heatmap_data <- gsva[rownames(gsva) %in% order, ]
 heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
