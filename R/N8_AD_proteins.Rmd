@@ -1681,6 +1681,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -1705,6 +1706,7 @@ draw(
 ```{r, fig.height = 15, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1729,6 +1731,7 @@ draw(
 ```{r, fig.height = 12, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1753,6 +1756,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1787,6 +1791,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -1811,6 +1816,7 @@ draw(
 ```{r, fig.height = 15, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1835,6 +1841,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1859,6 +1866,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1895,6 +1903,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -1919,6 +1928,7 @@ draw(
 ```{r, fig.height = 20, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1943,6 +1953,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -1967,6 +1978,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2001,6 +2013,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -2025,6 +2038,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2049,6 +2063,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2073,6 +2088,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2109,6 +2125,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -2133,6 +2150,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2157,6 +2175,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2181,6 +2200,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2215,6 +2235,7 @@ heatmap_data <- gsva[rownames(gsva) %in% rownames(up), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -2239,6 +2260,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2263,6 +2285,7 @@ draw(
 ```{r, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2287,6 +2310,7 @@ draw(
 ```{r, fig.width = 15}
 # heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 # 
+# set.seed(1)
 # draw(
 #   Heatmap(
 #     heatmap_data_sub,
@@ -2317,6 +2341,7 @@ heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -2341,6 +2366,7 @@ draw(
 ```{r, fig.height = 35, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_BP, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2365,6 +2391,7 @@ draw(
 ```{r, fig.height = 30, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_MF, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2389,6 +2416,7 @@ draw(
 ```{r, fig.height = 10, fig.width = 15}
 heatmap_data_sub <- heatmap_data[rownames(heatmap_data) %in% GO_CC, ]
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data_sub,
@@ -2429,6 +2457,7 @@ heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
@@ -2476,6 +2505,7 @@ heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
 colnames(heatmap_data) <- data$nice_names
 heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
+set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
