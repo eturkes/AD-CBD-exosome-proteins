@@ -2410,6 +2410,44 @@ draw(
 
 ## Curated
 
+### One Per Ontology
+
+```{r, fig.height = 3, fig.width = 15}
+order <- c(
+  "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
+  "proteoglycan binding",
+  "anchored component of external side of plasma membrane",
+  "vesicle-mediated transport between endosomal compartments",
+  "tau protein binding",
+  "early phagosome",
+  "mitochondrial protein processing",
+  "fatty-acyl-CoA binding",
+  "nucleoid"
+)
+heatmap_data <- gsva[rownames(gsva) %in% order, ]
+heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
+colnames(heatmap_data) <- data$nice_names
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 ### Two Per Ontology
 
 ```{r, fig.height = 5, fig.width = 15}
@@ -2457,42 +2495,69 @@ draw(
 )
 ```
 
-### One Per Ontology
+```{r}
+for (gene_set in rownames(heatmap_data)) {
+  proteins <- geneIds(gene_sets)[[gene_set]]
+  proteins <- gene_anno[gene_anno$ensembl_gene_id %in% proteins, ]$external_gene_name
+  heatmap_mat <- assay(data)[rownames(data) %in% proteins, ]
+  colnames(heatmap_mat) <- data$nice_names
+  heatmap_mat <- t(apply(heatmap_mat, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
 
-```{r, fig.height = 3, fig.width = 15}
-order <- c(
-  "heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules",
-  "proteoglycan binding",
-  "anchored component of external side of plasma membrane",
-  "vesicle-mediated transport between endosomal compartments",
-  "tau protein binding",
-  "early phagosome",
-  "mitochondrial protein processing",
-  "fatty-acyl-CoA binding",
-  "nucleoid"
-)
-heatmap_data <- gsva[rownames(gsva) %in% order, ]
-heatmap_data <- heatmap_data[match(order, rownames(heatmap_data)), ]
-colnames(heatmap_data) <- data$nice_names
-heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
-
-draw(
-  Heatmap(
-    heatmap_data,
-    heatmap_color,
-    cluster_columns = FALSE,
-    cluster_rows = FALSE,
-    row_names_max_width = max_text_width(rownames(heatmap_data)),
-    heatmap_legend_param = list(
-      title = "Per-row Scaled ssGSEA Enrichment", direction = "horizontal",
-      legend_width = unit(7.5, "cm")
+  set.seed(1)
+  draw(
+    Heatmap(
+      heatmap_mat,
+      heatmap_color,
+      cluster_columns = FALSE,
+      cluster_rows = FALSE,
+      column_title = gene_set,
+      heatmap_legend_param = list(
+        title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+        legend_width = unit(7.5, "cm")
+      ),
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 10),
+      rect_gp = gpar(col = "grey", lwd = 1)
     ),
-    row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10),
-    rect_gp = gpar(col = "grey", lwd = 1)
-  ),
-  heatmap_legend_side = "top"
+    heatmap_legend_side = "top"
+  )
+}
+```
+
+### Additional
+
+```{r}
+additional <- c(
+  "endosomal vesicle fusion", "autophagosome-lysosome fusion", "ubiquitin-specific protease binding",
+  "exocyst", "EARP complex"
 )
+
+for (gene_set in additional) {
+  proteins <- geneIds(gene_sets)[[gene_set]]
+  proteins <- gene_anno[gene_anno$ensembl_gene_id %in% proteins, ]$external_gene_name
+  heatmap_mat <- assay(data)[rownames(data) %in% proteins, ]
+  colnames(heatmap_mat) <- data$nice_names
+  heatmap_mat <- t(apply(heatmap_mat, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+  set.seed(1)
+  draw(
+    Heatmap(
+      heatmap_mat,
+      heatmap_color,
+      cluster_columns = FALSE,
+      cluster_rows = FALSE,
+      column_title = gene_set,
+      heatmap_legend_param = list(
+        title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+        legend_width = unit(7.5, "cm")
+      ),
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 10),
+      rect_gp = gpar(col = "grey", lwd = 1)
+    ),
+    heatmap_legend_side = "top"
+  )
+}
 ```
 
 # References
