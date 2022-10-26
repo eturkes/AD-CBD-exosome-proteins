@@ -984,8 +984,14 @@ for (i in seq_along(unique(molten_data$donor_fraction))) {
 
   cut <- cut(molten_data_sub$size, seq(0, 500, 50))
   levels(cut) <- c(levels(cut), "(300,400]", "(400,500]", "(500,3460]")
-  cut[as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 300 | as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 350] <- "(300,400]"
-  cut[as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 400 | as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 450] <- "(400,500]"
+  cut[
+    as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 300 |
+      as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 350
+  ] <- "(300,400]"
+  cut[
+    as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 400 |
+      as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) == 450
+  ] <- "(400,500]"
   cut[is.na(cut)] <- "(500,3460]"
   cut <- droplevels(cut)
 
