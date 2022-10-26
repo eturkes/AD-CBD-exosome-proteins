@@ -1118,12 +1118,75 @@ for (i in seq_along(unique(molten_data$Statistic))) {
       )
   )
 }
+```
 
+## Donor
+
+```{r}
+file_list <- list.files(file.path(assets_dir, "zetaview", "raw-data"))
+file_list <- file_list[-grep("10K", file_list)] # Remove 10K pellets.
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+
+for (i in seq_along(file_list)) {
+  file <- read.delim(
+    file.path(assets_dir, "zetaview", "raw-data", file_list[i]), skip = 70
+  )
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1]
+  }
+  data[ , i + 1] <- file[1:1200, 2]
+}
+
+colnames(data) <- c(
+  "size",
+    paste(
+      sub("^[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", "\\1", file_list),
+      sep = "_"
+  )
+)
+
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+
+names <- unique(sub("^([^_]*).*", "\\1", colnames(data[ , -1])))
+donor_fraction_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+donor_fraction_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[ , which(sub("^([^_]*).*", "\\1", colnames(data)) %in% names[i])]
+  donor_fraction_data[ , i + 1] <- rowSums(data_sub)
+}
+colnames(donor_fraction_data) <- c("size", names)
+```
+
+### Unnormalised
+
+```{r}
 aggregated_stats <- donor_fraction_data[ , -1]
 rownames(aggregated_stats) <- donor_fraction_data$size
 aggregated_stats <- rowSums(aggregated_stats)
 aggregated_stats <- rep(as.numeric(names(aggregated_stats)), aggregated_stats)
 summary(aggregated_stats)
+
+aggregated_stats <- donor_fraction_data[ , -1]
+rownames(aggregated_stats) <- donor_fraction_data$size
+stats_list <- vector("list", ncol(aggregated_stats))
+for (i in seq_along(stats_list)) {
+  stats_list[[i]] <- rep(as.numeric(rownames(aggregated_stats)), aggregated_stats[ , i])
+}
+
+df <- data.frame(matrix(nrow = 3, ncol = ncol(aggregated_stats)))
+rownames(df) <- c("Min", "Max", "SD")
+colnames(df) <- colnames(aggregated_stats)
+df[1 , ] <- unlist(lapply(stats_list, min))
+df[2 , ] <- unlist(lapply(stats_list, max))
+df[3 , ] <- unlist(lapply(stats_list, sd))
+datatable_download(df)
+
+cat("Standard deviation of min:", sd(df[1, ]))
+cat("Standard deviation of max:", sd(df[2, ]))
 ```
 
 # References
