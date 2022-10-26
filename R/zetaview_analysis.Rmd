@@ -1118,6 +1118,12 @@ for (i in seq_along(unique(molten_data$Statistic))) {
       )
   )
 }
+
+aggregated_stats <- donor_fraction_data[ , -1]
+rownames(aggregated_stats) <- donor_fraction_data$size
+aggregated_stats <- rowSums(aggregated_stats)
+aggregated_stats <- rep(as.numeric(names(aggregated_stats)), aggregated_stats)
+summary(aggregated_stats)
 ```
 
 # References
