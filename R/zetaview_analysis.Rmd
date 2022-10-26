@@ -966,21 +966,23 @@ ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   xlab("Diameter Range (nm)")
 ```
 
-## 50 nm Bins (Last Bin from 300 nm to End)
+## 50 nm Bins (Plus Bin from 300 nm to 600 nm and Last Bin from 600 nm to End)
 
 ### Proportion of Total Counts
 
 ```{r}
-data_sub <- fraction_data_norm
+data_sub <- donor_fraction_data_norm
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
-colnames(molten_data) <- c("Fraction", "proportion")
-molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
+colnames(molten_data) <- c("donor_fraction", "proportion")
+molten_data$size <- rep(data_sub$size, ncol(data_sub) - 1)
 
 molten_data_new <- data.frame()
-for (i in seq_along(unique(molten_data$Fraction))) {
-  molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
+for (i in seq_along(unique(molten_data$donor_fraction))) {
+  molten_data_sub <- molten_data[
+    molten_data$donor_fraction == unique(molten_data$donor_fraction)[i],
+  ]
 
-  cut <- cut(molten_data_sub$Size, seq(0, 600, 50))
+  cut <- cut(molten_data_sub$size, seq(0, 600, 50))
   levels(cut) <- c(levels(cut), "(300,600]", "(600,3460]")
   cut[as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) >= 300] <- "(300,600]"
   cut[is.na(cut)] <- "(600,3460]"
@@ -992,14 +994,28 @@ for (i in seq_along(unique(molten_data$Fraction))) {
     sub(",", "-", sub("]", "", sub("[(]", "", levels(cut)))),
     sub(",", "-", sub("]", "", sub("[(]", "", levels(cut))))
   )
-  df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
+  df$donor_fraction <- rep(unique(molten_data$donor_fraction)[i], nrow(df))
 
   molten_data_new <- rbind(molten_data_new, df)
 }
-colnames(molten_data_new) <- c("Size", "proportion", "Fraction")
 
-ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
+colnames(molten_data_new) <- c("size", "proportion", "donor_fraction")
+molten_data_new$fraction <- sub(".*_", "", molten_data_new$donor_fraction)
+molten_data_new$fraction_size <- paste(molten_data_new$size, molten_data_new$fraction, sep = "_")
+
+molten_data_new <- data_summary(molten_data_new, "proportion", "fraction_size")
+molten_data_new$size <- factor(sub("_.*", "", molten_data_new$fraction_size))
+molten_data_new$size <- factor(
+  sub("_.*", "", molten_data_new$fraction_size), unique(molten_data_new$size)[c(1, 7, 2:6, 8)]
+)
+molten_data_new$Fraction <- sub(".*_", "", molten_data_new$fraction_size)
+
+ggplot(molten_data_new, aes(size, proportion, fill = Fraction)) +
   geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(
+    aes(ymin = proportion, ymax = proportion + sd), size = 0.3,
+    position = position_dodge(), color = "darkgrey"
+  ) +
   theme_light() +
   scale_y_continuous(breaks = seq(0, max(molten_data_new$proportion), 2)) +
   scale_fill_manual(values = colour) +
