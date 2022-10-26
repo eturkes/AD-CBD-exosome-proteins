@@ -1315,6 +1315,84 @@ draw(
 )
 ```
 
+# Expression of Select Proteins
+
+```{r, fig.height = 10}
+select_prot <- read.delim(file.path(assets_dir, "gene-sets", "select-proteins.tsv"))
+
+heatmap_mat <- assay(data)[rownames(data) %in% select_prot$F1.3, ]
+colnames(heatmap_mat) <- data$nice_names
+heatmap_mat <- t(apply(heatmap_mat, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+datatable_download(heatmap_mat)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_mat,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_mat <- assay(data)[rownames(data) %in% select_prot$F4.6, ]
+colnames(heatmap_mat) <- data$nice_names
+heatmap_mat <- t(apply(heatmap_mat, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+datatable_download(heatmap_mat)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_mat,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_mat <- assay(data)[rownames(data) %in% select_prot$F7.8, ]
+colnames(heatmap_mat) <- data$nice_names
+heatmap_mat <- t(apply(heatmap_mat, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+
+datatable_download(heatmap_mat)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_mat,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 # Differential Expression
 
 ```{r}
