@@ -946,10 +946,11 @@ molten_data$Size <- rep(data_sub$size, ncol(data_sub) - 1)
 molten_data_new <- data.frame()
 for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
-  df <- aggregate(molten_data_sub$proportion, list(cut(molten_data_sub$Size, seq(0, 600, 50))), sum)
+  cut <- cut(molten_data_sub$Size, seq(0, 600, 50))
+  df <- aggregate(molten_data_sub$proportion, list(cut), sum)
   df$Group.1 <- factor(
-    paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-"),
-    paste(seq(0, 550, 50), seq(50, 600, 50), sep = "-")
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut)))),
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut))))
   )
   df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
   molten_data_new <- rbind(molten_data_new, df)
@@ -979,15 +980,17 @@ molten_data_new <- data.frame()
 for (i in seq_along(unique(molten_data$Fraction))) {
   molten_data_sub <- molten_data[molten_data$Fraction == unique(molten_data$Fraction)[i], ]
 
-  cut <- cut(molten_data_sub$Size, seq(0, 300, 50))
-  levels(cut) <- c(levels(cut), "(300,3460]")
-  cut[is.na(cut)] <- "(300,3460]"
+  cut <- cut(molten_data_sub$Size, seq(0, 600, 50))
+  levels(cut) <- c(levels(cut), "(300,600]", "(600,3460]")
+  cut[as.numeric(sub("[(]", "", sub("(.*),.*", "\\1", cut))) >= 300] <- "(300,600]"
+  cut[is.na(cut)] <- "(600,3460]"
+  cut <- droplevels(cut)
 
   df <- aggregate(molten_data_sub$proportion, list(cut), sum)
 
   df$Group.1 <- factor(
-    c(paste(seq(0, 250, 50), seq(50, 300, 50), sep = "-"), "300-3460"),
-    c(paste(seq(0, 250, 50), seq(50, 300, 50), sep = "-"), "300-3460")
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut)))),
+    sub(",", "-", sub("]", "", sub("[(]", "", levels(cut))))
   )
   df$Fraction <- rep(unique(molten_data$Fraction)[i], nrow(df))
 
