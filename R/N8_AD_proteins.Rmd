@@ -2830,8 +2830,9 @@ for (gene_set in rownames(heatmap_data)) {
 
 ```{r}
 additional <- c(
-  "endosomal vesicle fusion", "autophagosome-lysosome fusion", "ubiquitin-specific protease binding",
-  "exocyst", "EARP complex"
+  "endosomal vesicle fusion", "autophagosome-lysosome fusion",
+  "ubiquitin-specific protease binding", "exocyst",
+  "EARP complex"
 )
 
 for (gene_set in additional) {
