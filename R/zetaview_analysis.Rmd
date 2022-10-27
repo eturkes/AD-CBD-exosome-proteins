@@ -966,11 +966,11 @@ ggplot(molten_data_new, aes(Size, proportion, fill = Fraction)) +
   xlab("Diameter Range (nm)")
 ```
 
-## 50 nm Bins (Last Bin from 800 nm to End)
+## 100 nm Bins (Last Bin from 800 nm to End)
 
 ### Proportion of Total Counts
 
-```{r, fig.width = 12}
+```{r}
 data_sub <- donor_fraction_data_norm
 molten_data <- melt(data_sub[ , -1], id.vars = NULL)
 colnames(molten_data) <- c("donor_fraction", "proportion")
@@ -982,7 +982,7 @@ for (i in seq_along(unique(molten_data$donor_fraction))) {
     molten_data$donor_fraction == unique(molten_data$donor_fraction)[i],
   ]
 
-  cut <- cut(molten_data_sub$size, seq(0, 800, 50))
+  cut <- cut(molten_data_sub$size, seq(0, 800, 100))
   levels(cut) <- c(levels(cut), "(800,3460]")
   cut[is.na(cut)] <- "(800,3460]"
   cut <- droplevels(cut)
@@ -1004,9 +1004,6 @@ molten_data_new$fraction_size <- paste(molten_data_new$size, molten_data_new$fra
 
 molten_data_new <- data_summary(molten_data_new, "proportion", "fraction_size")
 molten_data_new$size <- factor(sub("_.*", "", molten_data_new$fraction_size))
-molten_data_new$size <- factor(
-  sub("_.*", "", molten_data_new$fraction_size), unique(molten_data_new$size)[c(1, 10, 2:9, 11:17)]
-)
 molten_data_new$Fraction <- sub(".*_", "", molten_data_new$fraction_size)
 
 ggplot(molten_data_new, aes(size, proportion, fill = Fraction)) +
