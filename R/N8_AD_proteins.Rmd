@@ -1775,8 +1775,6 @@ rownames(results) <- results$X
 results <- results[ , -1]
 results <- results[order(results$F.p.value.adj), ]
 
-datatable_download_exp(results)
-
 sub_ontology <- getGmt(
   file.path(assets_dir, "gene-sets", "gprofiler_hsapiens.ENSG", "hsapiens.GO:BP.ENSG.gmt")
 )
@@ -1800,6 +1798,16 @@ GO_CC <- c()
 for (i in seq(length(sub_ontology@.Data))) {
   GO_CC <- append(GO_CC, sub_ontology[[i]]@shortDescription)
 }
+
+key_value <- data.frame(
+  key = c(GO_BP, GO_MF, GO_CC),
+  value = c(rep("GO_BP", length(GO_BP)), rep("GO_MF", length(GO_MF)), rep("GO_CC", length(GO_CC)))
+)
+results_names <- data.frame(names = rownames(results))
+results$Ontology <- merge(results_names, key_value, by.x = "names", by.y = "key")$value
+results <- results[ , c(ncol(results), 1:(ncol(results) - 1))]
+
+datatable_download_exp(results)
 ```
 
 ## F1_3 < F4_6 < F7_8
