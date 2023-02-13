@@ -2949,6 +2949,156 @@ for (gene_set in additional) {
 }
 ```
 
+# Cell-type Origin
+
+## Johnson 2020 Modules
+
+We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [@johnsonLargescaleProteomicAnalysis2020] as our gene sets.
+
+```{r}
+# Load gene sets and filter to improve GSVA normalization.
+# --------------------------------------------------------
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
+gene_sets
+# --------------------------------------------------------
+
+# Filter dataset to proteins in gene sets to reduce multiple testing correction burden.
+# -------------------------------------------------------------------------------------
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
+print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
+print(
+  paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
+)
+# -------------------------------------------------------------------------------------
+
+# Perform GSVA using `ssgsea` method.
+# -----------------------------------
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+datatable_download(gsva)
+# -----------------------------------
+
+# Use limma to test for significance.
+# -----------------------------------
+fit <- lmFit(gsva, limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit, "global")
+write.fit(
+  cont_fit, tests, file.path(cache_dir, "results.tsv"),
+  adjust = "BH", method = "global", F.adjust = "BH"
+)
+results <- read.delim(file.path(cache_dir, "results.tsv"))
+rownames(results) <- results$X
+results <- results[ , -1]
+results <- results[order(results$F.p.value.adj), ]
+
+datatable_download_exp(results)
+# -----------------------------------
+```
+
+```{r, fig.width = 15}
+heatmap_data <- gsva
+colnames(heatmap_data) <- data$nice_names
+
+heatmap_color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+## Panglao Cell Types
+
+We use cell-type markers from the PanglaoDB database [https://panglaodb.se/markers.html](https://panglaodb.se/markers.html).
+
+```{r}
+# Load gene sets and filter to improve GSVA normalization.
+# --------------------------------------------------------
+gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
+gene_sets
+# --------------------------------------------------------
+
+# Filter dataset to proteins in gene sets to reduce multiple testing correction burden.
+# -------------------------------------------------------------------------------------
+data_filt <- data[rownames(data) %in% unique(unlist(geneIds(gene_sets))), ]
+print(paste0("Unique proteins in post-QC protein matrix: ", dim(data)[1]))
+print(paste0("Unique proteins in gene sets: ", length(unique(unlist(geneIds(gene_sets))))))
+print(
+  paste0("Unique proteins in both post-QC protein matrix and gene sets: ", dim(data_filt)[1])
+)
+# -------------------------------------------------------------------------------------
+
+# Perform GSVA using `ssgsea` method.
+# -----------------------------------
+gsva <- gsva(assay(data_filt), gene_sets, method = "ssgsea", ssgsea.norm = FALSE, verbose = FALSE)
+datatable_download(gsva)
+# -----------------------------------
+
+# Use limma to test for significance.
+# -----------------------------------
+fit <- lmFit(gsva, limma_design)
+cont_fit <- eBayes(contrasts.fit(fit, contrast_mat))
+tests <- decideTests(cont_fit, "global")
+write.fit(
+  cont_fit, tests, file.path(cache_dir, "results.tsv"),
+  adjust = "BH", method = "global", F.adjust = "BH"
+)
+results <- read.delim(file.path(cache_dir, "results.tsv"))
+rownames(results) <- results$X
+results <- results[ , -1]
+results <- results[order(results$F.p.value.adj), ]
+
+datatable_download_exp(results)
+# -----------------------------------
+```
+
+```{r, fig.width = 15}
+heatmap_data <- gsva
+colnames(heatmap_data) <- data$nice_names
+
+heatmap_color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 # References
 
 This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
