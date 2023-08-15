@@ -3099,6 +3099,71 @@ draw(
 )
 ```
 
+## Abundant Cell-type Markers
+
+```{r}
+ordered_fractions <- vector("list", length(unique(experimental_design$condition)))
+proteins <- c()
+for (i in seq_along(ordered_fractions)) {
+  data_sub <- data[ , which(experimental_design$condition == paste0("Fraction ", i))]
+  ordered_fractions[[i]] <- assay(data_sub[order(rowMedians(assay(data_sub)), decreasing = TRUE), ])
+
+  heatmap_data <- rbind(
+    ordered_fractions[[i]][1:5, ],
+    ordered_fractions[[i]][(nrow(ordered_fractions[[i]]) - 5):nrow(ordered_fractions[[i]]), ]
+  )
+  proteins <- c(proteins, rownames(heatmap_data))
+  heatmap_color2 <- colorRamp2(
+    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+  )
+  set.seed(1)
+  draw(
+    Heatmap(
+      heatmap_data,
+      heatmap_color2,
+      cluster_columns = FALSE,
+      cluster_rows = FALSE,
+      row_names_max_width = max_text_width(rownames(heatmap_data)),
+      heatmap_legend_param = list(
+        title = "log2 Intensity", direction = "horizontal",
+        legend_width = unit(7.5, "cm")
+      ),
+      row_names_gp = gpar(fontsize = 10),
+      column_names_gp = gpar(fontsize = 10),
+      rect_gp = gpar(col = "grey", lwd = 1)
+    ),
+    heatmap_legend_side = "top"
+  )
+}
+
+```
+
+```{r, fig.height = 10}
+heatmap_data <- assay(data[rownames(data) %in% proteins, ])
+heatmap_color2 <- colorRamp2(
+  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 # References
 
 This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
