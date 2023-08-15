@@ -3108,13 +3108,10 @@ for (i in seq_along(ordered_fractions)) {
   data_sub <- data[ , which(experimental_design$condition == paste0("Fraction ", i))]
   ordered_fractions[[i]] <- assay(data_sub[order(rowMedians(assay(data_sub)), decreasing = TRUE), ])
 
-  heatmap_data <- rbind(
-    ordered_fractions[[i]][1:5, ],
-    ordered_fractions[[i]][(nrow(ordered_fractions[[i]]) - 5):nrow(ordered_fractions[[i]]), ]
-  )
+  heatmap_data <- ordered_fractions[[i]][1:10, ]
   proteins <- c(proteins, rownames(heatmap_data))
   heatmap_color2 <- colorRamp2(
-    c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+    c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
     c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
   )
   set.seed(1)
@@ -3139,10 +3136,10 @@ for (i in seq_along(ordered_fractions)) {
 
 ```
 
-```{r, fig.height = 10}
+```{r, fig.height = 8}
 heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
   c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
 )
 set.seed(1)
