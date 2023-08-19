@@ -2955,7 +2955,7 @@ for (gene_set in additional) {
 
 We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [@johnsonLargescaleProteomicAnalysis2020] as our gene sets.
 
-```{r}
+```{r, fig.width = 15}
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
@@ -2994,9 +2994,7 @@ results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 # -----------------------------------
-```
 
-```{r, fig.width = 15}
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
@@ -3029,7 +3027,7 @@ draw(
 
 We use cell-type markers from the PanglaoDB database [https://panglaodb.se/markers.html](https://panglaodb.se/markers.html).
 
-```{r}
+```{r, fig.width = 15}
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "panglao-brain-ctypes.gmt"))
@@ -3068,9 +3066,7 @@ results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 # -----------------------------------
-```
 
-```{r, fig.width = 15}
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
@@ -3133,10 +3129,9 @@ for (i in seq_along(ordered_fractions)) {
     heatmap_legend_side = "top"
   )
 }
-
 ```
 
-```{r, fig.height = 8}
+```{r, fig.width = 15}
 heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_color2 <- colorRamp2(
   c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
@@ -3151,6 +3146,86 @@ draw(
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+## Marker Gene Analysis
+
+```{r, fig.width = 15}
+markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
+markers <- markers[markers$p_val_adj < 0.05, ]
+markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers %>% distinct(gene, .keep_all = TRUE)
+
+proteins <- c()
+proteins_cell_type <- c()
+for (cell_type in unique(markers$cluster)) {
+  markers_sub <- markers[markers$cluster == cell_type, ]
+  proteins <- c(proteins, markers_sub$gene[1:3])
+  proteins_cell_type <- c(proteins_cell_type, paste(cell_type, markers_sub$gene[1:3], sep = "_"))
+}
+
+heatmap_data <- assay(data[rownames(data) %in% proteins, ])
+heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
+rownames(heatmap_data) <- proteins_cell_type
+heatmap_color2 <- colorRamp2(
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),

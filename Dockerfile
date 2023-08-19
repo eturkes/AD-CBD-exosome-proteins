@@ -33,6 +33,7 @@ RUN apt-get update \
         libxt-dev \
         libgsl23 \
         libgdal26 \
+        libglpk-dev \
     && Rscript -e "install.packages('conflicted')" \
         -e "install.packages('rmarkdown')" \
         -e "install.packages('rprojroot')" \
@@ -52,6 +53,7 @@ RUN apt-get update \
         -e "install.packages('volcano3D')" \
         -e "install.packages('VennDiagram')" \
         -e "install.packages('mice')" \
+        -e "install.packages('Seurat')" \
         -e "install.packages('BiocManager')" \
         -e "install.packages('remotes')" \
         -e "BiocManager::install('DEP')" \
@@ -61,6 +63,7 @@ RUN apt-get update \
         -e "BiocManager::install('EnhancedVolcano')" \
         -e "BiocManager::install('preprocessCore', configure.args = '--disable-threading', force = TRUE)" \
         -e "BiocManager::install('NormalyzerDE')" \
+        -e "BiocManager::install('glmGamPoi')" \
         -e "remotes::install_github('lgatto/pRolocdata')" \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/ \
