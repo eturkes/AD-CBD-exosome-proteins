@@ -3292,14 +3292,8 @@ draw(
   heatmap_legend_side = "top"
 )
 
-proteins <- c(markers$gene[1:15], markers$gene[(nrow(markers) - 14):nrow(markers)])
-proteins_cell_type <- c(
-  paste(markers$cluster[1:15], markers$gene[1:15], sep = "_"),
-  paste(
-    markers$cluster[(nrow(markers) - 14):nrow(markers)],
-    markers$gene[(nrow(markers) - 14):nrow(markers)], sep = "_"
-  )
-)
+proteins <- markers$gene[1:30]
+proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 
 heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
