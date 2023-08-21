@@ -3177,6 +3177,8 @@ draw(
 
 ## Marker Gene Analysis
 
+### Sorted by Adjusted P-value
+
 ```{r, fig.width = 15}
 markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
 markers <- markers[markers$p_val_adj < 0.05, ]
@@ -3219,7 +3221,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Sorted by log2FC
+
+```{r, fig.width = 15}
 markers <- markers[order(markers$avg_log2FC, decreasing = TRUE), ]
 
 proteins <- c()
@@ -3255,7 +3261,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Each Cell-type Sorted by Abundance
+
+```{r, fig.width = 15}
 protein_order <- assay(data[rownames(data) %in% markers$gene, ])
 protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
 markers <- markers[match(protein_order, markers$gene), ]
@@ -3293,7 +3303,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Most Abundant Markers
+
+```{r, fig.width = 15}
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 proteins_cell_type <- proteins_cell_type[order(proteins_cell_type)]
@@ -3328,7 +3342,11 @@ draw(
 table(markers$cluster[1:30])
 table(markers$cluster)
 table(markers_orig$cluster)
+```
 
+### Each Cell-type Sorted by Abundance (Adjusted P-value Cutoff = 0)
+
+```{r, fig.width = 15}
 markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
 markers <- markers[markers$p_val_adj == 0, ]
 markers <- markers %>% distinct(gene, .keep_all = TRUE)
@@ -3374,7 +3392,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Most Abundant Markers (Adjusted P-value Cutoff = 0)
+
+```{r, fig.width = 15}
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 proteins_cell_type <- proteins_cell_type[order(proteins_cell_type)]
@@ -3409,7 +3431,11 @@ draw(
 table(markers$cluster[1:30])
 table(markers$cluster)
 table(markers_orig$cluster)
+```
 
+### Each Cell-type Sorted by Abundance (Adjusted P-value Cutoff = 0 & log2FC > 1)
+
+```{r, fig.width = 15}
 markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
 markers <- markers[markers$p_val_adj == 0 & markers$avg_log2FC > 1, ]
 markers <- markers %>% distinct(gene, .keep_all = TRUE)
@@ -3455,7 +3481,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Most Abundant Markers (Adjusted P-value Cutoff = 0 & log2FC > 1)
+
+```{r, fig.width = 15}
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 proteins_cell_type <- proteins_cell_type[order(proteins_cell_type)]
@@ -3490,7 +3520,11 @@ draw(
 table(markers$cluster[1:30])
 table(markers$cluster)
 table(markers_orig$cluster)
+```
 
+### Each Cell-type Sorted by Abundance (Adjusted P-value Cutoff = 0 & log2FC > 2)
+
+```{r, fig.width = 15}
 markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
 markers <- markers[markers$p_val_adj == 0 & markers$avg_log2FC > 2, ]
 markers <- markers %>% distinct(gene, .keep_all = TRUE)
@@ -3536,7 +3570,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Most Abundant Markers (Adjusted P-value Cutoff = 0 & log2FC > 1)
+
+```{r, fig.width = 15}
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 proteins_cell_type <- proteins_cell_type[order(proteins_cell_type)]
@@ -3571,7 +3609,11 @@ draw(
 table(markers$cluster[1:30])
 table(markers$cluster)
 table(markers_orig$cluster)
+```
 
+### Each Cell-type Sorted by Abundance (Adjusted P-value Cutoff = 0 & log2FC > 5)
+
+```{r, fig.width = 15}
 markers <- read.delim(file.path(assets_dir, "gene-sets", "markers.tsv"))
 markers <- markers[markers$p_val_adj == 0 & markers$avg_log2FC > 5, ]
 markers <- markers %>% distinct(gene, .keep_all = TRUE)
@@ -3617,7 +3659,11 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+```
 
+### Most Abundant Markers (Adjusted P-value Cutoff = 0 & log2FC > 5)
+
+```{r, fig.width = 15}
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 proteins_cell_type <- proteins_cell_type[order(proteins_cell_type)]
