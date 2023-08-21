@@ -3234,6 +3234,117 @@ draw(
   ),
   heatmap_legend_side = "top"
 )
+
+protein_order <- assay(data[rownames(data) %in% markers$gene, ])
+protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
+markers <- markers[match(protein_order, markers$gene), ]
+
+proteins <- c()
+proteins_cell_type <- c()
+for (cell_type in unique(markers$cluster)) {
+  markers_sub <- markers[markers$cluster == cell_type, ]
+  proteins <- c(proteins, markers_sub$gene[1:3])
+  proteins_cell_type <- c(proteins_cell_type, paste(cell_type, markers_sub$gene[1:3], sep = "_"))
+}
+
+heatmap_data <- assay(data[rownames(data) %in% proteins, ])
+heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
+rownames(heatmap_data) <- proteins_cell_type
+heatmap_color2 <- colorRamp2(
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+proteins <- c(markers$gene[1:15], markers$gene[(nrow(markers) - 14):nrow(markers)])
+proteins_cell_type <- c(
+  paste(markers$cluster[1:15], markers$gene[1:15], sep = "_"),
+  paste(
+    markers$cluster[(nrow(markers) - 14):nrow(markers)],
+    markers$gene[(nrow(markers) - 14):nrow(markers)], sep = "_"
+  )
+)
+
+heatmap_data <- assay(data[rownames(data) %in% proteins, ])
+heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
+rownames(heatmap_data) <- proteins_cell_type
+heatmap_color2 <- colorRamp2(
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
+)
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+
+heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
 ```
 
 # References
