@@ -3184,6 +3184,7 @@ markers <- markers %>% distinct(gene, .keep_all = TRUE)
 markers_orig <- markers
 
 markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers[order(markers$p_val_adj), ]
 
 proteins <- c()
 proteins_cell_type <- c()
@@ -3334,6 +3335,7 @@ markers <- markers %>% distinct(gene, .keep_all = TRUE)
 markers_orig <- markers
 
 markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers[order(markers$p_val_adj), ]
 
 protein_order <- assay(data[rownames(data) %in% markers$gene, ])
 protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
@@ -3414,6 +3416,7 @@ markers <- markers %>% distinct(gene, .keep_all = TRUE)
 markers_orig <- markers
 
 markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers[order(markers$p_val_adj), ]
 
 protein_order <- assay(data[rownames(data) %in% markers$gene, ])
 protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
@@ -3494,6 +3497,7 @@ markers <- markers %>% distinct(gene, .keep_all = TRUE)
 markers_orig <- markers
 
 markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers[order(markers$p_val_adj), ]
 
 protein_order <- assay(data[rownames(data) %in% markers$gene, ])
 protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
@@ -3574,6 +3578,7 @@ markers <- markers %>% distinct(gene, .keep_all = TRUE)
 markers_orig <- markers
 
 markers <- markers[markers$gene %in% rownames(data), ]
+markers <- markers[order(markers$p_val_adj), ]
 
 protein_order <- assay(data[rownames(data) %in% markers$gene, ])
 protein_order <- rownames(protein_order)[order(rowMedians(protein_order), decreasing = TRUE)]
