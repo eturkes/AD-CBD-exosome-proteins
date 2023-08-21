@@ -3216,25 +3216,6 @@ draw(
   heatmap_legend_side = "top"
 )
 
-heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
-set.seed(1)
-draw(
-  Heatmap(
-    heatmap_data,
-    heatmap_color,
-    cluster_columns = FALSE,
-    row_names_max_width = max_text_width(rownames(heatmap_data)),
-    heatmap_legend_param = list(
-      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
-      legend_width = unit(7.5, "cm")
-    ),
-    row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10),
-    rect_gp = gpar(col = "grey", lwd = 1)
-  ),
-  heatmap_legend_side = "top"
-)
-
 markers <- markers[order(markers$avg_log2FC, decreasing = TRUE), ]
 
 proteins <- c()
@@ -3261,25 +3242,6 @@ draw(
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "log2 Protein Intensity", direction = "horizontal",
-      legend_width = unit(7.5, "cm")
-    ),
-    row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10),
-    rect_gp = gpar(col = "grey", lwd = 1)
-  ),
-  heatmap_legend_side = "top"
-)
-
-heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
-set.seed(1)
-draw(
-  Heatmap(
-    heatmap_data,
-    heatmap_color,
-    cluster_columns = FALSE,
-    row_names_max_width = max_text_width(rownames(heatmap_data)),
-    heatmap_legend_param = list(
-      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
@@ -3327,25 +3289,6 @@ draw(
   heatmap_legend_side = "top"
 )
 
-heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
-set.seed(1)
-draw(
-  Heatmap(
-    heatmap_data,
-    heatmap_color,
-    cluster_columns = FALSE,
-    row_names_max_width = max_text_width(rownames(heatmap_data)),
-    heatmap_legend_param = list(
-      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
-      legend_width = unit(7.5, "cm")
-    ),
-    row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10),
-    rect_gp = gpar(col = "grey", lwd = 1)
-  ),
-  heatmap_legend_side = "top"
-)
-
 proteins <- markers$gene[1:30]
 proteins_cell_type <- paste(markers$cluster[1:30], markers$gene[1:30], sep = "_")
 
@@ -3366,25 +3309,6 @@ draw(
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "log2 Protein Intensity", direction = "horizontal",
-      legend_width = unit(7.5, "cm")
-    ),
-    row_names_gp = gpar(fontsize = 10),
-    column_names_gp = gpar(fontsize = 10),
-    rect_gp = gpar(col = "grey", lwd = 1)
-  ),
-  heatmap_legend_side = "top"
-)
-
-heatmap_data <- t(apply(heatmap_data, 1, function (x) ((2 * (x - min(x)) / (max(x) - min(x))) - 1)))
-set.seed(1)
-draw(
-  Heatmap(
-    heatmap_data,
-    heatmap_color,
-    cluster_columns = FALSE,
-    row_names_max_width = max_text_width(rownames(heatmap_data)),
-    heatmap_legend_param = list(
-      title = "Per-row Scaled Protein Intensity", direction = "horizontal",
       legend_width = unit(7.5, "cm")
     ),
     row_names_gp = gpar(fontsize = 10),
