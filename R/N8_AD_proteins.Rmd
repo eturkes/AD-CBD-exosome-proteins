@@ -71,7 +71,7 @@ Each sample in the dataset represents a fraction from a single donor.
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
   "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "khroma",
-  "biomaRt", "NormalyzerDE"
+  "biomaRt", "NormalyzerDE", "stringi"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -3656,6 +3656,109 @@ draw(
 table(markers$cluster[1:30])
 table(markers$cluster)
 table(markers_orig$cluster)
+```
+
+## MISEV
+
+```{r}
+MISEV <- read.delim(file.path(assets_dir, "fractions", "MISEV-curated-tidy.tsv"))
+MISEV_groups <- read.delim(file.path(assets_dir, "fractions", "MISEV-groups-trimmed.tsv"))
+
+rownames(data)[which(rownames(data) == "PDCD6IP")] <- "ALIX"
+
+keep <- c(
+  "CD81", "CD63", "LAMP2", "CD9", "APP", "THY1",
+  "ANXA1", "ANXA2", "ANXA6", "ANXA5", "ANXA4", "ANXA3", "ANXA7", "ANXA11",
+  "MAPT", "FLOT", "ALIX",
+  "ACTN4", "ACTN1", "ACTN2", "ACTR1B", "ACTB", "ACTR3", "ACTR2", "ACTR1A", "ACTG1", "ACTC1",
+  "APOOL", "APOL2", "APOO", "APOB", "APOH", "APOE", "APOD",
+  "LMNA", "LMNB2",
+  "VDAC1", "VDAC2", "VDAC3",
+  "GOLM1", "GOLM2",
+  "EMC1", "EMC2", "EMC3", "EMC7", "EMC8",
+  "ATG9A", "FGF1", "FGF2", "MFGE8"
+)
+
+tiers <- c(
+  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[2],
+  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[5]
+)
+tier_cutoff <-
+  ((max(assay(data), na.rm = TRUE) - min(assay(data), na.rm = TRUE)) / 2) +
+  min(assay(data), na.rm = TRUE)
+
+min_10_perc <- min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
+```
+
+### Unaggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
+
+```{r, fig.height = 8, fig.width = 15}
+proteins <- as.vector(unlist(MISEV))
+proteins <- proteins[proteins != ""]
+proteins <- trimws(proteins)
+proteins <- proteins[proteins %in% keep]
+
+sub_data <- assay(data[rownames(data) %in% proteins, ])
+
+missing <- proteins[proteins %notin% rownames(sub_data)]
+missing <- matrix(
+  nrow = length(missing), ncol = ncol(sub_data), dimnames = list(missing, colnames(sub_data))
+)
+sub_data <- rbind(sub_data, missing)
+
+remove <- trimws(unlist(MISEV)) %notin% rownames(sub_data)
+proteins <- trimws(unlist(MISEV))
+for (i in seq_along(remove)) {
+  if (remove[i] == TRUE) {
+    proteins[[i]] <- ""
+  }
+}
+proteins <- proteins[proteins != ""]
+categories <- names(proteins)
+categories <- stri_extract(categories, regex = ".*[a-z]")
+categories <- sub("^.*\\.", "", categories)
+
+sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
+no_NA_data <- sub_data
+no_NA_data[is.na(no_NA_data)] <- min_10_perc
+prot_per_cat <- as.vector(table(categories))
+row_counter <- 0
+for (i in seq_along(unique(categories))) {
+  order <- order(
+    rowMeans(no_NA_data[(row_counter + 1):(prot_per_cat[i] + row_counter), , drop = FALSE])
+  )
+  order <- order + row_counter
+  order <- sub_data[order, , drop = FALSE]
+  sub_data <- sub_data[order(match(rownames(sub_data), rownames(order))), ]
+  row_counter <- row_counter + prot_per_cat[i]
+}
+sub_data <- sub_data[rev(rownames(sub_data)), ]
+colnames(sub_data) <- data$nice_names
+
+datatable_download(sub_data)
+
+set.seed(1)
+draw(
+  Heatmap(
+    sub_data,
+    heatmap_color2,
+    na_col = "#DDDDDD",
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(data)),
+    heatmap_legend_param = list(title = "log2 Protein Intensity", direction = "horizontal"),
+    row_split = categories,
+    row_title_rot = 0,
+    row_gap = unit(2, "mm"),
+    column_split = colnames(sub_data),
+    column_gap = unit(0, "mm"),
+    border = TRUE,
+    column_title = NULL,
+    row_names_gp = gpar(fontsize = 9),
+    rect_gp = gpar(col = "black")
+  ),
+  heatmap_legend_side = "top"
+)
 ```
 
 # References
