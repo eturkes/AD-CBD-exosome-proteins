@@ -3344,6 +3344,35 @@ table(markers$cluster)
 table(markers_orig$cluster)
 ```
 
+### Bar Plot
+
+```{r}
+df <- data.frame(matrix(nrow = length(unique(markers_orig$cluster)) * 2, ncol = 3))
+colnames(df) <- c("Celltype", "Detection", "Number")
+df$Celltype <- factor(rep(unique(markers_orig$cluster), 2), rev(unique(markers_orig$cluster)))
+df$Detection <- factor(
+  c(rep("Detected", length(unique(df$Celltype))), rep("Undetected", length(unique(df$Celltype)))),
+  c("Undetected", "Detected")
+)
+df$Number <- c(table(markers$cluster), table(markers_orig$cluster) - table(markers$cluster))
+
+ggplot(df, aes(Celltype, Number, fill = Detection)) +
+  geom_bar(stat = "identity", position = "fill") +
+  coord_flip() +
+  scale_y_continuous(labels = percent, breaks = pretty_breaks(10)) +
+  ylab("Percent of Marker Genes") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+ggplot(df, aes(Celltype, Number, fill = Detection)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_y_continuous(breaks = pretty_breaks(15)) +
+  ylab("Number of Marker Genes") +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
 ### Each Cell-type Sorted by Abundance (log2FC > 1)
 
 ```{r, fig.width = 15}
