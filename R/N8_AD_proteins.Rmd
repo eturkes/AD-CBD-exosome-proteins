@@ -2995,6 +2995,8 @@ results <- results[order(results$F.p.value.adj), ]
 datatable_download_exp(results)
 # -----------------------------------
 
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
+
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
@@ -3066,6 +3068,8 @@ results <- results[order(results$F.p.value.adj), ]
 
 datatable_download_exp(results)
 # -----------------------------------
+
+gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
 
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
