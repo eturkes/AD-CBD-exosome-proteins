@@ -71,7 +71,7 @@ Each sample in the dataset represents a fraction from a single donor.
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
   "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "khroma",
-  "biomaRt", "NormalyzerDE", "stringi"
+  "biomaRt", "NormalyzerDE", "stringi", "readxl"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -3616,43 +3616,17 @@ table(markers_orig$cluster)
 
 ## MISEV
 
-```{r}
-MISEV <- read.delim(file.path(assets_dir, "fractions", "MISEV-curated-tidy.tsv"))
-MISEV_groups <- read.delim(file.path(assets_dir, "fractions", "MISEV-groups-trimmed.tsv"))
+```{r, fig.height = 40, fig.width = 15}
+MISEV <- read_excel(file.path(assets_dir, "fractions", "MISEV-master-list_Aug 24_2023.xlsx"))
 
+data_orig <- data
 rownames(data)[which(rownames(data) == "PDCD6IP")] <- "ALIX"
 
-keep <- c(
-  "CD81", "CD63", "LAMP2", "CD9", "APP", "THY1",
-  "ANXA1", "ANXA2", "ANXA6", "ANXA5", "ANXA4", "ANXA3", "ANXA7", "ANXA11",
-  "MAPT", "FLOT", "ALIX",
-  "ACTN4", "ACTN1", "ACTN2", "ACTR1B", "ACTB", "ACTR3", "ACTR2", "ACTR1A", "ACTG1", "ACTC1",
-  "APOOL", "APOL2", "APOO", "APOB", "APOH", "APOE", "APOD",
-  "LMNA", "LMNB2",
-  "VDAC1", "VDAC2", "VDAC3",
-  "GOLM1", "GOLM2",
-  "EMC1", "EMC2", "EMC3", "EMC7", "EMC8",
-  "ATG9A", "FGF1", "FGF2", "MFGE8"
-)
-
-tiers <- c(
-  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[2],
-  as.numeric(sub(".*:", "", summary(data.frame(c(assay(data))))))[5]
-)
-tier_cutoff <-
-  ((max(assay(data), na.rm = TRUE) - min(assay(data), na.rm = TRUE)) / 2) +
-  min(assay(data), na.rm = TRUE)
-
 min_10_perc <- min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
-```
 
-### Unaggregated, Including Proteins with All Missing, All Fractions, Full Intensity Heatmap
-
-```{r, fig.height = 8, fig.width = 15}
 proteins <- as.vector(unlist(MISEV))
-proteins <- proteins[proteins != ""]
+proteins <- proteins[-which(is.na(proteins))]
 proteins <- trimws(proteins)
-proteins <- proteins[proteins %in% keep]
 
 sub_data <- assay(data[rownames(data) %in% proteins, ])
 
@@ -3711,7 +3685,7 @@ draw(
     border = TRUE,
     column_title = NULL,
     row_names_gp = gpar(fontsize = 9),
-    rect_gp = gpar(col = "black")
+    rect_gp = gpar(col = "grey", lwd = 1)
   ),
   heatmap_legend_side = "top"
 )
