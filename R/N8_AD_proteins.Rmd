@@ -3000,16 +3000,11 @@ gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
-heatmap_color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
-
 set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
-    heatmap_color2,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -3074,16 +3069,11 @@ gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
-heatmap_color2 <- colorRamp2(
-  c(min(heatmap_data), (max(heatmap_data) + min(heatmap_data)) / 2, max(heatmap_data)),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
-
 set.seed(1)
 draw(
   Heatmap(
     heatmap_data,
-    heatmap_color2,
+    heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
@@ -3102,6 +3092,11 @@ draw(
 ## Abundant Cell-type Markers
 
 ```{r}
+heatmap_color2 <- colorRamp2(
+  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
+  c("#0077BB", "#FFFFFF", "#CC3311")
+)
+
 ordered_fractions <- vector("list", length(unique(experimental_design$condition)))
 proteins <- c()
 for (i in seq_along(ordered_fractions)) {
@@ -3110,10 +3105,6 @@ for (i in seq_along(ordered_fractions)) {
 
   heatmap_data <- ordered_fractions[[i]][1:10, ]
   proteins <- c(proteins, rownames(heatmap_data))
-  heatmap_color2 <- colorRamp2(
-    c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-    c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-  )
   set.seed(1)
   draw(
     Heatmap(
@@ -3138,10 +3129,6 @@ for (i in seq_along(ordered_fractions)) {
 ```{r, fig.width = 15}
 heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3205,10 +3192,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3246,10 +3229,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 
 order <- order(colMeans(matrix(rowMedians(heatmap_data), 3)), decreasing = TRUE)
 order <- c(
@@ -3296,10 +3275,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3332,10 +3307,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3372,13 +3343,17 @@ df$Detection <- factor(
 )
 df$Number <- c(table(markers$cluster), table(markers_orig$cluster) - table(markers$cluster))
 
+bar_colour <- colour[c(2, 5)]
+names(bar_colour) <- c("Undetected", "Detected")
+
 ggplot(df, aes(Celltype, Number, fill = Detection)) +
   geom_bar(stat = "identity", position = "fill") +
   coord_flip() +
   scale_y_continuous(labels = percent, breaks = pretty_breaks(10)) +
   ylab("Percent of Marker Genes") +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_fill_manual(values = bar_colour)
 
 ggplot(df, aes(Celltype, Number, fill = Detection)) +
   geom_bar(stat = "identity") +
@@ -3386,7 +3361,8 @@ ggplot(df, aes(Celltype, Number, fill = Detection)) +
   scale_y_continuous(breaks = pretty_breaks(15)) +
   ylab("Number of Marker Genes") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_fill_manual(values = bar_colour)
 ```
 
 ### Each Cell-type Sorted by Abundance (log2FC > 1)
@@ -3416,10 +3392,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3452,10 +3424,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3507,10 +3475,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3543,10 +3507,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3598,10 +3558,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
@@ -3634,10 +3590,6 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
-heatmap_color2 <- colorRamp2(
-  c(min(assay(data)), (max(assay(data)) + min(assay(data))) / 2, max(assay(data))),
-  c(brewer.pal(3, "RdBu")[3], brewer.pal(3, "RdBu")[2], brewer.pal(3, "RdBu")[1])
-)
 set.seed(1)
 draw(
   Heatmap(
