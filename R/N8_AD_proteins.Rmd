@@ -2959,6 +2959,7 @@ We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
+gene_sets <- gene_sets[-c(1:2)]
 gene_sets
 # --------------------------------------------------------
 
