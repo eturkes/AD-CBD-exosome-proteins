@@ -3000,6 +3000,8 @@ gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
+order <- order(rowMedians(heatmap_data), decreasing = TRUE)
+
 set.seed(1)
 draw(
   Heatmap(
@@ -3007,6 +3009,7 @@ draw(
     heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
+    row_order = order,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "ssGSEA Enrichment", direction = "horizontal",
@@ -3069,6 +3072,8 @@ gsva <- (2 * (gsva - min(gsva)) / (max(gsva) - min(gsva))) - 1
 heatmap_data <- gsva
 colnames(heatmap_data) <- data$nice_names
 
+order <- order(rowMedians(heatmap_data), decreasing = TRUE)
+
 set.seed(1)
 draw(
   Heatmap(
@@ -3076,6 +3081,7 @@ draw(
     heatmap_color,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
+    row_order = order,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "ssGSEA Enrichment", direction = "horizontal",
