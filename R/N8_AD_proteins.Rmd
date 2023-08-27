@@ -3023,6 +3023,38 @@ draw(
 )
 ```
 
+```{r}
+heatmap_data1 <- heatmap_data[ , 1:56]
+heatmap_data1 <- t(apply(heatmap_data1, 1, tapply, gl(7, 8), median))
+heatmap_data2 <- heatmap_data[ , 57:ncol(heatmap_data)]
+heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
+heatmap_data <- cbind(heatmap_data1, heatmap_data2)
+colnames(heatmap_data) <- paste0("Fraction ", 1:8)
+
+order <- order(rowMedians(heatmap_data), decreasing = TRUE)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_order = order,
+    column_names_rot = 45,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
 ## Panglao Cell Types
 
 We use cell-type markers from the PanglaoDB database [https://panglaodb.se/markers.html](https://panglaodb.se/markers.html).
@@ -3082,6 +3114,38 @@ draw(
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_order = order,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "ssGSEA Enrichment", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+```{r}
+heatmap_data1 <- heatmap_data[ , 1:56]
+heatmap_data1 <- t(apply(heatmap_data1, 1, tapply, gl(7, 8), median))
+heatmap_data2 <- heatmap_data[ , 57:ncol(heatmap_data)]
+heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
+heatmap_data <- cbind(heatmap_data1, heatmap_data2)
+colnames(heatmap_data) <- paste0("Fraction ", 1:8)
+
+order <- order(rowMedians(heatmap_data), decreasing = TRUE)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_order = order,
+    column_names_rot = 45,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "ssGSEA Enrichment", direction = "horizontal",
@@ -3198,6 +3262,7 @@ heatmap_data <- assay(data[rownames(data) %in% proteins, ])
 heatmap_data <- heatmap_data[match(proteins, rownames(heatmap_data)), ]
 rownames(heatmap_data) <- proteins_cell_type
 colnames(heatmap_data) <- data$nice_names
+
 set.seed(1)
 draw(
   Heatmap(
@@ -3205,6 +3270,35 @@ draw(
     heatmap_color2,
     cluster_columns = FALSE,
     cluster_rows = FALSE,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+```{r}
+heatmap_data1 <- heatmap_data[ , 1:56]
+heatmap_data1 <- t(apply(heatmap_data1, 1, tapply, gl(7, 8), median))
+heatmap_data2 <- heatmap_data[ , 57:ncol(heatmap_data)]
+heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
+heatmap_data <- cbind(heatmap_data1, heatmap_data2)
+colnames(heatmap_data) <- paste0("Fraction ", 1:8)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    column_names_rot = 45,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "log2 Protein Intensity", direction = "horizontal",
@@ -3249,6 +3343,36 @@ draw(
     cluster_columns = FALSE,
     cluster_rows = FALSE,
     row_order = order,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
+    heatmap_legend_param = list(
+      title = "log2 Protein Intensity", direction = "horizontal",
+      legend_width = unit(7.5, "cm")
+    ),
+    row_names_gp = gpar(fontsize = 10),
+    column_names_gp = gpar(fontsize = 10),
+    rect_gp = gpar(col = "grey", lwd = 1)
+  ),
+  heatmap_legend_side = "top"
+)
+```
+
+```{r}
+heatmap_data1 <- heatmap_data[ , 1:56]
+heatmap_data1 <- t(apply(heatmap_data1, 1, tapply, gl(7, 8), median))
+heatmap_data2 <- heatmap_data[ , 57:ncol(heatmap_data)]
+heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
+heatmap_data <- cbind(heatmap_data1, heatmap_data2)
+colnames(heatmap_data) <- paste0("Fraction ", 1:8)
+
+set.seed(1)
+draw(
+  Heatmap(
+    heatmap_data,
+    heatmap_color2,
+    cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    row_order = order,
+    column_names_rot = 45,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(
       title = "log2 Protein Intensity", direction = "horizontal",
