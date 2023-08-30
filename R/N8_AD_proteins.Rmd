@@ -71,11 +71,12 @@ Each sample in the dataset represents a fraction from a single donor.
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
   "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "khroma",
-  "biomaRt", "NormalyzerDE", "stringi", "readxl"
+  "biomaRt", "NormalyzerDE", "stringi"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
 conflict_prefer("rowMedians", "Biobase", quiet = TRUE)
+conflict_prefer("colMedians", "matrixStats", quiet = TRUE)
 conflict_prefer("which", "BiocGenerics", quiet = TRUE)
 conflict_prefer("select", "dplyr", quiet = TRUE)
 conflict_prefer("intersect", "base", quiet = TRUE)
@@ -3747,76 +3748,59 @@ table(markers_orig$cluster)
 
 ## MISEV
 
-```{r, fig.height = 40, fig.width = 15}
-MISEV <- read_excel(file.path(assets_dir, "fractions", "MISEV-master-list_Aug 24_2023.xlsx"))
+```{r, fig.height = 10, fig.width = 5}
+MISEV <- read.delim(file.path(assets_dir, "fractions", "MISEV-master-list.tsv"))
+MISEV <- MISEV[ , -31]
 
-data_orig <- data
-rownames(data)[which(rownames(data) == "PDCD6IP")] <- "ALIX"
+data1 <- assay(data[ , 1:56])
+data1 <- t(apply(data1, 1, tapply, gl(7, 8), median))
+data2 <- assay(data[ , 57:ncol(data)])
+data2 <- apply(data2, 1, tapply, gl(1, 5), median)
+comb_data <- cbind(data1, data2)
+colnames(comb_data) <- paste0("Fraction ", 1:8)
 
-min_10_perc <- min(assay(data), na.rm = TRUE) - (min(assay(data), na.rm = TRUE) * 0.1)
-
-proteins <- as.vector(unlist(MISEV))
-proteins <- proteins[-which(is.na(proteins))]
-proteins <- trimws(proteins)
-
-sub_data <- assay(data[rownames(data) %in% proteins, ])
-
-missing <- proteins[proteins %notin% rownames(sub_data)]
-missing <- matrix(
-  nrow = length(missing), ncol = ncol(sub_data), dimnames = list(missing, colnames(sub_data))
-)
-sub_data <- rbind(sub_data, missing)
-
-remove <- trimws(unlist(MISEV)) %notin% rownames(sub_data)
-proteins <- trimws(unlist(MISEV))
-for (i in seq_along(remove)) {
-  if (remove[i] == TRUE) {
-    proteins[[i]] <- ""
+data_list <- vector("list", ncol(MISEV))
+names(data_list) <- colnames(MISEV)
+for (i in seq_along(colnames(MISEV))) {
+  if (length(grep("[*]", MISEV[1, i])) == 1) {
+    data_list[[i]] <- t(as.matrix(colMedians(comb_data[rownames(data) %in% MISEV[ , i], ])))
+    colnames(data_list[[i]]) <- paste0("Fraction ", 1:8)
+    rownames(data_list[[i]]) <- MISEV[1 , i]
+  } else {
+    data_list[[i]] <- comb_data[rownames(comb_data) %in% MISEV[ , i], ]
+    if (is.matrix(data_list[[i]]) == FALSE) {
+      data_list[[i]] <- t(as.matrix(data_list[[i]]))
+      rownames(data_list[[i]]) <- MISEV[MISEV[ , i] %in% rownames(comb_data), i]
+    }
   }
 }
-proteins <- proteins[proteins != ""]
-categories <- names(proteins)
-categories <- stri_extract(categories, regex = ".*[a-z]")
-categories <- sub("^.*\\.", "", categories)
 
-sub_data <- sub_data[match(proteins, rownames(sub_data)), ]
-no_NA_data <- sub_data
-no_NA_data[is.na(no_NA_data)] <- min_10_perc
-prot_per_cat <- as.vector(table(categories))
-row_counter <- 0
-for (i in seq_along(unique(categories))) {
-  order <- order(
-    rowMeans(no_NA_data[(row_counter + 1):(prot_per_cat[i] + row_counter), , drop = FALSE])
-  )
-  order <- order + row_counter
-  order <- sub_data[order, , drop = FALSE]
-  sub_data <- sub_data[order(match(rownames(sub_data), rownames(order))), ]
-  row_counter <- row_counter + prot_per_cat[i]
+categories <- c()
+for (i in seq_along(data_list)) {
+  categories <- c(categories, rep(names(data_list)[i], nrow(data_list[[i]])))
 }
-sub_data <- sub_data[rev(rownames(sub_data)), ]
-colnames(sub_data) <- data$nice_names
+categories <- substr(categories, 1, nchar(categories) - 2)
+categories <- sub("\\.", " ", categories)
 
-datatable_download(sub_data)
+heatmap_data <- do.call(rbind, data_list)
 
 set.seed(1)
 draw(
   Heatmap(
-    sub_data,
+    heatmap_data,
     heatmap_color2,
-    na_col = "#DDDDDD",
     cluster_columns = FALSE,
     cluster_rows = FALSE,
-    row_names_max_width = max_text_width(rownames(data)),
+    column_names_rot = 45,
+    row_title_rot = 0,
+    row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(title = "log2 Protein Intensity", direction = "horizontal"),
     row_split = categories,
-    row_title_rot = 0,
     row_gap = unit(2, "mm"),
-    column_split = colnames(sub_data),
-    column_gap = unit(0, "mm"),
     border = TRUE,
-    column_title = NULL,
-    row_names_gp = gpar(fontsize = 9),
-    rect_gp = gpar(col = "grey", lwd = 1)
+    rect_gp = gpar(col = "grey", lwd = 1),
+    row_names_gp = gpar(fontsize = 6),
+    row_title_gp = gpar(fontsize = 8)
   ),
   heatmap_legend_side = "top"
 )
