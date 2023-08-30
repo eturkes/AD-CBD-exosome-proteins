@@ -3035,6 +3035,8 @@ colnames(heatmap_data) <- paste0("Fraction ", 1:8)
 
 order <- order(rowMedians(heatmap_data), decreasing = TRUE)
 
+datatable_download(heatmap_data)
+
 set.seed(1)
 draw(
   Heatmap(
@@ -3138,6 +3140,8 @@ heatmap_data <- cbind(heatmap_data1, heatmap_data2)
 colnames(heatmap_data) <- paste0("Fraction ", 1:8)
 
 order <- order(rowMedians(heatmap_data), decreasing = TRUE)
+
+datatable_download(heatmap_data)
 
 set.seed(1)
 draw(
@@ -3293,6 +3297,8 @@ heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
 heatmap_data <- cbind(heatmap_data1, heatmap_data2)
 colnames(heatmap_data) <- paste0("Fraction ", 1:8)
 
+datatable_download(heatmap_data)
+
 set.seed(1)
 draw(
   Heatmap(
@@ -3365,6 +3371,8 @@ heatmap_data2 <- heatmap_data[ , 57:ncol(heatmap_data)]
 heatmap_data2 <- apply(heatmap_data2, 1, tapply, gl(1, 5), median)
 heatmap_data <- cbind(heatmap_data1, heatmap_data2)
 colnames(heatmap_data) <- paste0("Fraction ", 1:8)
+
+datatable_download(heatmap_data)
 
 set.seed(1)
 draw(
@@ -3477,6 +3485,8 @@ df$Number <- c(table(markers$cluster), table(markers_orig$cluster) - table(marke
 
 bar_colour <- colour[c(2, 5)]
 names(bar_colour) <- c("Undetected", "Detected")
+
+datatable_download(df)
 
 ggplot(df, aes(Celltype, Number, fill = Detection)) +
   geom_bar(stat = "identity", position = "fill") +
@@ -3783,6 +3793,8 @@ categories <- substr(categories, 1, nchar(categories) - 2)
 categories <- sub("\\.", " ", categories)
 
 heatmap_data <- do.call(rbind, data_list)
+
+datatable_download(heatmap_data)
 
 set.seed(1)
 draw(
