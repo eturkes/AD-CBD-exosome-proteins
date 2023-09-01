@@ -71,7 +71,7 @@ Each sample in the dataset represents a fraction from a single donor.
 packages <- c(
   "conflicted", "circlize", "dplyr", "DEP", "SummarizedExperiment", "scales", "ggplot2", "DT",
   "ComplexHeatmap", "volcano3D", "GSEABase", "GSVA", "RColorBrewer", "limma", "tibble", "khroma",
-  "biomaRt", "NormalyzerDE", "stringi"
+  "biomaRt", "NormalyzerDE", "stringi", "openxlsx"
 )
 invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
 source(file.path("utils.R"))
@@ -89,6 +89,7 @@ heatmap_color <- colorRamp2(c(-1, 0, 1), c("#0077BB", "#FFFFFF", "#CC3311"))
 # Everything else in this chunk remains generally unchanged.
 # ----------------------------------------------------------
 assets_dir <- file.path("..", "assets") # Backed up data.
+results_dir <- file.path("..", "results", "N8_AD_proteins")
 
 cache_dir <- file.path("..", "tmp", "cache", "proteins")
 if (!dir.exists(cache_dir)) {
@@ -2960,9 +2961,45 @@ We use WGCNA modules derived from a more than 2,000 sample AD proteomics study [
 # Load gene sets and filter to improve GSVA normalization.
 # --------------------------------------------------------
 gene_sets <- getGmt(file.path(assets_dir, "gene-sets", "proteomics-modules.gmt"))
-gene_sets <- gene_sets[-c(1:2)]
+gene_sets <- rev(gene_sets[-c(1:2)])
 gene_sets
 # --------------------------------------------------------
+
+detection_list <- vector("list", length(gene_sets))
+for (i in seq_along(detection_list)) {
+  detection_list[[i]] <- assay(data[rownames(data) %in% unlist(geneIds(gene_sets)[i])])
+
+  detection_list1 <- detection_list[[i]][ , 1:56]
+  detection_list1 <- t(apply(detection_list1, 1, tapply, gl(7, 8), median))
+  detection_list2 <- detection_list[[i]][ , 57:ncol(detection_list[[i]])]
+  detection_list2 <- apply(detection_list2, 1, tapply, gl(1, 5), median)
+  detection_list[[i]] <- cbind(detection_list1, detection_list2)
+  colnames(detection_list[[i]]) <- paste0("Fraction ", 1:8)
+
+  detection_list[[i]] <- detection_list[[i]][
+    order(rowMedians(detection_list[[i]]), decreasing = TRUE),
+  ]
+
+  undetected <- unique(
+    unlist(geneIds(gene_sets)[i])[unlist(geneIds(gene_sets)[i]) %notin% rownames(data)]
+  )
+  undetected <- undetected[undetected != ""]
+  undetected <- undetected[order(undetected)]
+  if (length(undetected) > 0) {
+    tmp <- matrix(
+      nrow = length(undetected), ncol = ncol(detection_list[[i]]),
+      dimnames = list(undetected, colnames(detection_list[[i]]))
+    )
+    detection_list[[i]] <- rbind(detection_list[[i]], tmp)
+  }
+
+  file_name <- trimws(sub("/", "-", names(gene_sets)[i]))
+  write.csv(detection_list[[i]], file.path(results_dir, "johnson", paste0(file_name, ".csv")))
+}
+names(detection_list) <- trimws(sub("/", "-", names(gene_sets)))
+write.xlsx(
+  detection_list, file.path(results_dir, "johnson", "johnson.xlsx"), rowNames = TRUE, keepNA = TRUE
+)
 
 # Filter dataset to proteins in gene sets to reduce multiple testing correction burden.
 # -------------------------------------------------------------------------------------
@@ -3487,6 +3524,50 @@ bar_colour <- colour[c(2, 5)]
 names(bar_colour) <- c("Undetected", "Detected")
 
 datatable_download(df)
+
+detection_list <- vector("list", length(unique(markers_orig$cluster)))
+for (i in seq_along(detection_list)) {
+  markers_sub <- markers_orig[markers_orig$cluster == unique(markers_orig$cluster)[i], ]
+  detection_list[[i]] <- assay(data[rownames(data) %in% markers_sub$gene, ])
+
+  detection_list1 <- detection_list[[i]][ , 1:56]
+  detection_list1 <- t(apply(detection_list1, 1, tapply, gl(7, 8), median))
+  detection_list2 <- detection_list[[i]][ , 57:ncol(detection_list[[i]])]
+  detection_list2 <- apply(detection_list2, 1, tapply, gl(1, 5), median)
+  detection_list[[i]] <- cbind(detection_list1, detection_list2)
+  colnames(detection_list[[i]]) <- paste0("Fraction ", 1:8)
+
+  detection_list[[i]] <- detection_list[[i]][
+    order(rowMedians(detection_list[[i]]), decreasing = TRUE),
+  ]
+
+  markers_match <- markers_sub[match(rownames(detection_list[[i]]), markers_sub$gene), ]
+  detection_list[[i]] <- cbind(detection_list[[i]], markers_match[ , 2], markers_match[ , 5])
+  colnames(detection_list[[i]]) <- c(
+    colnames(detection_list[[i]])[1:8], "Marker Gene Avg. log2FC", "Marker Gene Adj. P-value"
+  )
+
+  undetected <- markers_sub[markers_sub$gene %notin% rownames(data), ]
+  undetected <- undetected[order(undetected$avg_log2FC, decreasing = TRUE), ]
+  if (length(undetected) > 0) {
+    tmp <- matrix(
+      nrow = nrow(undetected), ncol = 8,
+      dimnames = list(rownames(undetected), colnames(detection_list[[i]])[1:8])
+    )
+    tmp <- cbind(tmp, undetected[ , c(2, 5)])
+    colnames(tmp) <- c(colnames(tmp)[1:8], "Marker Gene Avg. log2FC", "Marker Gene Adj. P-value")
+    detection_list[[i]] <- rbind(detection_list[[i]], tmp)
+  }
+
+  write.csv(
+    detection_list[[i]],
+    file.path(results_dir, "markers", paste0(unique(markers_sub$cluster), ".csv"))
+  )
+}
+names(detection_list) <- unique(markers_orig$cluster)
+write.xlsx(
+  detection_list, file.path(results_dir, "markers", "markers.xlsx"), rowNames = TRUE, keepNA = TRUE
+)
 
 ggplot(df, aes(Celltype, Number, fill = Detection)) +
   geom_bar(stat = "identity", position = "fill") +
