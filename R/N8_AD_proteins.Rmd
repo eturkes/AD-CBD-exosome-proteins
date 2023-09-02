@@ -3870,8 +3870,61 @@ categories <- c()
 for (i in seq_along(data_list)) {
   categories <- c(categories, rep(names(data_list)[i], nrow(data_list[[i]])))
 }
-categories <- substr(categories, 1, nchar(categories) - 2)
-categories <- sub("\\.", " ", categories)
+categories <- gsub("\\.", " ", categories)
+categories_sub <- substr(categories, 1, nchar(categories) - 2)
+categories <- substr(categories, 1, nchar(categories) - 3)
+
+heatmap_data <- do.call(rbind, data_list)
+
+group_order <- c()
+rep <- c()
+for (i in seq_along(unique(categories))) {
+  rep <- c(rep, length(grep(unique(categories)[i], categories)))
+  data_sub <- heatmap_data[grep(unique(categories)[i], categories), ]
+  group_order <- c(group_order, median(data_sub))
+}
+names(rep) <- unique(categories)
+rep <- rep[order(group_order, decreasing = TRUE)]
+
+rep_names <- as.numeric(substr(names(rep), 10, 10))
+rep_new <- c()
+for (i in seq_along(rep_names)) {
+  rep_sub <- rep[which(rep_names < rep_names[i])]
+  rep_new <- c(rep_new, sum(rep_sub) + seq(rep[i]))
+}
+
+heatmap_data <- heatmap_data[rep_new, ]
+categories <- categories[rep_new]
+categories_sub <- categories_sub[rep_new]
+
+data_list <- vector("list", length(unique(categories_sub)))
+categories_sub_new <- c()
+add <- 0
+for (i in seq_along(unique(categories))) {
+  data_sub <- heatmap_data[grep(unique(categories)[i], categories), ]
+  categories_sub_sub <- categories_sub[grep(unique(categories)[i], categories)]
+
+  group_order <- c()
+  rep <- c()
+  for (j in seq_along(unique(categories_sub_sub))) {
+    rep <- c(rep, length(grep(unique(categories_sub_sub)[j], categories_sub_sub)))
+    data_sub_sub <- data_sub[grep(unique(categories_sub_sub)[j], categories_sub_sub) + add, ]
+    group_order <- c(group_order, median(data_sub_sub))
+  }
+  names(rep) <- unique(categories_sub_sub)
+  rep <- rep[order(group_order, decreasing = TRUE)]
+
+  rep_names <- substr(names(rep), 10, 11)
+  rep_new <- c()
+  for (j in seq_along(rep_names)) {
+    rep_sub <- rep[which(order(rep_names) < order(rep_names)[j])]
+    rep_new <- c(rep_new, sum(rep_sub) + seq(rep[j]))
+  }
+
+  data_list[[i]] <- data_sub[rep_new, ]
+  data_list[[i]] <- data_list[[i]][order(rowMedians(data_list[[i]]), decreasing = TRUE), ]
+  categories_sub_new <- c(categories_sub_new, rep(names(rep), rep))
+}
 
 heatmap_data <- do.call(rbind, data_list)
 
@@ -3888,7 +3941,7 @@ draw(
     row_title_rot = 0,
     row_names_max_width = max_text_width(rownames(heatmap_data)),
     heatmap_legend_param = list(title = "log2 Protein Intensity", direction = "horizontal"),
-    row_split = categories,
+    row_split = factor(categories_sub_new, unique(categories_sub_new)),
     row_gap = unit(2, "mm"),
     border = TRUE,
     rect_gp = gpar(col = "grey", lwd = 1),
