@@ -3841,7 +3841,6 @@ table(markers_orig$cluster)
 
 ```{r, fig.height = 10, fig.width = 5}
 MISEV <- read.delim(file.path(assets_dir, "fractions", "MISEV-master-list.tsv"))
-MISEV <- MISEV[ , -31]
 MISEV <- as.data.frame(apply(MISEV, 2, function(x) gsub("\\s+", "", x)))
 
 data1 <- assay(data[ , 1:56])
