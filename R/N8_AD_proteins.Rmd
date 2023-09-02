@@ -3913,18 +3913,36 @@ for (i in seq_along(unique(categories))) {
     group_order <- c(group_order, median(data_sub_sub))
   }
   names(rep) <- unique(categories_sub_sub)
-  rep <- rep[order(group_order, decreasing = TRUE)]
+  rep_ordered <- rep[order(group_order, decreasing = TRUE)]
 
   rep_names <- substr(names(rep), 10, 11)
+  rep_names_ordered <- substr(names(rep_ordered), 10, 11)
   rep_new <- c()
-  for (j in seq_along(rep_names)) {
-    rep_sub <- rep[which(order(rep_names) < order(rep_names)[j])]
-    rep_new <- c(rep_new, sum(rep_sub) + seq(rep[j]))
+  for (j in seq_along(rep_names_ordered)) {
+    rep_sub <- rep[
+      which(order(rep_names) < which(rep_names %in% rep_names_ordered[j]))
+    ]
+    rep_new <- c(rep_new, sum(rep_sub) + seq(rep_ordered[j]))
+  }
+  data_list[[i]] <- data_sub[rep_new, ]
+
+  data_list_sub <- vector("list", length(rep_ordered))
+  add_new <- 0
+  for (j in seq_along(rep_ordered)) {
+    data_list_sub[[j]] <- data_list[[i]][seq(rep_ordered[j]) + add_new, ]
+    if (class(data_list_sub[[j]])[1] == "matrix") {
+      data_list_sub[[j]] <- data_list_sub[[j]][
+        order(rowMedians(data_list_sub[[j]]), decreasing = TRUE),
+      ]
+    } else {
+      data_list_sub[[j]] <- t(as.matrix(data_list_sub[[j]]))
+      rownames(data_list_sub[[j]]) <- rownames(data_list[[i]])[seq(rep_ordered[j]) + add_new]
+    }
+    add_new <- add_new + rep_ordered[j]
   }
 
-  data_list[[i]] <- data_sub[rep_new, ]
-  data_list[[i]] <- data_list[[i]][order(rowMedians(data_list[[i]]), decreasing = TRUE), ]
-  categories_sub_new <- c(categories_sub_new, rep(names(rep), rep))
+  data_list[[i]] <- do.call(rbind, data_list_sub)
+  categories_sub_new <- c(categories_sub_new, rep(names(rep_ordered), rep_ordered))
 }
 
 heatmap_data <- do.call(rbind, data_list)
