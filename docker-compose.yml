@@ -24,6 +24,7 @@ services:
     image: eturkes/ad-exosome-characterisation:R4.1.2v5
     volumes:
       - ".:/home/rstudio/AD-exosome-characterisation:rw"
+    user: rstudio
     command: Rscript -e "source('/home/rstudio/AD-exosome-characterisation/R/run_all.R')"
 
   rstudio:

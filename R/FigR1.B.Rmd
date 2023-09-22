@@ -1,0 +1,247 @@
+---
+title: "Figure R1 B"
+author:
+  - name: "Emir Turkes and Stephanie Fowler"
+date: '`r strftime(Sys.time(), "%B %d, %Y")`'
+output:
+  html_document:
+    code_folding: show
+    number_sections: true
+    theme: lumen
+    highlight: haddock
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = file.path("..", "results", "FigR1.B.html")
+  )})
+---
+
+<style type="text/css">
+body {font-size: 16px;}
+h1.title {font-size: 35px;}
+h1 {font-size: 24px;}
+h2 {font-size: 22px;}
+.toc-content {padding-left: 0px; padding-right: 0px;}
+div.tocify {width: 100%;}
+.tocify-subheader .tocify-item {font-size: 0.95em; padding-left: 25px; text-indent: 0;}
+div.main-container {max-width: none; width: 100%;}
+</style>
+
+*This file is a part of [AD-exosome-characterisation](https://github.com/eturkes/AD-exosome-characterisation).*
+*The purpose of this file is to reproduce results from the manuscript rebuttal, specifically section B of Rebuttal Figure 1.*
+
+The table of contents in the top left is clickable and can be used to quickly navigate the document.
+To toggle the visibility of code, use the `CODE` toggles at the top right of chunks.
+The toggle at the start of the document controls the visibility of all chunks.
+Note that several chunk options are used to suppress any output that is not a result in the paper, in order to keep this document clean and focused.
+
+# Prep
+
+This section covers necessary but non-directly relevant code for generating the main sections.
+
+```{r, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+#    This file is part of AD-exosome-characterisation.
+#    Copyright (C) 2022-2023  Emir Turkes, Stephanie Fowler, UK DRI at UCL, Columbia
+#    University Medical Center
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    Emir Turkes can be contacted at emir.turkes@eturkes.com
+
+# Load required packages, suppressing startup messages.
+# -----------------------------------------------------
+packages <- c("conflicted", "reshape2", "ggplot2", "ggbeeswarm", "plyr")
+invisible(suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE)))
+# -----------------------------------------------------
+
+# Define global settings.
+# -----------------------
+knitr::opts_chunk$set(fig.width = 9, fig.height = 5, dev = "svglite")
+# -----------------------
+
+# Commonly used paths.
+# --------------------
+data_dir <- file.path("..", "assets", "rebuttal", "zetaview")
+# --------------------
+
+# Add required functions.
+# -----------------------
+# The following section is modified from content on STHDA:
+# http://www.sthda.com/english/wiki/ggplot2-error-bars-quick-start-guide-r-software-and-data-visualization
+# This function is used to calculate the standard deviation among densities / seeding status of the EV
+# proportion at each size.
+# This standard deviation is used to create error bars in the histograms.
+# --------------------------------------------------------------------------------------------------------
+data_summary <- function(data, varname, groupnames){
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, groupnames, .fun=summary_func,
+                  varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+  return(data_sum)
+}
+# --------------------------------------------------------------------------------------------------------
+# -----------------------
+
+# The Zetaview data is spread out across many files, so we must aggregate them to obtain a single data object.
+# ------------------------------------------------------------------------------------------------------------
+file_list <- list.files(file.path(data_dir))
+
+data <- data.frame(matrix(nrow = 1200, ncol = length(file_list)) + 1)
+for (i in seq_along(file_list)) {
+  file <- read.delim(file.path(data_dir, file_list[i]), skip = 76) # Skip metadata lines.
+  if (i == 1) {
+    data[ , i] <- file[1:1200, 1] # Use first sample to add particle sizes to the data object.
+  }
+  data[ , i + 1] <- file[1:1200, 2]
+}
+rm(file)
+# ------------------------------------------------------------------------------------------------------------
+
+# Use Zetaview filenames to name data columns.
+# --------------------------------------------
+colnames(data) <- c(
+  "size",
+  paste(
+    sub("^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    unlist(
+      strsplit(sub("^[^_]*_[^_]*_[^_]*[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list), "\\.")
+    )[seq(2, 32, by = 2)],
+    sub("^[^_]*_[^_]*_[^_]*[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list),
+    unlist(
+      strsplit(
+        sub(
+          "^[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = file_list
+        ),
+        "\\."
+      )
+    )[seq(2, 32, by = 2)],
+    sep = "_"
+  )
+)
+# --------------------------------------------
+
+# Subset to the particle size range.
+# ----------------------------------
+non_zero <- which(rowSums(data[ , -1]) > 0)
+data <- data[min(non_zero):max(non_zero), ]
+# ----------------------------------
+
+# Create a dataset where replicates of each seeding status are summed together.
+# -----------------------------------------------------------------------------
+names <- unique(
+  paste(
+    sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])),
+    sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data[ , -1])),
+    sep = "_"
+  )
+)
+summed_data <- data.frame(matrix(nrow = nrow(data), ncol = length(names) + 1))
+summed_data$X1 <- data$size
+for (i in seq_along(names)) {
+  data_sub <- data[
+    , which(
+        paste(
+          sub("^[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data)),
+          sub("^[^_]*_[^_]*_([^_]*).*", replacement = "\\1", x = colnames(data)),
+          sep = "_"
+        ) %in% names[i]
+    )
+  ]
+  summed_data[ , i + 1] <- rowSums(data_sub)
+}
+colnames(summed_data) <- c("size", names)
+# -----------------------------------------------------------------------------
+
+# Convert counts into proportion values.
+# --------------------------------------
+summed_data_proportion <- summed_data
+for (i in seq_along(colnames(summed_data_proportion))) {
+  if (i != 1) { # The first column contains sizes not counts.
+    summed_data_proportion[i] <- summed_data_proportion[i] / max(summed_data_proportion[i])
+  }
+}
+# --------------------------------------
+
+# Prep the data for plotting.
+# ---------------------------
+data_sub <- summed_data_proportion[1:which(summed_data_proportion$size == 502.5), ]
+molten_data <- melt(data_sub[ , -1], id.vars = NULL)
+colnames(molten_data) <- c("Seeds", "Proportion")
+molten_data$Size <- rep(data_sub$size, times = ncol(data_sub) - 1)
+# ---------------------------
+
+# Add the standard deviation.
+# ---------------------------
+sd <- data_summary(molten_data, varname = "Proportion", groupnames = "Size")
+molten_data$SD <- rep(sd$sd, length(unique(molten_data$Seeds)))
+# ---------------------------
+
+# Calculate basic summary statistics.
+# -----------------------------------
+stats <- data.frame(matrix(nrow = 6, ncol = ncol(summed_data) - 1))
+colnames(stats) <- colnames(summed_data[ , -1])
+rownames(stats) <- c("Mean", "Median", "Mode", "D10", "D50", "D90")
+
+counts_per_sample <- vector("list", ncol(summed_data) - 1)
+for (i in seq_along(counts_per_sample)) {
+  counts_per_sample[[i]] <- rep(summed_data[ , 1], summed_data[ , i + 1])
+  stats[1, i] <- mean(counts_per_sample[[i]])
+  stats[2, i] <- median(counts_per_sample[[i]])
+  stats[3, i] <- as.numeric(names(table(counts_per_sample[[i]]))[
+    table(counts_per_sample[[i]]) == max(table(counts_per_sample[[i]]))
+  ])[1]
+  stats[4:6, i] <- as.numeric(quantile(counts_per_sample[[i]], probs = c(0.1, 0.5, 0.9)))
+}
+# -----------------------------------
+
+# Subset to condition of interest.
+# --------------------------------
+molten_data_sub <- molten_data[molten_data[[1]] == names[1], ]
+# --------------------------------
+```
+
+# Figure R1 B
+
+```{r}
+ggplot(molten_data_sub, aes(Size, Proportion, group = Seeds, color = Seeds)) +
+  geom_smooth(se = FALSE, span = 0.2) +
+  geom_point(size = 0.75) +
+  geom_errorbar(
+    aes(ymin = Proportion - SD, ymax = Proportion + SD), linewidth = 0.2,
+    position = position_dodge(0.05), color = "darkgrey"
+  ) +
+  theme_light() +
+  ylab("Relative proportion of EVs per seeding status") +
+  xlab("Diameter (nm)") +
+  scale_x_continuous(breaks = seq(0, max(molten_data_sub$Size), by = 20)) +
+  scale_y_continuous(
+    breaks = seq(0, max(molten_data_sub$Proportion), by = 0.1),
+    limits = c(0, max(molten_data_sub$Proportion))
+  ) +
+  geom_vline(xintercept = c(stats[4, i], stats[3, i], stats[6, i]))
+```
+
+# References
+
+This is the concluding section of the document, where we output the `sessionInfo`, and create a bibliography for works cited.
+
+```{r}
+sessionInfo()
+```

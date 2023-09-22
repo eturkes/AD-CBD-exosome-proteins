@@ -23,26 +23,10 @@
 setwd(dirname(parent.frame(2)$ofile)) # Move to location of this file.
 
 rmarkdown::render(
-  file.path("N8_AD_proteins.Rmd"),
-  output_file = file.path("..", "results", "N8_AD_proteins.html")
+  file.path("FigR1.B.Rmd"),
+  output_file = file.path("..", "results", "FigR1.B.html")
 )
 rmarkdown::render(
-  file.path("N8_AD_proteins_pipeline_comparison.Rmd"),
-  output_file = file.path("..", "results", "N8_AD_proteins_pipeline_comparison.html")
-)
-rmarkdown::render(
-  file.path("N8_AD_peptides.Rmd"),
-  output_file = file.path("..", "results", "N8_AD_peptides.html")
-)
-rmarkdown::render(
-  file.path("imputation_simulation.Rmd"),
-  output_file = file.path("..", "results", "imputation_simulation.html")
-)
-rmarkdown::render(
-  file.path("imputation_simulation_pipeline_comparison.Rmd"),
-  output_file = file.path("..", "results", "imputation_simulation_pipeline_comparison.html")
-)
-rmarkdown::render(
-  file.path("zetaview_analysis.Rmd"),
-  output_file = file.path("..", "results", "zetaview_analysis.html")
+  file.path("FigR2_FigR3_FigR4.AB.Rmd"),
+  output_file = file.path("..", "results", "FigR2_FigR3_FigR4.AB.html")
 )

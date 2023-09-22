@@ -19,25 +19,21 @@
 #
 #    Emir Turkes can be contacted at emir.turkes@eturkes.com
 
-# Shell script for building a Singularity image from Docker Hub and running it
-# Run with "sh ./singularity.sh rstudio 8787"
-# Then locally something like "ssh -N -L 8787:localhost:8787 user@ip-address"
-# The ports can be set to whatever you choose
-# For more details: https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/
-# Be sure to check images and paths
+# Shell script for building an Apptainer image from Docker Hub and running it
+# See README of this project for further details
 
-singularity pull ad-cbd-exosome-protein.simg docker://eturkes/ad-exosome-characterisation:R4.1.2v5
+apptainer pull ad-cbd-exosome-protein.sif docker://eturkes/ad-exosome-characterisation:R4.1.2v5
 
 if [ "$1" = "all" ]; then
-    singularity exec \
+    apptainer exec \
         -B .:/home/rstudio/AD-exosome-characterisation \
-        ad-exosome-characterisation.simg \
+        ad-exosome-characterisation.sif \
     Rscript -e "source('/home/rstudio/AD-exosome-characterisation/R/run_all.R')"
 
 elif [ "$1" = "rstudio" ]; then
-    # TODO: Point bind point to user's home.
     DISABLE_AUTH=true RSTUDIO_SESSION_TIMEOUT="0" \
-    singularity exec \
+    apptainer exec \
         -B .:/home/rstudio/AD-exosome-characterisation \
-        ad-exosome-characterisation.simg rserver --www-address=127.0.0.1 --www-port=$2
+        ad-exosome-characterisation.sif \
+    rserver --www-address=127.0.0.1 --www-port=$2 --server-user=$USER
 fi

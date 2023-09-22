@@ -1,9 +1,7 @@
 gdrive
 .git
-graphviz
 R
 assets
-AD-exosome-characterisation.bib
 AD-exosome-characterisation.Rproj
 docker-compose.yml
 .gitignore
