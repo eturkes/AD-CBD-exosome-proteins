@@ -26,7 +26,7 @@
 # For more details: https://divingintogeneticsandgenomics.rbind.io/post/run-rstudio-server-with-singularity-on-hpc/
 # Be sure to check images and paths
 
-singularity pull ad-cbd-exosome-protein.simg docker://eturkes/ad-exosome-characterisation:R4.1.2v5
+singularity pull ad-cbd-exosome-protein.simg docker://eturkes/ad-exosome-characterisation:R4.2.1v5
 
 if [ "$1" = "all" ]; then
     singularity exec \
